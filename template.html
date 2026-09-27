@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Distribuição C2Pro</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --bg-deep:#030507; --solid:#0A0E14;
+  --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E;
+  --grid:rgba(255,255,255,.07);
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-body);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 16px 64px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:40px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.brand{display:flex;gap:16px;align-items:center}
+.brand img{width:52px;height:52px;object-fit:contain}
+.pills{display:inline-flex;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.pills button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.pills button:hover{color:var(--t-strong)}
+.pills button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.pills button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.tile{padding:20px}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.tile .val{font:600 24px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.tile.hero .val{color:var(--acc-h)}
+.tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.delta{display:inline-block;margin-top:10px;font:500 12px/1 var(--mono);color:var(--t-faint)}
+.delta.pos{color:var(--pos)} .delta.neg{color:var(--neg)}
+.delta span{color:var(--t-faint);font-weight:400}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.chart{padding:20px 20px 12px;position:relative}
+.chart h3{margin:0;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.chart .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:4px 0 12px}
+.chart svg{display:block;width:100%;height:200px;overflow:visible}
+.axis{font:400 10px var(--mono);fill:var(--t-faint)}
+.tip{position:absolute;pointer-events:none;background:var(--solid);border:1px solid var(--b-def);border-radius:10px;
+  padding:8px 10px;font:400 12px/1.45 var(--mono);color:var(--t-body);white-space:nowrap;box-shadow:0 4px 16px -4px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .1s;z-index:5}
+.tip b{color:var(--t-strong);font-weight:600}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--t-muted);font-size:13px}
+summary:hover{color:var(--acc-h)}
+
+.tbl-wrap{overflow-x:auto;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-faint);text-align:right;padding:14px 16px;border-bottom:1px solid var(--b-def);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--b-sub);text-align:right;white-space:nowrap;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body)}
+th:first-child,td:first-child{text-align:left}
+td:first-child{font-family:Inter,sans-serif;color:var(--t-strong);white-space:normal;min-width:220px}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--s1)}
+.badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);letter-spacing:.06em;border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px}
+.badge.on{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+
+.ads-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
+.ads-col h3{margin:0 0 12px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.ads{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.ad{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:16px;align-items:start}
+.ad .thumb{position:relative;display:block;width:96px;height:128px;border-radius:12px;overflow:hidden;background:var(--s2);border:1px solid var(--b-sub)}
+.ad .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ad .rank{position:absolute;top:6px;left:6px;min-width:24px;padding:2px 6px;border-radius:999px;background:rgba(5,7,10,.8);
+  border:1px solid var(--b-def);font:600 11px/1.4 var(--mono);color:var(--t-strong);text-align:center}
+.ad .nm{color:var(--t-strong);font-weight:600;font-size:14px;line-height:1.3;word-break:break-word}
+.ad .cp{color:var(--t-faint);font-size:12px;margin:2px 0 10px;word-break:break-word}
+.ad .kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font:400 12px/1.35 var(--mono);color:var(--t-muted)}
+.ad .kpis b{display:block;color:var(--t-strong);font-weight:500;font-size:13px}
+.ad .kpis .sel b{color:var(--acc-h)}
+.ad .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lnk{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--b-def);
+  color:var(--t-body);font:500 12px/1.2 Inter,sans-serif;text-decoration:none;transition:.15s}
+.lnk:hover{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.lnk svg{width:14px;height:14px}
+.lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.empty{padding:24px;color:var(--t-muted);font-size:14px}
+
+.ret{padding:20px}
+.ret h3{margin:0 0 4px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.ret .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:0 0 16px}
+.ret-row{display:grid;grid-template-columns:92px 1fr 150px;gap:12px;align-items:center;margin-bottom:10px;font:400 12px/1.3 var(--mono)}
+.ret-row .k{color:var(--t-muted)}
+.ret-row .bar{height:14px;border-radius:0 4px 4px 0;background:var(--acc);min-width:2px}
+.ret-row .track{background:var(--s1);border-radius:0 4px 4px 0}
+.ret-row .v{color:var(--t-strong);text-align:right}
+.ret-row .v span{color:var(--t-faint)}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
+.defs b{color:var(--t-muted);font-weight:500}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+
+.lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lock form{width:100%;max-width:380px;padding:32px;text-align:center}
+.lock img{width:64px;margin-bottom:16px}
+.lock input[type=password]{width:100%;margin:20px 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--b-def);
+  background:rgba(0,0,0,.35);color:var(--t-strong);font:400 15px Inter,sans-serif}
+.lock input:focus{outline:2px solid var(--acc);outline-offset:1px;border-color:transparent}
+.lock .row{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--t-muted);margin-bottom:16px}
+.btn{all:unset;cursor:pointer;display:block;width:100%;padding:12px 0;border-radius:12px;background:var(--acc);color:var(--on-acc);
+  font:600 15px Inter,sans-serif;box-shadow:0 0 12px -2px rgba(0,216,245,.45);transition:.15s;text-align:center}
+.btn:hover{background:var(--acc-h);transform:translateY(-2px);box-shadow:var(--glow)}
+.btn:active{transform:scale(.975)}
+.err{color:var(--neg);font-size:13px;min-height:20px;margin-top:12px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="tip" id="tip"></div>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(() => {
+const app = document.getElementById("app");
+const payload = JSON.parse(document.getElementById("payload").textContent);
+const CHAVE_SENHA = "c2pro-dash-senha";
+
+// ---------- formatação pt-BR ----------
+let MOEDA = "BRL";
+const fmtMoeda = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:MOEDA}).format(v||0);
+const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
+const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
+const fmtX = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"x";
+const fmtCompacto = v => new Intl.NumberFormat("pt-BR",{notation:"compact",maximumFractionDigits:1}).format(v||0);
+const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
+const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const div = (a,b) => b ? a/b : null;
+
+// Métricas de distribuição. Hook rate = views 3s / impressões. Retenção = ThruPlay / views 3s.
+function derivadas(m){
+  return { ...m,
+    cpm: div(m.gasto*1000, m.impressoes), freq: div(m.impressoes, m.alcance),
+    cpv: div(m.gasto, m.views3s), c25: div(m.gasto, m.p25), c50: div(m.gasto, m.p50), c75: div(m.gasto, m.p75),
+    cthru: div(m.gasto, m.thruplay), ceng: div(m.gasto, m.engajamento),
+    hook: div(m.views3s*100, m.impressoes), ret: div(m.thruplay*100, m.views3s) };
+}
+
+// ---------- tela de senha ----------
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decifrar(senha){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha), "PBKDF2", false, ["deriveKey"]);
+  const chave = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(payload.sal), iterations:payload.iter, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const txt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(payload.iv)}, chave, b64(payload.ct));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
+
+function telaSenha(){
+  app.innerHTML = `<div class="lock"><form class="card" id="f">
+    <img src="logo.png" alt="C2Pro">
+    <div class="eyebrow" style="justify-content:center">Dashboard protegido</div>
+    <input type="password" id="s" placeholder="Senha" autocomplete="current-password" aria-label="Senha" autofocus>
+    <label class="row"><input type="checkbox" id="lembrar" checked> Lembrar neste navegador</label>
+    <button class="btn" type="submit">Abrir dashboard</button>
+    <div class="err" id="err"></div></form></div>`;
+  document.getElementById("f").addEventListener("submit", async e => {
+    e.preventDefault();
+    const senha = document.getElementById("s").value;
+    try {
+      const dados = await decifrar(senha);
+      try { if (document.getElementById("lembrar").checked) localStorage.setItem(CHAVE_SENHA, senha); } catch(_){}
+      render(dados);
+    } catch(_) { document.getElementById("err").textContent = "Senha incorreta."; }
+  });
+}
+
+async function iniciar(){
+  if (!payload.enc) return render(payload.dados);
+  let salva = null;
+  try { salva = localStorage.getItem(CHAVE_SENHA); } catch(_){}
+  if (salva) { try { return render(await decifrar(salva)); } catch(_){ try{localStorage.removeItem(CHAVE_SENHA);}catch(_){} } }
+  telaSenha();
+}
+
+// ---------- dashboard ----------
+let D, PER = "7";
+try { PER = localStorage.getItem("c2pro-dash-periodo") || "7"; } catch(_){}
+
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; desenhar(); }
+
+function delta(atual, anterior, melhorQuando){
+  if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
+  if (!anterior) return atual ? `<div class="delta"><span>sem base no período anterior</span></div>` : `<div class="delta"><span>sem dados</span></div>`;
+  const p = (atual - anterior) / anterior * 100;
+  const txt = (p > 0 ? "+" : "") + new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(p) + "%";
+  let cls = "";
+  if (melhorQuando && Math.abs(p) >= 0.5) cls = (p > 0) === (melhorQuando === "sobe") ? "pos" : "neg";
+  return `<div class="delta ${cls}">${txt} <span>vs anterior</span></div>`;
+}
+
+function tile(lbl, val, deltaHtml, extra, hero){
+  return `<div class="card tile${hero?" hero":""}"><div class="lbl">${esc(lbl)}</div>
+    <div class="val">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}${deltaHtml}</div>`;
+}
+
+const ORDENS = {
+  cpv:  {label:"Custo por view",        val:m => m.cpv,  melhor:"menor", fmt:v => fmtMoeda(v)},
+  hook: {label:"Hook rate",             val:m => m.hook, melhor:"maior", fmt:v => fmtPct(v)},
+  ret:  {label:"Retenção",              val:m => m.ret,  melhor:"maior", fmt:v => fmtPct(v)},
+  ceng: {label:"Custo por engajamento", val:m => m.ceng, melhor:"menor", fmt:v => fmtMoeda(v)},
+};
+let ORDEM = "cpv";
+try { ORDEM = localStorage.getItem("c2pro-dash-ordem") || "cpv"; if (!ORDENS[ORDEM]) ORDEM = "cpv"; } catch(_){}
+
+const ICO_IG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`;
+const ICO_EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
+const moedaOu = v => v == null ? "-" : fmtMoeda(v);
+const pctOu = v => v == null ? "-" : fmtPct(v);
+
+function desenhar(){
+  const P = D.periodos[PER];
+  const a = derivadas(P.atual), b = derivadas(P.anterior);
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+  const tempo = v => v ? new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v) + "s" : "-";
+
+  app.innerHTML = `<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.png" alt="C2Pro">
+      <div><div class="eyebrow">${esc(D.subtitulo || "Dashboard Meta Ads")}</div><h1>${esc(D.nome)}</h1></div></div>
+    <div class="pills" role="group" aria-label="Período">
+      <button data-p="7" aria-pressed="${PER==="7"}">Últimos 7 dias</button>
+      <button data-p="30" aria-pressed="${PER==="30"}">Últimos 30 dias</button>
+    </div>
+  </header>
+  <div class="meta">
+    <span>Período: ${dataBR(P.inicio)} a ${dataBR(P.fim)}</span>
+    <span>Comparado com: ${dataBR(P.ant_inicio)} a ${dataBR(P.ant_fim)}</span>
+    <span>Atualizado em ${quando}</span>
+  </div>
+
+  <section>
+    <div class="sec-head"><div><h2>Custo de visualização</h2><p class="sub">Quanto custa cada pessoa que assiste, em cada ponto do vídeo.</p></div></div>
+    <div class="tiles">
+      ${tile("Custo por view (3s)", moedaOu(a.cpv), delta(a.cpv,b.cpv,"desce"), `${fmtInt(a.views3s)} views`, true)}
+      ${tile("Custo por view 25%", moedaOu(a.c25), delta(a.c25,b.c25,"desce"), `${fmtInt(a.p25)} views`)}
+      ${tile("Custo por view 50%", moedaOu(a.c50), delta(a.c50,b.c50,"desce"), `${fmtInt(a.p50)} views`)}
+      ${tile("Custo por view 75%", moedaOu(a.c75), delta(a.c75,b.c75,"desce"), `${fmtInt(a.p75)} views`)}
+      ${tile("Custo por engajamento", moedaOu(a.ceng), delta(a.ceng,b.ceng,"desce"), `${fmtInt(a.engajamento)} engajamentos`)}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Atenção e retenção</h2><p class="sub">Quanto o vídeo prende quem é impactado.</p></div></div>
+    <div class="split">
+      <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        ${tile("Hook rate", pctOu(a.hook), delta(a.hook,b.hook,"sobe"), "views 3s ÷ impressões")}
+        ${tile("Retenção", pctOu(a.ret), delta(a.ret,b.ret,"sobe"), "ThruPlay ÷ views 3s")}
+        ${tile("Tempo médio assistido", tempo(a.tempo_medio), delta(a.tempo_medio||null,b.tempo_medio||null,"sobe"))}
+        ${tile("Custo por ThruPlay", moedaOu(a.cthru), delta(a.cthru,b.cthru,"desce"), `${fmtInt(a.thruplay)} ThruPlays`)}
+      </div>
+      ${curvaRetencao(a)}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Entrega</h2><p class="sub">Verba e alcance das campanhas de distribuição.</p></div></div>
+    <div class="tiles">
+      ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
+      ${tile("Alcance", fmtInt(a.alcance), delta(a.alcance,b.alcance,"sobe"))}
+      ${tile("Impressões", fmtInt(a.impressoes), delta(a.impressoes,b.impressoes,"sobe"))}
+      ${tile("Frequência", a.freq==null?"-":fmtX(a.freq).replace("x",""), delta(a.freq,b.freq,null))}
+      ${tile("CPM", moedaOu(a.cpm), delta(a.cpm,b.cpm,"desce"))}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Últimos 30 dias, independente do período selecionado.</p></div></div>
+    <div class="charts">
+      <div class="card chart"><h3>Views de 3s por dia</h3>
+        <div class="tot">Total: ${fmtInt(D.diario.reduce((s,d)=>s+d.views3s,0))}</div><svg id="c-views"></svg></div>
+      <div class="card chart"><h3>Hook rate por dia</h3>
+        <div class="tot">Média do período: ${pctOu(div(D.diario.reduce((s,d)=>s+d.views3s,0)*100, D.diario.reduce((s,d)=>s+d.impressoes,0)))}</div><svg id="c-hook"></svg></div>
+    </div>
+    <details><summary>Ver dados diários em tabela</summary>
+      <div class="card tbl-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>Dia</th><th>Investimento</th><th>Impressões</th><th>Views 3s</th><th>Hook rate</th><th>Retenção</th><th>Custo por view</th></tr></thead>
+        <tbody>${D.diario.slice().reverse().map(d => `<tr><td>${dataBRano(d.data)}</td><td>${fmtMoeda(d.gasto)}</td>
+          <td>${fmtInt(d.impressoes)}</td><td>${fmtInt(d.views3s)}</td><td>${pctOu(div(d.views3s*100,d.impressoes))}</td>
+          <td>${pctOu(div(d.thruplay*100,d.views3s))}</td><td>${moedaOu(div(d.gasto,d.views3s))}</td></tr>`).join("")}</tbody>
+      </table></div></details>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Campanhas de distribuição com investimento no período.</p></div></div>
+    ${tabelaCampanhas(P.campanhas)}
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><h2>Criativos</h2><p class="sub">Anúncios com pelo menos ${fmtMoeda(D.gasto_minimo_criativo)} investidos, do melhor para o pior.</p></div>
+      <div class="pills" role="group" aria-label="Ordenar criativos por">
+        ${Object.entries(ORDENS).map(([k,o]) => `<button data-o="${k}" aria-pressed="${ORDEM===k}">${o.label}</button>`).join("")}
+      </div>
+    </div>
+    ${criativos(P.anuncios)}
+  </section>
+
+  <footer>
+    <div class="defs"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos.
+      <b>Custo por view 25/50/75%:</b> investimento ÷ pessoas que assistiram até esse ponto do vídeo.
+      <b>Custo por engajamento:</b> investimento ÷ engajamentos com a publicação.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+  </footer>
+  </div>`;
+
+  app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
+    PER = bt.dataset.p; try { localStorage.setItem("c2pro-dash-periodo", PER); } catch(_){}
+    desenhar();
+  }));
+  app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
+    ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-dash-ordem", ORDEM); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+  graficoBarras(document.getElementById("c-views"), D.diario.map(d => ({x:d.data, y:d.views3s, g:d.gasto})),
+    p => `<b>${dataBRano(p.x)}</b><br>Views 3s: ${fmtInt(p.y)}<br>Custo por view: ${moedaOu(div(p.g,p.y))}`);
+  graficoLinha(document.getElementById("c-hook"), D.diario.map(d => ({x:d.data, y:div(d.views3s*100,d.impressoes)||0, i:d.impressoes})),
+    p => `<b>${dataBRano(p.x)}</b><br>Hook rate: ${p.i?fmtPct(p.y):"-"}<br>Impressões: ${fmtInt(p.i)}`, v => fmtCompacto(v)+"%");
+}
+
+function curvaRetencao(a){
+  const base = a.views3s;
+  const pontos = [["3 segundos", a.views3s], ["25%", a.p25], ["50%", a.p50], ["75%", a.p75], ["100%", a.p100]];
+  return `<div class="card ret"><h3>Curva de retenção</h3>
+    <div class="tot">De cada 100 pessoas que passaram dos 3 segundos, quantas chegaram a cada ponto do vídeo.</div>
+    ${pontos.map(([k,v]) => { const p = base ? v/base*100 : 0;
+      return `<div class="ret-row"><div class="k">${k}</div>
+        <div class="track"><div class="bar" style="width:${Math.min(100,p)}%"></div></div>
+        <div class="v">${base?fmtPct(p):"-"} <span>${fmtInt(v)}</span></div></div>`; }).join("")}
+  </div>`;
+}
+
+function statusBadge(s){
+  if (!s) return "";
+  const map = {ACTIVE:"ativa",PAUSED:"pausada",CAMPAIGN_PAUSED:"campanha pausada",ADSET_PAUSED:"conjunto pausado",ARCHIVED:"arquivada",DELETED:"excluída",WITH_ISSUES:"com problema",IN_PROCESS:"em análise",PENDING_REVIEW:"em revisão",DISAPPROVED:"reprovada"};
+  return `<span class="badge${s==="ACTIVE"?" on":""}">${esc(map[s]||s.toLowerCase())}</span>`;
+}
+
+function tabelaCampanhas(lista){
+  if (!lista.length) return `<div class="card empty">Nenhuma campanha com investimento no período.</div>`;
+  return `<div class="card tbl-wrap"><table>
+    <thead><tr><th>Campanha</th><th>Investimento</th><th>Views 3s</th><th>Hook rate</th><th>Retenção</th><th>Custo por view</th>
+      <th>Custo 25%</th><th>Custo 50%</th><th>Custo 75%</th><th>Custo por engaj.</th></tr></thead>
+    <tbody>${lista.map(c => { const m = derivadas(c);
+      return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.views3s)}</td>
+        <td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td>${moedaOu(m.cpv)}</td><td>${moedaOu(m.c25)}</td>
+        <td>${moedaOu(m.c50)}</td><td>${moedaOu(m.c75)}</td><td>${moedaOu(m.ceng)}</td></tr>`; }).join("")}</tbody></table></div>`;
+}
+
+function cardAnuncio(ad, pos){
+  const m = derivadas(ad);
+  const link = ad.instagram || ad.previa;
+  const img = ad.thumb ? `<img src="${esc(ad.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+  const thumb = link ? `<a class="thumb" href="${esc(link)}" target="_blank" rel="noopener" aria-label="Abrir criativo">${img}<span class="rank">${pos}</span></a>`
+                     : `<div class="thumb">${img}<span class="rank">${pos}</span></div>`;
+  const kpi = (k, lbl, v) => `<div class="${ORDEM===k?"sel":""}">${lbl}<b>${v}</b></div>`;
+  return `<div class="card ad">${thumb}<div>
+    <div class="nm">${esc(ad.nome)}${statusBadge(ad.status)}</div><div class="cp">${esc(ad.campanha)}</div>
+    <div class="kpis">
+      ${kpi("cpv","Custo por view",moedaOu(m.cpv))}${kpi("hook","Hook rate",pctOu(m.hook))}
+      ${kpi("ret","Retenção",pctOu(m.ret))}${kpi("ceng","Custo por engaj.",moedaOu(m.ceng))}
+      ${kpi("","Custo 25 / 50 / 75%",`${moedaOu(m.c25)} / ${moedaOu(m.c50)} / ${moedaOu(m.c75)}`).replace('<div class="">','<div style="grid-column:1/-1">')}
+      ${kpi("","Investido",fmtMoeda(m.gasto))}${kpi("","Views 3s",fmtInt(m.views3s))}
+    </div>
+    <div class="links">
+      ${ad.instagram ? `<a class="lnk" href="${esc(ad.instagram)}" target="_blank" rel="noopener">${ICO_IG}Ver no Instagram</a>` : ""}
+      ${ad.previa ? `<a class="lnk" href="${esc(ad.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia do anúncio</a>` : ""}
+    </div></div></div>`;
+}
+
+function criativos(lista){
+  const elegiveis = lista.filter(a => a.gasto >= D.gasto_minimo_criativo);
+  if (!elegiveis.length) return `<div class="card empty">Nenhum anúncio atingiu o investimento mínimo no período.</div>`;
+  const o = ORDENS[ORDEM];
+  const chave = a => { const v = o.val(derivadas(a)); return v == null ? (o.melhor === "menor" ? Infinity : -Infinity) : v; };
+  const ord = elegiveis.slice().sort((x,y) => o.melhor === "menor" ? chave(x) - chave(y) : chave(y) - chave(x));
+  return `<div class="ads">${ord.map((a,i) => cardAnuncio(a, i+1)).join("")}</div>`;
+}
+
+// ---------- gráficos (SVG puro) ----------
+const NS = "http://www.w3.org/2000/svg";
+const tipEl = document.getElementById("tip");
+
+function escala(max){
+  if (max <= 0) return {top:1, ticks:[0,1]};
+  const passo0 = max / 3, mag = Math.pow(10, Math.floor(Math.log10(passo0)));
+  const passo = [1,2,2.5,5,10].map(k => k*mag).find(p => p >= passo0);
+  const top = Math.ceil(max / passo) * passo;
+  const ticks = []; for (let v = 0; v <= top + 1e-9; v += passo) ticks.push(v);
+  return {top, ticks};
+}
+
+function base(svg, pts, fmtEixo){
+  const W = svg.clientWidth || 500, H = 200, L = 52, Rr = 8, T = 8, B = 24;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const {top, ticks} = escala(Math.max(...pts.map(p => p.y)));
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const pw = (W - L - Rr) / pts.length;
+  const x = i => L + pw * i + pw / 2;
+  let g = "";
+  ticks.forEach(t => {
+    g += `<line x1="${L}" x2="${W-Rr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text class="axis" x="${L-8}" y="${y(t)+3}" text-anchor="end">${(fmtEixo||fmtCompacto)(t)}</text>`;
+  });
+  const ult = pts.length - 1;
+  pts.forEach((p,i) => { if ((i % 7 === 0 && ult - i >= 4) || i === ult)
+    g += `<text class="axis" x="${x(i)}" y="${H-6}" text-anchor="middle">${dataBR(p.x)}</text>`; });
+  svg.insertAdjacentHTML("beforeend", g);
+  return {W, H, L, Rr, T, B, y, x, pw};
+}
+
+function hover(svg, pts, geo, conteudo, destacar){
+  const card = svg.closest(".chart");
+  const alvo = document.createElementNS(NS, "rect");
+  alvo.setAttribute("x", geo.L); alvo.setAttribute("y", 0);
+  alvo.setAttribute("width", geo.W - geo.L - geo.Rr); alvo.setAttribute("height", geo.H - geo.B);
+  alvo.setAttribute("fill", "transparent");
+  svg.appendChild(alvo);
+  const mover = ev => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (geo.W / r.width);
+    const i = Math.max(0, Math.min(pts.length - 1, Math.floor((px - geo.L) / geo.pw)));
+    destacar(i);
+    tipEl.innerHTML = conteudo(pts[i]);
+    tipEl.style.opacity = 1;
+    const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+    let left = ev.clientX + 14; if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
+    tipEl.style.left = left + window.scrollX + "px";
+    tipEl.style.top = ev.clientY - th - 10 + window.scrollY + "px";
+  };
+  alvo.addEventListener("pointermove", mover);
+  alvo.addEventListener("pointerdown", mover);
+  alvo.addEventListener("pointerleave", () => { tipEl.style.opacity = 0; destacar(-1); });
+}
+
+function graficoBarras(svg, pts, tooltip, fmtEixo){
+  const geo = base(svg, pts, fmtEixo);
+  const bw = Math.max(2, geo.pw - 2), r = Math.min(4, bw / 2), y0 = geo.y(0);
+  let g = "";
+  pts.forEach((p,i) => {
+    const x0 = geo.x(i) - bw/2, yt = geo.y(p.y), h = y0 - yt;
+    if (h <= 0) return;
+    const rr = Math.min(r, h);
+    g += `<path data-i="${i}" fill="var(--acc)" d="M${x0},${y0} V${yt+rr} Q${x0},${yt} ${x0+rr},${yt} H${x0+bw-rr} Q${x0+bw},${yt} ${x0+bw},${yt+rr} V${y0} Z"/>`;
+  });
+  svg.insertAdjacentHTML("beforeend", g);
+  const barras = [...svg.querySelectorAll("path[data-i]")];
+  hover(svg, pts, geo, tooltip,
+    i => barras.forEach(b => b.setAttribute("opacity", i < 0 || +b.dataset.i === i ? 1 : .35)));
+}
+
+function graficoLinha(svg, pts, tooltip, fmtEixo){
+  const geo = base(svg, pts, fmtEixo);
+  const d = pts.map((p,i) => `${i?"L":"M"}${geo.x(i)},${geo.y(p.y)}`).join(" ");
+  const area = `${d} L${geo.x(pts.length-1)},${geo.y(0)} L${geo.x(0)},${geo.y(0)} Z`;
+  svg.insertAdjacentHTML("beforeend",
+    `<defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00D8F5" stop-opacity=".18"/><stop offset="1" stop-color="#00D8F5" stop-opacity="0"/></linearGradient></defs>
+     <path d="${area}" fill="url(#ga)"/>
+     <path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+     <line id="cross" y1="${geo.T}" y2="${geo.y(0)}" stroke="var(--b-def)" stroke-width="1" visibility="hidden"/>
+     <circle id="dot" r="5" fill="var(--acc)" stroke="#05070A" stroke-width="2" visibility="hidden"/>`);
+  const cross = svg.querySelector("#cross"), dot = svg.querySelector("#dot");
+  hover(svg, pts, geo,
+    tooltip,
+    i => {
+      const vis = i < 0 ? "hidden" : "visible";
+      cross.setAttribute("visibility", vis); dot.setAttribute("visibility", vis);
+      if (i >= 0) { cross.setAttribute("x1", geo.x(i)); cross.setAttribute("x2", geo.x(i));
+        dot.setAttribute("cx", geo.x(i)); dot.setAttribute("cy", geo.y(pts[i].y)); }
+    });
+}
+
+let tRes; window.addEventListener("resize", () => { clearTimeout(tRes); tRes = setTimeout(() => D && desenhar(), 150); });
+iniciar();
+})();
+</script>
+</body>
+</html>

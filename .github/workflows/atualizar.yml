@@ -1,0 +1,61 @@
+# Atualiza os dashboards todo dia as 2h (Brasilia) e publica no GitHub Pages.
+# Nao usa Claude: e so o gerar.py chamando a API da Meta.
+# Secret necessario (Settings > Secrets and variables > Actions): META_ADS_TOKEN
+# Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
+
+name: Atualizar dashboards
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC = 02:00 em Brasilia
+  workflow_dispatch:       # botao "Run workflow" pra rodar na hora
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write           # pro passo que mantem o agendamento ativo
+
+concurrency:
+  group: dashboards
+  cancel-in-progress: true
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Gerar dashboards
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          SENHA_C2PRO: ${{ secrets.SENHA_C2PRO }}
+        run: python gerar.py
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      # Repositorio publico: o GitHub desliga agendamentos apos 60 dias sem commit.
+      # Reativar o workflow a cada execucao evita isso.
+      - name: Manter agendamento ativo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/atualizar.yml/enable"
+
+  publicar:
+    needs: gerar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
