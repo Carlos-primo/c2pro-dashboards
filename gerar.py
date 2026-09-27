@@ -71,9 +71,23 @@ def api(caminho, **params):
     return itens
 
 
+# Regra da agencia: dashboard de distribuicao so mostra campanhas com DISTRIBUICAO no nome.
+# Fixo no codigo de proposito, nao e configuravel por cliente.
+FILTRO = "DISTRIBUICAO"
+
+
 def filtro_campanha():
-    termo = CFG.get("filtro_campanha")
-    return [{"field": "campaign.name", "operator": "CONTAIN", "value": termo}] if termo else []
+    return [{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]
+
+
+def eh_distribuicao(nome_campanha):
+    return FILTRO in (nome_campanha or "").upper()
+
+
+def conferir(condicao, mensagem):
+    """Aborta a geracao em vez de publicar um dashboard com dado fora da regra."""
+    if not condicao:
+        sys.exit(f"ERRO de consistencia ({CFG.get('nome')}): {mensagem}")
 
 
 def insights(nivel, inicio, fim, campos, **extra):
@@ -123,6 +137,7 @@ def periodo(dias, ontem):
 
     campanhas = []
     for l in insights("campaign", inicio, fim, "campaign_id,campaign_name," + CAMPOS_METRICAS):
+        conferir(eh_distribuicao(l["campaign_name"]), f"campanha fora do filtro: {l['campaign_name']}")
         m = metricas(l)
         if m["gasto"] > 0:
             campanhas.append({"id": l["campaign_id"], "nome": l["campaign_name"],
@@ -131,16 +146,22 @@ def periodo(dias, ontem):
 
     anuncios = []
     for l in insights("ad", inicio, fim, "ad_id,ad_name,campaign_name," + CAMPOS_METRICAS):
+        conferir(eh_distribuicao(l["campaign_name"]), f"anuncio de campanha fora do filtro: {l['campaign_name']}")
         m = metricas(l)
         if m["gasto"] > 0:
             anuncios.append({"id": l["ad_id"], "nome": l["ad_name"],
                              "campanha": l["campaign_name"], **m})
     detalhes_anuncios(anuncios)
 
+    atual = conta_total(inicio, fim)
+    soma = sum(c["gasto"] for c in campanhas)
+    conferir(abs(soma - atual["gasto"]) < 0.05,
+             f"total {dias}d (R$ {atual['gasto']:.2f}) difere da soma das campanhas DISTRIBUICAO (R$ {soma:.2f})")
+
     return {
         "inicio": inicio.isoformat(), "fim": fim.isoformat(),
         "ant_inicio": ant_inicio.isoformat(), "ant_fim": ant_fim.isoformat(),
-        "atual": conta_total(inicio, fim),
+        "atual": atual,
         "anterior": conta_total(ant_inicio, ant_fim),
         "campanhas": campanhas,
         "anuncios": anuncios,
@@ -208,12 +229,15 @@ def gerar_cliente(slug):
         "subtitulo": CFG.get("subtitulo", ""),
         "conta": conta.get("name", ""),
         "moeda": conta.get("currency", "BRL"),
-        "filtro": CFG.get("filtro_campanha", ""),
+        "filtro": FILTRO,
         "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],
         "periodos": {"7": periodo(7, ontem), "30": periodo(30, ontem)},
         "diario": serie_diaria(ontem),
     }
+    soma_diaria = sum(d["gasto"] for d in dados["diario"])
+    conferir(abs(soma_diaria - dados["periodos"]["30"]["atual"]["gasto"]) < 0.05,
+             "serie diaria nao bate com o total de 30 dias")
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     senha = os.environ.get(f"SENHA_{slug.upper().replace('-', '_')}", "")

@@ -23,14 +23,17 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 
 Últimos 7 ou 30 dias (botão no topo), comparados com o período anterior. O dia de hoje não entra.
 
+**Regra fixa:** só entram campanhas com `DISTRIBUICAO` no nome. O filtro está no código (`FILTRO` em `gerar.py`), não é configurável, e o gerador aborta se algum dado fugir da regra.
+
 **Definições:** hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
 
 ## Adicionar um cliente
 
+Pelo Claude Code, no workspace da agência: skill `c2pro-dashboard-distribuicao` (é só dizer o nome do cliente). Manualmente:
+
 1. Criar `clientes/<slug>/config.json` (copiar o da C2Pro e trocar):
    - `nome`, `subtitulo`
    - `conta_anuncio`: `act_...` do cliente
-   - `filtro_campanha`: trecho do nome das campanhas que entram (ex: `DISTRIBUICAO`). Vazio = conta inteira
    - `criativos_gasto_minimo`: gasto mínimo pro anúncio aparecer no ranking
 2. Commit e push. O link fica `https://carlos-primo.github.io/c2pro-dashboards/<slug>/`
 3. Pra rodar na hora: aba Actions > Atualizar dashboards > Run workflow
