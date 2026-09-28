@@ -11,6 +11,7 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 | Cliente | Link |
 |---|---|
 | C2Pro | https://carlos-primo.github.io/c2pro-dashboards/c2pro/ |
+| Evaldit Rafaela | https://carlos-primo.github.io/c2pro-dashboards/evaldit-rafaela-ibama/ |
 
 ## O que cada dashboard mostra
 
