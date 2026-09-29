@@ -2,6 +2,7 @@
 # Nao usa Claude: e so o gerar.py chamando a API da Meta.
 # Secret necessario (Settings > Secrets and variables > Actions): META_ADS_TOKEN
 # Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
+# Dashboards de vendas: SENHA_VENDAS_<SLUG>, no bloco env do passo "Gerar dashboards de vendas".
 
 name: Atualizar dashboards
 
@@ -38,6 +39,11 @@ jobs:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
           SENHA_C2PRO: ${{ secrets.SENHA_C2PRO }}
         run: python gerar.py
+
+      - name: Gerar dashboards de vendas
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+        run: python gerar_vendas.py
 
       - uses: actions/upload-pages-artifact@v4
         with:

@@ -14,7 +14,7 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 | Evaldit Rafaela | https://carlos-primo.github.io/c2pro-dashboards/evaldit-rafaela-ibama/ |
 | Método NeuroappAvalia | https://carlos-primo.github.io/c2pro-dashboards/metodo-neuroapp-avalia-cartao/ |
 
-## O que cada dashboard mostra
+## O que cada dashboard de distribuição mostra
 
 - **Custo de visualização:** custo por view (3s), por view de 25%, 50% e 75%, custo por engajamento
 - **Atenção e retenção:** hook rate, retenção, tempo médio assistido, custo por ThruPlay e curva de retenção
@@ -28,6 +28,27 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 **Regra fixa:** só entram campanhas com `DISTRIBUICAO` no nome. O filtro está no código (`FILTRO` em `gerar.py`), não é configurável, e o gerador aborta se algum dado fugir da regra.
 
 **Definições:** hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
+
+## Dashboards de vendas
+
+Mesma lógica, para campanhas com `VENDAS` no nome (filtro fixo em `FILTRO` no `gerar_vendas.py`).
+Cada cliente é uma pasta `vendas/<slug>/config.json` e o link fica:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
+```
+
+| Cliente | Link |
+|---|---|
+| Ordus System | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
+
+- **Resumo:** custo por compra, compras, investimento, faturamento, ROAS e ticket médio
+- **Funil visual:** impressões (CPM) > cliques no link (CTR, CPC) > visitas à página (connect rate, custo por visita) > checkouts (página para checkout, custo por checkout) > compras (checkout para compra, custo por compra), com variação em pontos percentuais e alerta na etapa que mais caiu
+- **Entrega, dia a dia, campanhas e criativos** com o funil de cada um
+
+Ontem, últimos 3, 7 ou 30 dias, comparados com o período anterior. Compras e faturamento são os registrados pelo pixel.
+Pelo Claude Code: skill `c2pro-dashboard-vendas`. Rodar no PC: `python gerar_vendas.py [slug]` e abrir `site/vendas/<slug>/index.html`.
+Senha opcional: secret `SENHA_VENDAS_<SLUG>` no passo "Gerar dashboards de vendas" do workflow.
 
 ## Adicionar um cliente
 
