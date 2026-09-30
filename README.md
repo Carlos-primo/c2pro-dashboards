@@ -85,3 +85,16 @@ de 60 dias. Pra não precisar trocar, use um token de **System User** do Busines
 O repositório é público (o código não tem nenhum segredo). Os dados só existem na página publicada,
 que qualquer pessoa com o link consegue abrir. A página raiz fica em branco e não lista os clientes,
 e as páginas pedem para não serem indexadas pelo Google.
+
+## Planejamentos
+
+Páginas estáticas de planejamento estratégico de cliente (não puxam dados, não são dashboards de acompanhamento).
+Cada uma fica em `planejamento/<cliente>/index.html` e o workflow só copia a pasta pro site:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/planejamento/<cliente>/
+```
+
+| Cliente | Link |
+|---|---|
+| Mariana Groth (Growth Compliance) | https://carlos-primo.github.io/c2pro-dashboards/planejamento/mariana-groth/ |

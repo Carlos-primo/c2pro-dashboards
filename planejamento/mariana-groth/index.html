@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Planejamento Growth Compliance</title>
+<meta name="description" content="Planejamento estratégico da Growth Compliance: pesquisa, treinamentos para empresas, treinamentos gravados e mentoria.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#05070a;
+  --surface-card:linear-gradient(180deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.018) 100%);
+  --surface-1:rgba(255,255,255,.028);
+  --surface-2:rgba(255,255,255,.048);
+  --surface-inset:rgba(0,0,0,.35);
+  --border-subtle:rgba(255,255,255,.07);
+  --border-default:rgba(255,255,255,.12);
+  --border-strong:rgba(255,255,255,.2);
+  --border-accent:rgba(0,216,245,.45);
+  --text-strong:#f2f6fa;
+  --text-body:#c9d2dd;
+  --text-muted:#9aa6b6;
+  --text-faint:#6b788a;
+  --text-accent:#37e6ff;
+  --accent:#00d8f5;
+  --accent-hover:#37e6ff;
+  --accent-soft:rgba(0,216,245,.12);
+  --accent-soft-hover:rgba(0,216,245,.2);
+  --on-accent:#00171c;
+  --green:#23d18b;
+  --amber:#ffb020;
+  --red:#ff4d5e;
+  --grad-ink:linear-gradient(180deg,#f2f6fa 0%,#9aa6b6 100%);
+  --grad-signal:linear-gradient(135deg,#37e6ff 0%,#004aad 100%);
+  --elev-card:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow-sm:0 0 12px -2px rgba(0,216,245,.45),0 0 2px rgba(0,216,245,.5);
+  --glow-md:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --r-control:12px;--r-card:18px;--r-pill:999px;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg);margin:0}
+body{color:var(--text-body);font-family:var(--sans);font-size:15px;line-height:1.55;letter-spacing:-.008em;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.halo{position:absolute;inset:0 0 auto 0;height:520px;pointer-events:none;z-index:0;background:radial-gradient(60% 60% at 50% 0%,rgba(0,216,245,.18) 0%,rgba(0,74,173,.10) 45%,rgba(0,0,0,0) 100%)}
+.wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding-inline:16px}
+@media (min-width:640px){.wrap{padding-inline:24px}}
+
+.top{padding-block:28px 20px;display:grid;gap:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.ring{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);box-shadow:var(--glow-sm);display:grid;place-items:center;font:700 10px/1 var(--mono);color:var(--text-accent)}
+.wordmark{font:800 17px/1 var(--sans);letter-spacing:-.03em;background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{font:600 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-accent);display:inline-flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+h1{margin:0;font:800 clamp(30px,7vw,48px)/1.04 var(--sans);letter-spacing:-.035em;text-wrap:balance;background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:0;max-width:62ch;color:var(--text-muted);font-size:16px}
+.who{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 12px/1 var(--mono);color:var(--text-body);padding:8px 12px;border-radius:var(--r-pill);border:1px solid var(--border-default);background:var(--surface-1)}
+
+.tabbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(5,7,10,.94) 0%,rgba(5,7,10,.86) 100%);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--border-subtle)}
+.tabs{max-width:920px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;scroll-padding-inline:16px}
+.tabs::-webkit-scrollbar{display:none}
+@media (min-width:640px){.tabs{padding-inline:24px;flex-wrap:wrap}}
+.tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--border-default);background:var(--surface-1);color:var(--text-muted);font:500 13.5px/1 var(--sans);cursor:pointer;transition:border-color .18s var(--ease-out),background .18s var(--ease-out),color .18s var(--ease-out)}
+.tab .n{font:600 11px/1 var(--mono);color:var(--text-faint)}
+.tab:hover{color:var(--text-strong);border-color:var(--border-strong)}
+.tab[aria-selected="true"]{border-color:var(--border-accent);background:var(--accent-soft-hover);color:#b3f7ff;box-shadow:var(--glow-sm)}
+.tab[aria-selected="true"] .n{color:var(--text-accent)}
+button:focus-visible,summary:focus-visible,textarea:focus-visible,input:focus-visible+.box{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:28px 40px}
+.panel{display:grid;gap:22px;animation:fade .32s var(--ease-out)}
+@keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}*{transition:none!important}}
+.phead{display:grid;gap:10px}
+h2{margin:0;font:700 clamp(24px,5.4vw,34px)/1.16 var(--sans);letter-spacing:-.022em;color:var(--text-strong);text-wrap:balance}
+h3{margin:0;font:700 18px/1.3 var(--sans);letter-spacing:-.015em;color:var(--text-strong);text-wrap:balance}
+h4{margin:0;font:600 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+p{margin:0;max-width:66ch}
+.intro{color:var(--text-muted);font-size:16px}
+strong{color:var(--text-strong);font-weight:600}
+.accent{color:var(--text-accent)}
+.note{font-size:13px;color:var(--text-muted)}
+
+.card{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--r-card);box-shadow:var(--elev-card);padding:20px;display:grid;gap:14px;min-width:0}
+@media (min-width:640px){.card{padding:24px}}
+.card.hl{border-color:var(--border-accent);box-shadow:var(--elev-card),var(--glow-md)}
+.card.flat{background:var(--surface-1);box-shadow:none}
+.card-title{display:flex;align-items:center;gap:10px}
+.ic{width:34px;height:34px;flex:0 0 34px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--text-accent);border:1px solid rgba(0,216,245,.25)}
+.ic svg{width:18px;height:18px}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.grid3{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+ol.list,ul.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+ul.list li{position:relative;padding-left:20px}
+ul.list li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.8}
+ol.list{counter-reset:s}
+ol.list li{counter-increment:s;position:relative;padding-left:40px;min-height:28px}
+ol.list li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;font:600 12px/1 var(--mono);color:var(--text-accent);padding:6px 0;width:28px;text-align:center;border-radius:8px;background:var(--accent-soft)}
+.opts{display:block;margin-top:4px;font-size:13.5px;color:var(--text-muted)}
+
+.tag{display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:var(--r-pill);width:max-content;max-width:100%}
+.tag.rec{color:#b3f7ff;background:var(--accent-soft);border:1px solid var(--border-accent)}
+.tag.warn{color:var(--amber);background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.35)}
+.tag.ok{color:var(--green);background:rgba(35,209,139,.1);border:1px solid rgba(35,209,139,.35)}
+.tag.mute{color:var(--text-muted);background:var(--surface-1);border:1px solid var(--border-default)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+
+.quote{padding:18px 20px;border-radius:var(--r-card);background:var(--surface-inset);border:1px solid var(--border-subtle);display:grid;gap:8px}
+.quote p{font-size:17px;line-height:1.5;color:var(--text-strong);font-weight:500;letter-spacing:-.012em}
+.quote .src{font:500 12px/1 var(--mono);color:var(--text-muted)}
+
+/* Sequência de frentes */
+.seq{display:grid;gap:12px}
+.fr{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start;padding:16px;border-radius:14px;background:var(--surface-1);border:1px solid var(--border-subtle)}
+.fr.now{border-color:var(--border-accent);background:var(--accent-soft);box-shadow:var(--glow-sm)}
+.fr .num{height:52px;border-radius:12px;display:grid;place-items:center;font:700 20px/1 var(--mono);color:var(--text-accent);border:1px solid var(--border-accent);background:var(--bg)}
+.fr .b{display:grid;gap:4px;min-width:0}
+.fr .when{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-accent)}
+.fr h3{font-size:17px}
+.fr p{font-size:14px;color:var(--text-muted)}
+.arrow{justify-self:center;color:var(--text-faint);font:600 12px/1 var(--mono)}
+
+/* Linha do tempo */
+.tl{display:grid;position:relative}
+.step{display:grid;grid-template-columns:96px 1fr;gap:14px;position:relative;padding-bottom:18px}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:47px;top:34px;bottom:0;width:1px;background:linear-gradient(180deg,rgba(0,216,245,.5),rgba(0,216,245,.08))}
+.step:last-child::before{display:none}
+.dayb{min-height:34px;padding:6px 4px;border-radius:var(--r-pill);display:grid;place-items:center;text-align:center;font:600 11px/1.2 var(--mono);color:var(--text-accent);background:var(--bg);border:1px solid var(--border-accent);position:relative;z-index:1}
+.step.off .dayb{color:var(--text-muted);border:1px dashed var(--border-strong)}
+.step.key .dayb{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow-sm)}
+.step .body{display:grid;gap:4px;padding-top:6px;min-width:0}
+.step .body h3{font-size:16px}
+.step .body p{font-size:14px;color:var(--text-muted)}
+
+/* Prompts e scripts */
+.menu{display:grid;gap:10px}
+details.pm{border-radius:14px;background:var(--surface-inset);border:1px solid var(--border-default);overflow:hidden}
+details.pm[open]{border-color:var(--border-accent)}
+details.pm summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:34px 1fr 20px;gap:12px;align-items:center;padding:14px 16px}
+details.pm summary::-webkit-details-marker{display:none}
+details.pm summary .t{display:grid;gap:2px;min-width:0}
+details.pm summary .t b{color:var(--text-strong);font-weight:600;font-size:15px}
+details.pm summary .t span{font-size:13px;color:var(--text-muted)}
+details.pm summary .chev{color:var(--text-faint);transition:transform .2s var(--ease-out)}
+details.pm[open] summary .chev{transform:rotate(180deg)}
+.pm-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);background:rgba(255,255,255,.02)}
+.pm-bar span{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.prompt{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word;font:400 13.5px/1.6 var(--sans);color:var(--text-body);max-height:420px;overflow:auto}
+.prompt .ph{color:var(--text-accent);font-family:var(--mono);font-size:12.5px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--r-control);font:600 13px/1 var(--sans);cursor:pointer;border:1px solid var(--border-accent);background:var(--accent-soft);color:#b3f7ff;transition:background .18s var(--ease-out),box-shadow .18s var(--ease-out),transform .12s var(--ease-out)}
+.btn:hover{background:var(--accent-soft-hover);box-shadow:var(--glow-sm)}
+.btn:active{transform:scale(.975)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{background:transparent;border-color:var(--border-default);color:var(--text-body)}
+.btn svg{width:15px;height:15px}
+
+/* Checklist */
+.progress{display:grid;gap:10px}
+.bar{height:8px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden;border:1px solid var(--border-subtle)}
+.bar i{display:block;height:100%;width:0;background:var(--grad-signal);box-shadow:0 0 12px rgba(0,216,245,.5);transition:width .3s var(--ease-out)}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.prog-row .v{font:600 22px/1 var(--mono);color:var(--text-strong);font-variant-numeric:tabular-nums}
+.checks{display:grid;gap:2px}
+.check{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;padding:10px 8px;border-radius:10px;cursor:pointer;position:relative}
+.check:hover{background:var(--surface-1)}
+.check input{position:absolute;opacity:0;width:1px;height:1px}
+.box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border-strong);display:grid;place-items:center;margin-top:1px;transition:all .15s var(--ease-out)}
+.box::after{content:"";width:10px;height:6px;border-left:2px solid var(--on-accent);border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+.check input:checked+.box{background:var(--accent);border-color:var(--accent);box-shadow:var(--glow-sm)}
+.check input:checked+.box::after{opacity:1}
+.check input:checked~.t{color:var(--text-muted);text-decoration:line-through;text-decoration-color:rgba(154,166,182,.5)}
+.check .t small{display:block;color:var(--text-muted);font-size:13px;margin-top:2px}
+
+/* Cenários */
+.scen{display:grid;gap:10px;align-content:start}
+.scen .letter{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 18px/1 var(--mono);color:var(--on-accent);background:var(--accent);box-shadow:var(--glow-sm)}
+.kv{display:grid;gap:10px;margin:0}
+.kv div{display:grid;gap:2px}
+.kv dt{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.kv dd{margin:0}
+
+/* Próximos passos */
+.rows{display:grid;gap:8px}
+.row{display:grid;gap:8px;padding:14px 16px;border-radius:12px;background:var(--surface-1);border:1px solid var(--border-subtle)}
+@media (min-width:720px){.row{grid-template-columns:1fr auto;align-items:center}}
+.row .what{color:var(--text-strong);font-weight:500}
+.row .meta{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font:500 12px/1 var(--mono);padding:6px 10px;border-radius:var(--r-pill);border:1px solid var(--border-default);color:var(--text-body);background:var(--surface-1);white-space:nowrap}
+.pill.who-c2{border-color:var(--border-accent);color:#b3f7ff;background:var(--accent-soft)}
+.pill.date{color:var(--text-muted)}
+
+/* Decisões */
+.dq{display:grid;gap:12px}
+.dq .qh{display:grid;gap:4px}
+.dq .qh p{font-size:14px;color:var(--text-muted)}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choice{min-height:40px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--border-default);background:var(--surface-1);color:var(--text-body);font:500 14px/1.2 var(--sans);cursor:pointer;text-align:left;transition:all .15s var(--ease-out)}
+.choice:hover{border-color:var(--border-strong);color:var(--text-strong)}
+.choice[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft-hover);color:#e6feff;box-shadow:var(--glow-sm)}
+textarea.notes{width:100%;min-height:96px;padding:12px 14px;border-radius:var(--r-control);border:1px solid var(--border-default);background:var(--surface-inset);color:var(--text-strong);font:400 15px/1.5 var(--sans);resize:vertical}
+textarea.notes::placeholder{color:var(--text-faint)}
+.sticky-cta{position:sticky;bottom:12px;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;background:rgba(10,14,20,.94);border:1px solid var(--border-accent);box-shadow:var(--glow-md);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.sticky-cta .meta{font:500 12px/1.3 var(--mono);color:var(--text-muted)}
+
+.pager{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border-subtle);padding-top:20px;margin-top:6px}
+.pager .btn{min-height:44px;flex:1 1 0;max-width:280px}
+.pager .btn.next{margin-left:auto}
+.pager .btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+footer{padding-block:28px 40px;border-top:1px solid var(--border-subtle);color:var(--text-faint);font:500 12px/1.5 var(--mono)}
+</style>
+</head>
+<body>
+<div class="halo" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="ring">C2</div><div class="wordmark">C2Pro</div></div>
+    <span class="eyebrow">Planejamento estratégico</span>
+    <h1>Diversificação e mentoria da Growth Compliance</h1>
+    <p class="lede">Mari, aqui está o plano que combinamos na call de 24/09. Ele parte do que você trouxe e do rascunho de estrutura de 25/09. Está em ordem: primeiro a lógica, depois cada frente, e no fim os próximos passos e as decisões que dependem de você.</p>
+    <div class="who">
+      <span class="chip">Growth Compliance</span>
+      <span class="chip">Carlos Primo · C2Pro</span>
+      <span class="chip">Outubro de 2026</span>
+    </div>
+  </header>
+</div>
+
+<nav class="tabbar" aria-label="Seções do planejamento">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="visao" aria-selected="true"><span class="n">01</span>Visão geral</button>
+    <button class="tab" role="tab" data-tab="sequencia" aria-selected="false"><span class="n">02</span>Sequência</button>
+    <button class="tab" role="tab" data-tab="pesquisa" aria-selected="false"><span class="n">03</span>Frente 0 · Pesquisa</button>
+    <button class="tab" role="tab" data-tab="empresas" aria-selected="false"><span class="n">04</span>Frente 1 · Empresas</button>
+    <button class="tab" role="tab" data-tab="treinamentos" aria-selected="false"><span class="n">05</span>Frente 2 · Treinamentos</button>
+    <button class="tab" role="tab" data-tab="mentoria" aria-selected="false"><span class="n">06</span>Frente 3 · Mentoria</button>
+    <button class="tab" role="tab" data-tab="canais" aria-selected="false"><span class="n">07</span>Canais</button>
+    <button class="tab" role="tab" data-tab="mba" aria-selected="false"><span class="n">08</span>MBA</button>
+    <button class="tab" role="tab" data-tab="passos" aria-selected="false"><span class="n">09</span>Próximos passos</button>
+    <button class="tab" role="tab" data-tab="decisoes" aria-selected="false"><span class="n">10</span>Decisões</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- 01 VISÃO GERAL -->
+<section class="panel" id="visao" role="tabpanel" data-title="Visão geral">
+  <div class="phead">
+    <span class="eyebrow">01 · Onde a gente está</span>
+    <h2>O momento e a lógica do plano</h2>
+    <p class="intro">Na call você trouxe três preocupações que se conectam. O plano inteiro nasce delas.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="trending-down"></i></span><h3>O mercado apertou</h3></div>
+      <p>Instituições fechando, contratos sendo encerrados e a nova exigência de capital pressionando quem é regulado. Depender só do mercado financeiro ficou arriscado.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="graduation-cap"></i></span><h3>O MBA pede fôlego</h3></div>
+      <p>É um investimento alto num ano que pede cautela com o caixa. E ainda gera desconforto, o que também conta.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="users"></i></span><h3>Abrir o público</h3></div>
+      <p>Levar o que a Growth sabe para empresas e profissionais de fora do mercado financeiro, sem abandonar o núcleo.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="layers"></i></span><h3>Os ativos que você já tem</h3></div>
+    <p>Dá para testar tudo isso gastando pouco, porque a base já existe:</p>
+    <ul class="list">
+      <li><strong>Instagram:</strong> virou um ativo de verdade. Foi por ele que a Kion chegou até vocês.</li>
+      <li><strong>LinkedIn:</strong> a Carla já vem tendo bons retornos por lá.</li>
+      <li><strong>Mailing:</strong> nas suas palavras, "é tops". É o ativo mais valioso deste plano.</li>
+      <li><strong>Equipe:</strong> a Carla publica sem depender de você, e ela e a Bruna já estão gravando treinamentos. Isso te dá fôlego.</li>
+    </ul>
+  </div>
+
+  <div class="quote">
+    <p>O objetivo do conteúdo enquanto você está fora não é bombar. É não parar.</p>
+    <span class="src">Da nossa call de 24/09</span>
+  </div>
+
+  <div class="card hl">
+    <span class="tag warn"><i data-lucide="flask-conical" style="width:13px;height:13px"></i>Importante</span>
+    <h3>Tudo aqui é hipótese até a pesquisa responder</h3>
+    <p>Este plano organiza as nossas melhores ideias, mas elas saíram da nossa cabeça. O diferencial mais forte da mentoria <strong>provavelmente vai aparecer na pesquisa</strong>, nas palavras do seu público, e não agora. Depois da pesquisa, o plano muda: público, formato, oferta e comunicação serão ajustados ao que os dados mostrarem.</p>
+  </div>
+
+  <div class="card">
+    <span class="tag mute">Uma primeira hipótese de posicionamento</span>
+    <h3>O rigor de banco aplicado a qualquer empresa</h3>
+    <p>Fora do mercado financeiro já existe muito curso de compliance corporativo. Entrar como "mais uma" desperdiçaria o que você tem de mais forte. Uma possibilidade é usar o nicho como diferencial:</p>
+    <div class="quote"><p>O nível de exigência que o Banco Central e a CVM cobram de uma instituição financeira, aplicado à sua empresa.</p><span class="src">Hipótese a validar na pesquisa</span></div>
+    <p class="note">Ela conversa com a ideia que você já defende: não basta ter a política aprovada, é preciso conseguir provar que o programa funciona. Mas é só um ponto de partida. A pesquisa pode mostrar um ângulo melhor.</p>
+  </div>
+</section>
+
+<!-- 02 SEQUÊNCIA -->
+<section class="panel" id="sequencia" role="tabpanel" data-title="Sequência" hidden>
+  <div class="phead">
+    <span class="eyebrow">02 · Uma frente de cada vez</span>
+    <h2>A ordem das frentes</h2>
+    <p class="intro">O que você descreveu na call são, na prática, quatro frentes de trabalho. Todas fazem sentido, mas <strong>não podem ser tocadas ao mesmo tempo</strong>. Elas vão em sequência, começando pela pesquisa.</p>
+  </div>
+
+  <div class="card hl">
+    <div class="card-title"><span class="ic"><i data-lucide="list-ordered"></i></span><h3>A regra</h3></div>
+    <p>Uma frente só começa quando a anterior estiver <strong>montada e rodando</strong>. Montar é o que consome a sua energia e a da Carla. Depois de montada, a frente segue rodando com pouca manutenção, e aí a próxima começa.</p>
+  </div>
+
+  <div class="seq">
+    <div class="fr now"><div class="num">0</div><div class="b"><span class="when">Outubro · agora</span><h3>Pesquisa de validação</h3><p>Responde quem é o público, qual a dor, quem paga e qual deve ser o diferencial. Todas as outras frentes dependem dela.</p></div></div>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <div class="fr"><div class="num">1</div><div class="b"><span class="when">Novembro</span><h3>Treinamentos para empresas</h3><p>É o dinheiro que chega mais rápido, compensa os contratos perdidos e está na época, com o encerramento do ano fiscal.</p></div></div>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <div class="fr"><div class="num">2</div><div class="b"><span class="when">Dezembro e janeiro</span><h3>Treinamentos gravados</h3><p>Montados em dezembro, rodam no perpétuo durante o período parado, sem depender da sua agenda. Aumentam a base para a mentoria.</p></div></div>
+    <div class="arrow" aria-hidden="true">↓</div>
+    <div class="fr"><div class="num">3</div><div class="b"><span class="when">Fim de janeiro a março</span><h3>Mentoria</h3><p>Pré-venda para a base, captação depois do carnaval e turma 1 em março, com o público já validado.</p></div></div>
+  </div>
+
+  <div class="card">
+    <h4>Calendário</h4>
+    <div class="tl">
+      <div class="step off"><div class="dayb">30/09 a 09/10</div><div class="body"><h3>Carlos viajando</h3><p>Acessível, só que menos do que o normal.</p></div></div>
+      <div class="step key"><div class="dayb">até 12/10</div><div class="body"><h3>Pesquisa no ar</h3><p>A Carla publica tudo antes das férias dela.</p></div></div>
+      <div class="step off"><div class="dayb">13 a 26/10</div><div class="body"><h3>Carla de férias</h3><p>As respostas chegam sem ninguém precisar atuar. Os anúncios de teste rodam.</p></div></div>
+      <div class="step"><div class="dayb">27 a 31/10</div><div class="body"><h3>Coleta dos dados</h3><p>A Carla reúne tudo na pasta da pesquisa (checklist na aba 03).</p></div></div>
+      <div class="step key"><div class="dayb">início nov</div><div class="body"><h3>Análise e reunião de decisão</h3><p>A C2Pro analisa e a gente escolhe o cenário A, B ou C.</p></div></div>
+      <div class="step"><div class="dayb">novembro</div><div class="body"><h3>Frente 1: empresas</h3><p>Também a previsão de custos de 2027 e a decisão sobre MBA e Tabari.</p></div></div>
+      <div class="step"><div class="dayb">dezembro</div><div class="body"><h3>Frente 2: treinamentos gravados</h3><p>Até 15/12 é a última janela comercial do ano.</p></div></div>
+      <div class="step off"><div class="dayb">15/12 a 25/01</div><div class="body"><h3>Mercado parado</h3><p>O perpétuo roda sozinho. Em janeiro você cuida dos clientes com o Luiz de férias.</p></div></div>
+      <div class="step"><div class="dayb">26/01 a 07/02</div><div class="body"><h3>Pré-venda da turma fundadora</h3><p>Só para a base quente.</p></div></div>
+      <div class="step off"><div class="dayb">09/02</div><div class="body"><h3>Carnaval</h3><p>Cai cedo em 2027, do jeito que você prefere.</p></div></div>
+      <div class="step"><div class="dayb">2ª quinzena fev</div><div class="body"><h3>Captação aberta da mentoria</h3><p>Com um workshop de 1 dia.</p></div></div>
+      <div class="step key"><div class="dayb">março</div><div class="body"><h3>Início da turma 1</h3><p>Depois do carnaval, como você queria.</p></div></div>
+    </div>
+  </div>
+
+  <div class="card flat">
+    <p><strong>Por que a pesquisa não pode esperar:</strong> se ela mostrar algo muito diferente do que imaginamos, precisamos de novembro para mudar de rumo. Uma pesquisa feita em dezembro chegaria com todo mundo de férias e sem tempo para ajustar.</p>
+  </div>
+</section>
+
+<!-- 03 PESQUISA -->
+<section class="panel" id="pesquisa" role="tabpanel" data-title="Pesquisa" hidden>
+  <div class="phead">
+    <span class="eyebrow">03 · Frente 0 · prioridade agora</span>
+    <h2>Pesquisa de validação</h2>
+    <p class="intro">Antes de investir em qualquer frente, a gente testa a hipótese com os três ativos que você já tem. Esta aba tem tudo o que a Carla precisa para montar, publicar e reunir os dados enquanto eu estou fora.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="target"></i></span><h3>O que a pesquisa precisa responder</h3></div>
+    <ol class="list">
+      <li><strong>Existe demanda</strong> por compliance prático fora do mercado financeiro na sua audiência?</li>
+      <li><strong>Quem é essa pessoa</strong> (setor, cargo, momento de carreira) e qual é a dor dela?</li>
+      <li><strong>Quem paga:</strong> a própria pessoa ou a empresa em que ela trabalha?</li>
+      <li><strong>O que os outros não entregam:</strong> o que incomoda nos cursos e conteúdos que ela já consumiu. É daqui que deve sair o diferencial.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="git-branch"></i></span><h3>Como fazer</h3></div>
+    <ul class="list">
+      <li><strong>Um formulário só</strong> (Google Forms), divulgado em três canais: stories do Instagram, LinkedIn e e-mail. Os alunos do curso de PLD/FTP recebem um e-mail próprio.</li>
+      <li><strong>Origem marcada:</strong> um link diferente para cada canal, usando a opção "Gerar link pré-preenchido" do Google Forms numa pergunta "Onde você viu esta pesquisa?". Assim a gente compara os canais.</li>
+      <li><strong>Curto:</strong> até 3 minutos para responder.</li>
+      <li><strong>Formulário aberto até 31/10.</strong></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="clipboard-list"></i></span><h3>Questionário sugerido</h3></div>
+    <ol class="list">
+      <li><strong>Em que tipo de organização você atua hoje?</strong><span class="opts">Instituição financeira regulada (banco, corretora, DTVM, gestora, cooperativa, fintech) · Indústria ou multinacional · Empresa de serviços ou comércio · Escritório de advocacia ou contabilidade · Consultoria · Ainda não atuo na área</span></li>
+      <li><strong>Qual é a sua função?</strong><span class="opts">Analista · Coordenação ou gerência · Diretoria ou sócio · Advogado ou contador · Estudante ou em transição de carreira · Outra</span></li>
+      <li><strong>Qual é a sua relação com compliance hoje?</strong><span class="opts">Trabalho na área · Cuido de compliance junto com outras funções · Preciso entender para atender meus clientes · Quero entrar na área</span></li>
+      <li><strong>Qual é hoje a sua maior dificuldade com compliance?</strong><span class="opts">Resposta aberta</span></li>
+      <li><strong>O que te incomoda nos cursos e conteúdos de compliance que você já consumiu?</strong><span class="opts">Resposta aberta. É a pergunta que deve revelar o diferencial.</span></li>
+      <li><strong>Se tivesse um acompanhamento prático comigo, o que você mais gostaria de sair sabendo fazer?</strong><span class="opts">Resposta aberta</span></li>
+      <li><strong>Qual formato combina mais com você?</strong><span class="opts">Curso gravado · Encontros ao vivo em grupo · Acompanhamento individual · Treinamento dentro da minha empresa</span></li>
+      <li><strong>Quem normalmente paga pelos seus cursos e capacitações?</strong><span class="opts">Eu mesmo · A empresa em que trabalho · Depende</span></li>
+      <li><strong>Quer ser avisado em primeira mão quando o projeto abrir?</strong><span class="opts">Sim ou não, com nome, e-mail e WhatsApp. Quem disser sim vira a lista de espera.</span></li>
+    </ol>
+    <p class="note">As perguntas abertas (4, 5 e 6) são as mais valiosas. É delas que sai a linguagem do público para toda a comunicação da mentoria.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="sparkles"></i></span><h3>Menu de prompts</h3></div>
+    <p>Prompts prontos para a Carla colar na IA e gerar cada peça da pesquisa. Cada um já traz o contexto da Growth, o objetivo da pesquisa e o seu tom de voz. É só abrir, copiar e trocar o <span class="accent" style="font-family:var(--mono)">[LINK]</span> pelo link do formulário.</p>
+    <div class="menu">
+
+      <details class="pm">
+        <summary><span class="ic"><i data-lucide="smartphone"></i></span><span class="t"><b>1. Perguntas para os stories</b><span>Sequência de stories com enquete, caixinha e link</span></span><i class="chev" data-lucide="chevron-down"></i></summary>
+        <div class="pm-bar"><span>Prompt</span><button class="btn" data-copy="p1"><i data-lucide="copy"></i>Copiar</button></div>
+<pre class="prompt" id="p1"><span class="ph">CONTEXTO</span>
+Você vai me ajudar a criar peças para uma pesquisa de validação da Mariana Groth, fundadora da Growth Compliance (Growth Assessoria em Compliance, desde 2019). Ela tem 20 anos de mercado financeiro, foi Diretora Estatutária aprovada pelo Banco Central e pela CVM, dá treinamentos de PLD/FTP e compliance desde 2018 e é coautora do livro "Mulheres Compliance na Prática".
+
+Hoje o público dela é principalmente do mercado financeiro (bancos, corretoras, DTVMs, gestoras, cooperativas, fintechs). Ela quer entender se existe demanda fora dele: indústrias, multinacionais, empresas de serviço, advogados, contadores e pessoas que querem entrar na área de compliance.
+
+<span class="ph">OBJETIVO DA PESQUISA</span>
+Descobrir: (1) se existe demanda por compliance prático fora do mercado financeiro; (2) quem é essa pessoa e qual é a dor dela; (3) quem paga, a pessoa ou a empresa; (4) o que os cursos e conteúdos que ela já consumiu não entregam. O resultado vai orientar uma mentoria e novos treinamentos. Nada está sendo vendido agora.
+
+<span class="ph">TOM DE VOZ DA MARIANA</span>
+Autoridade calma. Técnica, mas traduzida (ela usa "Traduzindo: ..."). Direta, sem hype, sem promessa, sem urgência fabricada, sem emoji. Estruturas que são dela: "Todo mundo acha X. A norma diz Y." e "Ou você entende isso agora, ou descobre na auditoria."
+
+<span class="ph">REGRAS</span>
+Nunca use travessão. Não invente números nem estatísticas. Frases curtas. Português do Brasil.
+
+<span class="ph">TAREFA</span>
+Crie uma sequência de 5 a 7 stories para o Instagram da Mariana, com esta estrutura:
+1. Abertura: por que ela está perguntando (está desenhando um projeto novo e quer ouvir quem a acompanha antes).
+2. Enquete de 2 opções que separe quem é do mercado financeiro de quem não é.
+3. Enquete ou teste sobre a maior dificuldade com compliance.
+4. Caixa de perguntas: "Qual a sua maior dúvida sobre compliance fora do mercado financeiro?" (sugira 2 alternativas de texto para a caixinha).
+5. Story com o link do formulário completo: [LINK]
+6. Agradecimento.
+
+Para cada story, entregue: o texto na tela (no máximo 3 linhas), o recurso interativo com as opções exatas (enquete, teste, caixinha, controle deslizante ou link) e uma sugestão visual simples.
+
+Entregue 2 versões completas da sequência para eu escolher.</pre>
+      </details>
+
+      <details class="pm">
+        <summary><span class="ic"><i data-lucide="linkedin"></i></span><span class="t"><b>2. Post e enquete para o LinkedIn</b><span>3 opções de post com enquete nativa e primeiro comentário</span></span><i class="chev" data-lucide="chevron-down"></i></summary>
+        <div class="pm-bar"><span>Prompt</span><button class="btn" data-copy="p2"><i data-lucide="copy"></i>Copiar</button></div>
+<pre class="prompt" id="p2"><span class="ph">CONTEXTO</span>
+Você vai me ajudar a criar peças para uma pesquisa de validação da Mariana Groth, fundadora da Growth Compliance (Growth Assessoria em Compliance, desde 2019). Ela tem 20 anos de mercado financeiro, foi Diretora Estatutária aprovada pelo Banco Central e pela CVM, dá treinamentos de PLD/FTP e compliance desde 2018 e é coautora do livro "Mulheres Compliance na Prática".
+
+Hoje o público dela é principalmente do mercado financeiro. Ela quer entender se existe demanda fora dele: indústrias, multinacionais, empresas de serviço, advogados, contadores e pessoas que querem entrar na área de compliance. No LinkedIn, a audiência dela já tem profissionais seniores de serviços financeiros e bancos, além de um grupo relevante de advogados e analistas jurídicos.
+
+<span class="ph">OBJETIVO DA PESQUISA</span>
+Descobrir: (1) se existe demanda por compliance prático fora do mercado financeiro; (2) quem é essa pessoa e qual é a dor dela; (3) quem paga, a pessoa ou a empresa; (4) o que os cursos e conteúdos que ela já consumiu não entregam. Nada está sendo vendido agora.
+
+<span class="ph">TOM DE VOZ DA MARIANA</span>
+Autoridade calma. Técnica, mas traduzida (ela usa "Traduzindo: ..."). Direta, sem hype, sem promessa, sem urgência fabricada, sem emoji. Estruturas que são dela: "Todo mundo acha X. A norma diz Y." e "Ou você entende isso agora, ou descobre na auditoria."
+
+<span class="ph">REGRAS</span>
+Nunca use travessão. Não invente números nem estatísticas. Frases curtas. Português do Brasil.
+
+<span class="ph">TAREFA</span>
+Crie 3 opções de post para o LinkedIn da Mariana sobre compliance fora do mercado financeiro. O ângulo central: indústrias e multinacionais estão cobrando das suas equipes um rigor parecido com o que o regulador cobra de uma instituição financeira, e o que muda na prática para quem trabalha nessas empresas.
+
+Cada post deve:
+- ter no máximo 1.300 caracteres;
+- começar com uma frase que prenda nas 2 primeiras linhas (antes do "ver mais");
+- terminar com uma enquete nativa do LinkedIn que mostre onde a pessoa aplica compliance hoje. Regras da enquete: pergunta com até 140 caracteres, até 4 opções com até 30 caracteres cada;
+- trazer o texto do primeiro comentário, convidando para o formulário completo: [LINK]
+
+Inclua também 3 perguntas abertas que ela pode usar para responder comentários e puxar conversa.</pre>
+      </details>
+
+      <details class="pm">
+        <summary><span class="ic"><i data-lucide="mail"></i></span><span class="t"><b>3. E-mail convite</b><span>Versão para a lista, versão para alunos e lembrete</span></span><i class="chev" data-lucide="chevron-down"></i></summary>
+        <div class="pm-bar"><span>Prompt</span><button class="btn" data-copy="p3"><i data-lucide="copy"></i>Copiar</button></div>
+<pre class="prompt" id="p3"><span class="ph">CONTEXTO</span>
+Você vai me ajudar a criar peças para uma pesquisa de validação da Mariana Groth, fundadora da Growth Compliance (Growth Assessoria em Compliance, desde 2019). Ela tem 20 anos de mercado financeiro, foi Diretora Estatutária aprovada pelo Banco Central e pela CVM, dá treinamentos de PLD/FTP e compliance desde 2018 e é coautora do livro "Mulheres Compliance na Prática". Ela tem um curso gravado de PLD/FTP com mais de 150 alunos e uma lista de e-mail muito engajada.
+
+Hoje o público dela é principalmente do mercado financeiro. Ela quer entender se existe demanda fora dele: indústrias, multinacionais, empresas de serviço, advogados, contadores e pessoas que querem entrar na área de compliance.
+
+<span class="ph">OBJETIVO DA PESQUISA</span>
+Descobrir: (1) se existe demanda por compliance prático fora do mercado financeiro; (2) quem é essa pessoa e qual é a dor dela; (3) quem paga, a pessoa ou a empresa; (4) o que os cursos e conteúdos que ela já consumiu não entregam. Nada está sendo vendido agora.
+
+<span class="ph">TOM DE VOZ DA MARIANA</span>
+Autoridade calma. Técnica, mas traduzida. Direta, sem hype, sem promessa, sem urgência fabricada, sem emoji.
+
+<span class="ph">REGRAS</span>
+Nunca use travessão. Não invente números nem estatísticas. Frases curtas. Português do Brasil.
+
+<span class="ph">TAREFA</span>
+Escreva o corpo do e-mail convite para a pesquisa, em 3 versões:
+
+A) Lista geral. Estrutura: um pedido de ajuda pessoal; em 2 frases, explicar que ela está desenhando um projeto novo e quer ouvir quem a acompanha antes de tirá-lo do papel; dizer que leva no máximo 3 minutos; o link [LINK]; dizer que ela lê cada resposta; assinatura "Mariana".
+
+B) Alunos do curso de PLD/FTP. Mesma estrutura, mas reconhecendo que a pessoa já é aluna e que a opinião dela vai ajudar a desenhar o próximo passo.
+
+C) Lembrete, enviado 3 dias depois para quem não abriu ou não respondeu. Mais curto, sem cobrar, só relembrar.
+
+Cada versão com no máximo 120 palavras. Nada de cara de marketing: tem que parecer um e-mail escrito por ela, de pessoa para pessoa, sem botões chamativos nem frases de vendedor.</pre>
+      </details>
+
+      <details class="pm">
+        <summary><span class="ic"><i data-lucide="heading"></i></span><span class="t"><b>4. Títulos para o e-mail</b><span>15 assuntos com pré-cabeçalho e sugestão de teste A/B</span></span><i class="chev" data-lucide="chevron-down"></i></summary>
+        <div class="pm-bar"><span>Prompt</span><button class="btn" data-copy="p4"><i data-lucide="copy"></i>Copiar</button></div>
+<pre class="prompt" id="p4"><span class="ph">CONTEXTO</span>
+A Mariana Groth, fundadora da Growth Compliance, ex-Diretora Estatutária aprovada pelo Banco Central e pela CVM, vai enviar um e-mail para a lista dela pedindo que as pessoas respondam uma pesquisa curta (3 minutos). A pesquisa quer entender se existe demanda por compliance prático fora do mercado financeiro e vai orientar um projeto novo. O e-mail é um pedido de ajuda pessoal, não uma venda.
+
+Referência de estilo que funciona muito bem nesse tipo de e-mail: "Sua ajuda, por favor..."
+
+<span class="ph">TOM DE VOZ</span>
+Autoridade calma, direta, sem hype, sem emoji.
+
+<span class="ph">REGRAS</span>
+Nunca use travessão. Português do Brasil.
+
+<span class="ph">TAREFA</span>
+Crie 15 opções de assunto para esse e-mail, divididas em 3 grupos de 5:
+1. Pedido de ajuda (na linha de "Sua ajuda, por favor...")
+2. Curiosidade
+3. Direto ao ponto
+
+Regras dos assuntos:
+- até 45 caracteres;
+- sem caixa alta, sem emoji e sem palavras que costumam cair no spam (grátis, urgente, promoção, oferta);
+- soar como algo que uma pessoa escreveria para outra.
+
+Para cada assunto, sugira um pré-cabeçalho (o texto que aparece ao lado do assunto na caixa de entrada) com até 90 caracteres.
+
+No final, indique os 2 assuntos que você usaria num teste A/B e explique em uma frase o porquê.</pre>
+      </details>
+
+      <details class="pm">
+        <summary><span class="ic"><i data-lucide="table"></i></span><span class="t"><b>5. Consolidar os resultados</b><span>Para a Carla organizar os dados no fim de outubro</span></span><i class="chev" data-lucide="chevron-down"></i></summary>
+        <div class="pm-bar"><span>Prompt</span><button class="btn" data-copy="p5"><i data-lucide="copy"></i>Copiar</button></div>
+<pre class="prompt" id="p5"><span class="ph">CONTEXTO</span>
+A Growth Compliance (Mariana Groth) rodou uma pesquisa de validação em outubro, por três canais: stories do Instagram, LinkedIn e e-mail (lista geral e alunos do curso de PLD/FTP). O objetivo era descobrir: (1) se existe demanda por compliance prático fora do mercado financeiro; (2) quem é essa pessoa e qual é a dor dela; (3) quem paga, a pessoa ou a empresa; (4) o que os cursos e conteúdos que ela já consumiu não entregam.
+
+Vou colar abaixo tudo o que foi coletado: a planilha de respostas do formulário, os resultados das enquetes dos stories e do LinkedIn, as respostas da caixinha, os comentários, as métricas dos e-mails e as respostas recebidas por e-mail e direct.
+
+<span class="ph">REGRAS</span>
+- Não interprete além do que os dados mostram. Não invente números.
+- Toda afirmação deve apontar de onde veio (canal e quantidade).
+- Se faltar algum dado, liste o que está faltando no final.
+- Nunca use travessão. Português do Brasil.
+
+<span class="ph">TAREFA</span>
+Organize os dados em:
+1. Resumo por canal: alcance ou envios, respostas, taxa de resposta, cliques no link.
+2. Perfil de quem respondeu: contagem por tipo de organização, função, relação com compliance, formato preferido e quem paga. Separe "mercado financeiro" de "fora do mercado financeiro".
+3. Dores mais citadas (pergunta 4), agrupadas por tema, com a contagem e 2 ou 3 citações exatas de cada tema.
+4. O que incomoda nos cursos atuais (pergunta 5), agrupado por tema, com contagem e citações exatas.
+5. O que as pessoas querem sair sabendo fazer (pergunta 6), agrupado por tema, com contagem e citações exatas.
+6. Tamanho da lista de espera (quem respondeu "sim" na última pergunta), separado por perfil.
+7. Lista do que ficou faltando.
+
+Entregue também as tabelas 1, 2 e 6 em formato CSV, para colar numa planilha.
+
+[COLE OS DADOS AQUI]</pre>
+      </details>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="megaphone"></i></span><h3>Teste com público frio</h3></div>
+    <span class="tag rec">Feito pela C2Pro</span>
+    <p>A pesquisa mostra o que pensa quem já te acompanha. Para saber se o mercado de fora também responde, rodamos anúncios com orçamento pequeno por 7 a 10 dias, com três ângulos levando para a mesma lista de espera. Comparamos o custo por inscrição e o perfil de quem entra em cada um.</p>
+    <div class="grid3">
+      <div class="card flat"><span class="tag mute">Ângulo A · Mercado financeiro</span><p>"Você consegue provar para o regulador que o seu programa funciona?"</p></div>
+      <div class="card flat"><span class="tag mute">Ângulo B · Corporativo</span><p>"O rigor que o Banco Central exige de um banco, aplicado à sua empresa."</p></div>
+      <div class="card flat"><span class="tag mute">Ângulo C · Carreira</span><p>"Compliance é uma área que só cresce. Mas ninguém entra nela sem base."</p></div>
+    </div>
+  </div>
+
+  <div class="card hl progress">
+    <div class="prog-row"><h4>Insumos para a análise</h4><span class="v" id="progTxt">0 de 0</span></div>
+    <div class="bar"><i id="progBar"></i></div>
+    <p class="note">Checklist da Carla para o fim de outubro. Com tudo isso reunido, eu consigo analisar assim que voltar. Marque cada item quando fizer: o progresso fica salvo neste aparelho.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Formulário</h4>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="k-f1"><span class="box"></span><span class="t">Respostas exportadas para Google Planilhas</span></label>
+        <label class="check"><input type="checkbox" id="k-f2"><span class="box"></span><span class="t">Coluna de origem preenchida em todas as respostas</span></label>
+        <label class="check"><input type="checkbox" id="k-f3"><span class="box"></span><span class="t">Formulário fechado em 31/10</span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h4>Instagram</h4>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="k-i1"><span class="box"></span><span class="t">Print do resultado de cada enquete e teste<small>Tirar no dia seguinte, antes de sumir dos destaques.</small></span></label>
+        <label class="check"><input type="checkbox" id="k-i2"><span class="box"></span><span class="t">Todas as respostas da caixinha, em print ou copiadas</span></label>
+        <label class="check"><input type="checkbox" id="k-i3"><span class="box"></span><span class="t">Alcance, toques no link e respostas de cada story</span></label>
+        <label class="check"><input type="checkbox" id="k-i4"><span class="box"></span><span class="t">Mensagens no direct sobre a pesquisa</span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h4>LinkedIn</h4>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="k-l1"><span class="box"></span><span class="t">Resultado final da enquete, com votos por opção</span></label>
+        <label class="check"><input type="checkbox" id="k-l2"><span class="box"></span><span class="t">Estatísticas do post<small>Impressões, reações, comentários e dados de quem viu: cargo, setor e senioridade.</small></span></label>
+        <label class="check"><input type="checkbox" id="k-l3"><span class="box"></span><span class="t">Comentários copiados</span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h4>E-mail</h4>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="k-e1"><span class="box"></span><span class="t">Envios, aberturas e cliques de cada disparo<small>Lista geral, alunos e lembrete, separados.</small></span></label>
+        <label class="check"><input type="checkbox" id="k-e2"><span class="box"></span><span class="t">Assunto usado em cada disparo</span></label>
+        <label class="check"><input type="checkbox" id="k-e3"><span class="box"></span><span class="t">Respostas recebidas direto no e-mail</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h4>Organização</h4>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="k-o1"><span class="box"></span><span class="t">Tudo numa pasta do Drive "Pesquisa Mentoria Growth", com uma subpasta por canal</span></label>
+      <label class="check"><input type="checkbox" id="k-o2"><span class="box"></span><span class="t">Uma lista das peças publicadas: data, canal e link</span></label>
+      <label class="check"><input type="checkbox" id="k-o3"><span class="box"></span><span class="t">Prompt 5 rodado com todos os dados e o resultado salvo na pasta</span></label>
+      <label class="check"><input type="checkbox" id="k-o4"><span class="box"></span><span class="t">Link da pasta enviado para o Carlos</span></label>
+    </div>
+    <p class="note">Os dados dos anúncios de teste a C2Pro puxa direto. A Carla não precisa se preocupar com eles.</p>
+  </div>
+
+  <div class="phead" style="margin-top:8px">
+    <span class="eyebrow">Depois da pesquisa</span>
+    <h3>Os três cenários possíveis</h3>
+    <p class="intro">No início de novembro, a gente olha os dados juntos e escolhe o caminho.</p>
+  </div>
+  <div class="grid3">
+    <div class="card scen"><div class="letter">A</div><dl class="kv"><div><dt>A pesquisa mostra</dt><dd>O público de fora do mercado financeiro aparece com força e com disposição de investir.</dd></div><div><dt>O que fazemos</dt><dd>Mentoria aberta, com uma trilha extra para o mercado financeiro. É o formato que você imaginou.</dd></div></dl></div>
+    <div class="card scen"><div class="letter">B</div><dl class="kv"><div><dt>A pesquisa mostra</dt><dd>O público de fora aparece, mas pequeno ou sem disposição de pagar.</dd></div><div><dt>O que fazemos</dt><dd>Mentoria com núcleo aberto e comunicação puxada para o mercado financeiro. O público de fora entra primeiro pelos treinamentos gravados.</dd></div></dl></div>
+    <div class="card scen"><div class="letter">C</div><dl class="kv"><div><dt>A pesquisa mostra</dt><dd>O público de fora quase não aparece.</dd></div><div><dt>O que fazemos</dt><dd>Turma 1 focada no mercado financeiro. A diversificação vem pelas empresas (frente 1), e não pela pessoa física.</dd></div></dl></div>
+  </div>
+  <div class="card flat">
+    <p>A análise vira um <strong>dossiê do público</strong>: dores, desejos, objeções e as palavras exatas que as pessoas usam. É a base de toda a comunicação que vem depois, e é onde a gente espera encontrar o diferencial da mentoria.</p>
+  </div>
+</section>
+
+<!-- 04 EMPRESAS -->
+<section class="panel" id="empresas" role="tabpanel" data-title="Empresas" hidden>
+  <div class="phead">
+    <span class="eyebrow">04 · Frente 1 · novembro</span>
+    <h2>Treinamentos para empresas</h2>
+    <p class="intro">Fora do mercado financeiro você não faz assessoria, mas treinamento você faz, e bem. Essa é a porta mais rápida para compensar os contratos perdidos.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="card flat"><div class="card-title"><span class="ic"><i data-lucide="zap"></i></span><h3>Dinheiro mais rápido</h3></div><p>Empresa compra treinamento com orçamento anual e decide em semanas.</p></div>
+    <div class="card flat"><div class="card-title"><span class="ic"><i data-lucide="calendar-clock"></i></span><h3>É época</h3></div><p>O treinamento de PLD tem demanda no encerramento do ano fiscal.</p></div>
+    <div class="card flat"><div class="card-title"><span class="ic"><i data-lucide="map-pin"></i></span><h3>Sinal de mercado</h3></div><p>A Kion encontrou vocês pelo Instagram, justamente por estarem "aqui do lado".</p></div>
+  </div>
+
+  <div class="card hl">
+    <span class="tag rec">A oferta</span>
+    <h3>Programa Anual de Treinamentos de Compliance</h3>
+    <p>Em vez de vender treinamento avulso, vender <strong>o ano inteiro de treinamentos obrigatórios</strong>, com a prova de que foram feitos.</p>
+    <ul class="list">
+      <li><strong>Trilha anual:</strong> ética e conduta, prevenção à lavagem de dinheiro, anticorrupção, cibersegurança (Bruna), LGPD, conflito de interesses e canal de denúncias.</li>
+      <li><strong>Formatos:</strong> presencial na empresa (estar na região é vantagem), ao vivo online ou acesso gravado para os colaboradores.</li>
+      <li><strong>Lista de presença, avaliação e certificado</strong> por colaborador.</li>
+      <li><strong>Relatório de evidência</strong> para a auditoria e para a matriz: quem foi treinado, quando, em quê e com qual resultado.</li>
+    </ul>
+    <p class="note">O relatório de evidência é o diferencial. É a sua evidenciabilidade aplicada ao corporativo, e é exatamente o que a matriz no exterior cobra da filial brasileira.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="building-2"></i></span><h3>Para quem vender</h3></div>
+      <dl class="kv">
+        <div><dt>Região</dt><dd>Indaiatuba e o entorno industrial: Campinas, Itu, Salto, Sorocaba e Jundiaí.</dd></div>
+        <div><dt>Empresas</dt><dd>Multinacionais e grandes indústrias. Você já citou Toyota, John Deere, Kion, Cobreq e IP.</dd></div>
+        <div><dt>Quem abordar</dt><dd>Gerente ou analista de compliance, jurídico e RH / Treinamento e Desenvolvimento.</dd></div>
+      </dl>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="handshake"></i></span><h3>Como vender</h3></div>
+      <ol class="list">
+        <li><strong>Lista de empresas-alvo,</strong> com os contatos certos de cada uma no LinkedIn.</li>
+        <li><strong>Sequência de abordagem:</strong> conexão no LinkedIn, mensagem curta, e-mail com a apresentação, ligação.</li>
+        <li><strong>Apresentação comercial de uma página:</strong> a Growth, a sua trajetória, o programa anual e o relatório de evidência.</li>
+        <li><strong>Case da Kion,</strong> se eles autorizarem a citação.</li>
+        <li><strong>Google Ads de busca</strong> (C2Pro) para quem já procura fornecedor: "treinamento de compliance para empresas", "treinamento PLD in company", "treinamento de código de conduta".</li>
+        <li><strong>Perfil da empresa no Google</strong> revisado, para aparecer para quem busca na região.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card flat">
+      <h4>O que acompanhar</h4>
+      <p>Reuniões marcadas, propostas enviadas e contratos fechados, mês a mês.</p>
+    </div>
+    <div class="card flat">
+      <h4>Ponte com a mentoria</h4>
+      <p>A empresa que contrata treinamento pode <strong>pagar vagas na mentoria</strong> para o analista de compliance dela. Isso responde a pergunta "quem paga?" de um jeito que favorece o ticket.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 TREINAMENTOS -->
+<section class="panel" id="treinamentos" role="tabpanel" data-title="Treinamentos" hidden>
+  <div class="phead">
+    <span class="eyebrow">05 · Frente 2 · dezembro e janeiro</span>
+    <h2>Treinamentos gravados</h2>
+    <p class="intro">Eles aumentam a base, geram receita recorrente e trazem os futuros mentorados. Quem compra um treinamento de valor baixo e gosta é o lead mais quente que existe para a mentoria.</p>
+  </div>
+
+  <div class="card hl">
+    <div class="card-title"><span class="ic"><i data-lucide="moon"></i></span><h3>Por que em dezembro</h3></div>
+    <p>Montados em dezembro, eles rodam no perpétuo durante o período em que o mercado para (15/12 a 25/01) e em que você estará com os clientes. <strong>Vendem sem depender da sua agenda.</strong></p>
+  </div>
+
+  <div class="card">
+    <h4>Catálogo, cada tema em duas versões quando fizer sentido</h4>
+    <div class="grid3">
+      <div class="card flat"><h3>PLD/FTP</h3><dl class="kv"><div><dt>Mercado financeiro</dt><dd>Já existe (curso atual).</dd></div><div><dt>Corporativo</dt><dd>Lei federal e melhores práticas, sem as regras do BCB e da CVM.</dd></div></dl></div>
+      <div class="card flat"><h3>Compliance</h3><dl class="kv"><div><dt>Mercado financeiro</dt><dd>Em produção.</dd></div><div><dt>Corporativo</dt><dd>Em produção.</dd></div></dl></div>
+      <div class="card flat"><h3>Cibersegurança</h3><dl class="kv"><div><dt>Com a Bruna</dt><dd>Em produção.</dd></div></dl></div>
+    </div>
+    <p class="note">A ordem de lançamento segue a pesquisa: primeiro os temas que o público mais pedir.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="ic"><i data-lucide="line-chart"></i></span><h3>Como vender</h3></div>
+    <ul class="list">
+      <li><strong>Perpétuo com tráfego pago</strong> (C2Pro) para os temas prioritários.</li>
+      <li><strong>Trilha "Compliance Corporativo":</strong> os treinamentos juntos num pacote, com preço melhor do que comprar separado.</li>
+      <li><strong>Página de obrigado com convite:</strong> todo comprador vê o convite para entrar na lista de espera da mentoria.</li>
+      <li><strong>Certificado</strong> em todos os treinamentos. Pesa muito para quem quer entrar na área.</li>
+      <li><strong>Nivelamento da mentoria:</strong> os treinamentos gravados podem ser o pré-trabalho da mentoria, para todo mundo chegar ao primeiro encontro com a mesma base.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 06 MENTORIA -->
+<section class="panel" id="mentoria" role="tabpanel" data-title="Mentoria" hidden>
+  <div class="phead">
+    <span class="eyebrow">06 · Frente 3 · fim de janeiro a março</span>
+    <h2>Mentoria</h2>
+    <p class="intro">Menos custo que o MBA, mais rentabilidade e mais autoridade, como você mesma disse. A estrutura abaixo é um ponto de partida. A versão final sai da pesquisa.</p>
+  </div>
+
+  <div class="card">
+    <span class="tag ok">Já decidido pelos seus comentários</span>
+    <ul class="list">
+      <li><strong>Público aberto,</strong> não restrito ao mercado financeiro.</li>
+      <li><strong>Sem kit de modelos de políticas prontos,</strong> porque é um trabalho que custa caro na assessoria.</li>
+      <li><strong>O principal entregável é a sua revisão dos documentos do mentorado.</strong> Isso até fortalece a oferta: "seu documento revisado por uma ex-diretora estatutária aprovada pelo BCB e pela CVM".</li>
+      <li>A estrutura geral do rascunho está boa, com pequenos ajustes.</li>
+    </ul>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="book-open"></i></span><h3>Núcleo, para todos</h3></div>
+      <ol class="list">
+        <li><strong>Fundamentos e mapa legal:</strong> Lei Anticorrupção, Lei de Lavagem de Dinheiro, LGPD e como transformar uma norma em processo.</li>
+        <li><strong>Governança e estrutura do programa:</strong> código de conduta, políticas, conflito de interesses, canal de denúncias, papéis e responsabilidades.</li>
+        <li><strong>Riscos e controles internos:</strong> matriz de riscos, testes de controle, auditoria interna e externa.</li>
+        <li><strong>PLD aplicado:</strong> conhecer o cliente, o fornecedor e o colaborador, beneficiário final, monitoramento.</li>
+        <li><strong>Terceiros e cultura:</strong> diligência de parceiros, treinamento e comunicação interna.</li>
+        <li><strong>Evidenciabilidade:</strong> como provar que o programa funciona para a auditoria, para a matriz e para o regulador.</li>
+        <li><strong>Carreira e posicionamento:</strong> caminho na área, como se posicionar, atuação como consultor.</li>
+      </ol>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr;align-content:start">
+      <div class="card hl">
+        <div class="card-title"><span class="ic"><i data-lucide="landmark"></i></span><h3>Trilha regulada</h3></div>
+        <p>Um encontro extra por mês para quem é do mercado financeiro: dúvidas de BCB, CVM e COAF, supervisão e normas novas.</p>
+        <p class="note">Foi a sua ideia de "uma hora a mais" para esse público. Resolve o problema sem nichar a mentoria.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic"><i data-lucide="clock"></i></span><h3>Formato que respeita a sua agenda</h3></div>
+        <ul class="list">
+          <li>Encontros em grupo com hot seat de casos reais, anonimizados.</li>
+          <li>Poucas sessões individuais, para diagnóstico e revisão.</li>
+          <li>Revisão dos documentos concentrada em momentos definidos, e não a qualquer hora.</li>
+          <li>Comunidade com curadoria, com a Carla no dia a dia.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>Como vender</h4>
+    <div class="tl">
+      <div class="step"><div class="dayb">26/01 a 07/02</div><div class="body"><h3>Turma fundadora em pré-venda</h3><p>Só para a base quente: alunos dos treinamentos, mailing e lista de espera da pesquisa. Condição especial para quem entra primeiro, com vagas limitadas. Valida a mentoria com dinheiro, e não só com respostas. Se não vender, isso também é informação, e ainda dá tempo de ajustar.</p></div></div>
+      <div class="step"><div class="dayb">2ª quinzena fev</div><div class="body"><h3>Captação aberta com workshop de 1 dia</h3><p>Ingresso de valor baixo: o tráfego se paga na venda do ingresso. No workshop, apresentação da mentoria e ficha de aplicação. Anúncios de "ao vivo" levam público para as aulas abertas.</p></div></div>
+      <div class="step"><div class="dayb">fev e mar</div><div class="body"><h3>Conversa individual com quem aplicou</h3><p>Mentoria de ticket alto quase sempre fecha numa conversa 1:1.</p></div></div>
+      <div class="step key"><div class="dayb">março</div><div class="body"><h3>Início da turma 1</h3></div></div>
+    </div>
+  </div>
+
+  <div class="card flat">
+    <div class="card-title"><span class="ic"><i data-lucide="briefcase"></i></span><h3>Proposta para empresas</h3></div>
+    <p>Uma versão da oferta para empresas que queiram pagar vagas para os seus colaboradores, com nota fiscal e condição para mais de uma vaga. Conecta com a frente 1.</p>
+  </div>
+</section>
+
+<!-- 07 CANAIS -->
+<section class="panel" id="canais" role="tabpanel" data-title="Canais" hidden>
+  <div class="phead">
+    <span class="eyebrow">07 · Onde tudo isso aparece</span>
+    <h2>Canais</h2>
+    <p class="intro">Cada canal tem um papel diferente. Nenhum precisa de estrutura nova para começar.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="linkedin"></i></span><h3>LinkedIn</h3></div>
+      <span class="tag warn">Teste</span>
+      <p>O posicionamento lá está funcionando e continua. Vender pelo LinkedIn é uma hipótese, então a proposta é <strong>testar</strong> antes de mudar qualquer coisa:</p>
+      <ul class="list">
+        <li>Uma chamada para ação em parte dos posts da Carla, levando aos treinamentos ou à lista de espera.</li>
+        <li>Acompanhar cliques e inscrições por algumas semanas e decidir com os números.</li>
+        <li>Se funcionar, dá para somar a newsletter do LinkedIn e eventos para aulas abertas.</li>
+      </ul>
+      <p class="note">É também o canal principal da prospecção das empresas (frente 1).</p>
+    </div>
+    <div class="card hl">
+      <div class="card-title"><span class="ic"><i data-lucide="mail"></i></span><h3>Mailing</h3></div>
+      <p>O ativo mais valioso do plano.</p>
+      <ul class="list">
+        <li>Com as respostas da pesquisa, <strong>dividir a lista</strong> entre mercado financeiro e fora dele, e falar com cada grupo do jeito certo.</li>
+        <li>Frequência fixa. O Radar Regulatório pode ser a espinha dorsal.</li>
+        <li>É por ele que a turma fundadora vai ser vendida.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="instagram"></i></span><h3>Instagram</h3></div>
+      <ul class="list">
+        <li>Anúncios dos melhores Reels da semana (C2Pro) para quem ainda não te conhece.</li>
+        <li>Pautas para quem não é do mercado financeiro: anticorrupção, canal de denúncias, conflito de interesses, LGPD, compliance na indústria.</li>
+        <li>Porta de entrada de empresas da região, como aconteceu com a Kion.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ic"><i data-lucide="youtube"></i></span><h3>YouTube</h3></div>
+      <p>O primeiro vídeo foi bem. Aulas mais longas sobre os temas que a pesquisa apontar reforçam a autoridade e viram material para anúncios.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card flat">
+      <h4>TikTok</h4>
+      <p>Republicar os Reels que já existem, sem produção extra, para ir crescendo a base até a venda de infoproduto chegar ao Brasil. Mais para frente, pode servir de remarketing.</p>
+    </div>
+    <div class="card flat">
+      <h4>Conteúdo sem depender de você</h4>
+      <p>Gravações em lote antes das suas ausências (outubro e janeiro) e calendário programado para a Carla publicar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 08 MBA -->
+<section class="panel" id="mba" role="tabpanel" data-title="MBA" hidden>
+  <div class="phead">
+    <span class="eyebrow">08 · Em espera, com critério</span>
+    <h2>MBA</h2>
+    <p class="intro">A gente concorda com você: agora não é o momento de colocar um investimento alto num projeto que ainda gera desconforto. A proposta é deixar em espera, mas com critérios claros para voltar.</p>
+  </div>
+
+  <div class="card hl">
+    <div class="card-title"><span class="ic"><i data-lucide="check-circle"></i></span><h3>O MBA volta à mesa se</h3></div>
+    <ol class="list">
+      <li>A turma 1 da mentoria vendeu bem e entregou resultado.</li>
+      <li>A pesquisa e a mentoria mostraram demanda por uma formação mais longa.</li>
+      <li>O caixa de 2027 comporta o investimento.</li>
+    </ol>
+    <p class="note">Se voltar, o conteúdo da mentoria pode virar módulo do MBA. Nada do que for construído agora se perde.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Plataforma e parceiros</h4>
+      <ul class="list">
+        <li>A Focus continua sendo a melhor opção, pelo suporte a quem é do digital.</li>
+        <li>O contato do Murilo fica guardado para depois da decisão, como você sugeriu.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Renovação do Tabari</h4>
+      <p>Decidir no fim de novembro, junto com a previsão de custos de 2027. A pergunta a responder: com o MBA em espera, qual é o papel dele no próximo ano?</p>
+    </div>
+  </div>
+</section>
+
+<!-- 09 PASSOS -->
+<section class="panel" id="passos" role="tabpanel" data-title="Próximos passos" hidden>
+  <div class="phead">
+    <span class="eyebrow">09 · Quem faz o quê</span>
+    <h2>Próximos passos</h2>
+    <p class="intro">Na ordem das frentes. Os passos de uma frente só começam quando a anterior estiver rodando.</p>
+  </div>
+
+  <div class="card">
+    <span class="tag rec">Frente 0 · Pesquisa</span>
+    <div class="rows">
+      <div class="row"><span class="what">Montar o formulário e as peças da pesquisa, com o menu de prompts</span><span class="meta"><span class="pill">Carla</span><span class="pill date">até 09/10</span></span></div>
+      <div class="row"><span class="what">Publicar nos três canais e enviar aos alunos</span><span class="meta"><span class="pill">Carla</span><span class="pill date">até 12/10</span></span></div>
+      <div class="row"><span class="what">Anúncios de teste com os três ângulos</span><span class="meta"><span class="pill who-c2">C2Pro</span><span class="pill date">até 12/10</span></span></div>
+      <div class="row"><span class="what">Reunir os insumos na pasta da pesquisa</span><span class="meta"><span class="pill">Carla</span><span class="pill date">27 a 31/10</span></span></div>
+      <div class="row"><span class="what">Análise e dossiê do público</span><span class="meta"><span class="pill who-c2">C2Pro</span><span class="pill date">início de nov</span></span></div>
+      <div class="row"><span class="what">Reunião de decisão: cenário A, B ou C</span><span class="meta"><span class="pill">Todos</span><span class="pill date">início de nov</span></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag rec">Frente 1 · Empresas</span>
+    <div class="rows">
+      <div class="row"><span class="what">Lista de empresas-alvo e contatos</span><span class="meta"><span class="pill">Carla</span><span class="pill date">novembro</span></span></div>
+      <div class="row"><span class="what">Apresentação comercial de uma página</span><span class="meta"><span class="pill">Carla + Mariana</span><span class="pill date">novembro</span></span></div>
+      <div class="row"><span class="what">Google Ads de busca para treinamentos corporativos</span><span class="meta"><span class="pill who-c2">C2Pro</span><span class="pill date">novembro</span></span></div>
+      <div class="row"><span class="what">Abordagem das empresas</span><span class="meta"><span class="pill">Mariana + Carla</span><span class="pill date">nov a 15/12</span></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag mute">Gestão</span>
+    <div class="rows">
+      <div class="row"><span class="what">Custos de 2027, decisão sobre MBA e renovação do Tabari</span><span class="meta"><span class="pill">Mariana + Carlos + Carla</span><span class="pill date">fim de nov</span></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag rec">Frente 2 · Treinamentos gravados</span>
+    <div class="rows">
+      <div class="row"><span class="what">Páginas e perpétuo dos treinamentos prioritários</span><span class="meta"><span class="pill">Carla</span><span class="pill who-c2">C2Pro</span><span class="pill date">dezembro</span></span></div>
+      <div class="row"><span class="what">Página de obrigado com convite para a lista de espera</span><span class="meta"><span class="pill">Carla</span><span class="pill date">dezembro</span></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag rec">Frente 3 · Mentoria</span>
+    <div class="rows">
+      <div class="row"><span class="what">Oferta e página da turma fundadora</span><span class="meta"><span class="pill">Carla</span><span class="pill who-c2">C2Pro</span><span class="pill date">até 20/01</span></span></div>
+      <div class="row"><span class="what">Pré-venda da turma fundadora</span><span class="meta"><span class="pill">Todos</span><span class="pill date">26/01 a 07/02</span></span></div>
+      <div class="row"><span class="what">Captação aberta com workshop de 1 dia</span><span class="meta"><span class="pill">Todos</span><span class="pill date">2ª quinzena fev</span></span></div>
+      <div class="row"><span class="what">Início da turma 1</span><span class="meta"><span class="pill">Mariana</span><span class="pill date">março</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 DECISÕES -->
+<section class="panel" id="decisoes" role="tabpanel" data-title="Decisões" hidden>
+  <div class="phead">
+    <span class="eyebrow">10 · Com você, Mari</span>
+    <h2>Decisões que dependem de você</h2>
+    <p class="intro">Toque na opção que mais combina com você em cada pergunta. No fim, é só copiar as respostas e mandar no WhatsApp. As escolhas ficam salvas neste aparelho.</p>
+  </div>
+
+  <div id="dqs" class="grid2" style="grid-template-columns:1fr">
+    <div class="card dq" data-q="Sequência das frentes" data-mode="one">
+      <div class="qh"><h3>1. A sequência faz sentido?</h3><p>Pesquisa, depois empresas, depois treinamentos gravados, depois mentoria.</p></div>
+      <div class="choices"><button class="choice">Sim, pode seguir</button><button class="choice">Quero mudar a ordem</button><button class="choice">Vamos conversar</button></div>
+    </div>
+    <div class="card dq" data-q="Pesquisa no ar até 12/10" data-mode="one">
+      <div class="qh"><h3>2. A pesquisa pode ir ao ar até 12/10?</h3><p>Antes das férias da Carla.</p></div>
+      <div class="choices"><button class="choice">Sim</button><button class="choice">Preciso de mais tempo</button></div>
+    </div>
+    <div class="card dq" data-q="Hipótese de posicionamento" data-mode="one">
+      <div class="qh"><h3>3. "O rigor de banco aplicado à sua empresa" representa você?</h3><p>É só um ponto de partida. A pesquisa pode mudar.</p></div>
+      <div class="choices"><button class="choice">Sim</button><button class="choice">Em parte</button><button class="choice">Não</button></div>
+    </div>
+    <div class="card dq" data-q="Formato dos treinamentos para empresas" data-mode="many">
+      <div class="qh"><h3>4. Quais formatos você topa oferecer para empresas?</h3><p>Pode marcar mais de um.</p></div>
+      <div class="choices"><button class="choice">Presencial na empresa</button><button class="choice">Ao vivo online</button><button class="choice">Gravado para os colaboradores</button></div>
+    </div>
+    <div class="card dq" data-q="Case da Kion" data-mode="one">
+      <div class="qh"><h3>5. Podemos citar a Kion como case?</h3></div>
+      <div class="choices"><button class="choice">Vou pedir autorização</button><button class="choice">Já temos autorização</button><button class="choice">Melhor não citar</button></div>
+    </div>
+    <div class="card dq" data-q="Treinamentos prontos até o fim do ano" data-mode="many">
+      <div class="qh"><h3>6. Quais treinamentos estarão prontos até o fim do ano?</h3><p>Pode marcar mais de um.</p></div>
+      <div class="choices"><button class="choice">PLD mercado financeiro</button><button class="choice">PLD corporativo</button><button class="choice">Compliance</button><button class="choice">Cibersegurança</button></div>
+    </div>
+    <div class="card dq" data-q="Horas por semana para a mentoria" data-mode="one">
+      <div class="qh"><h3>7. Quantas horas por semana você consegue dedicar à mentoria a partir de março?</h3><p>Define o tamanho da turma e quantas sessões individuais cabem.</p></div>
+      <div class="choices"><button class="choice">Até 2 horas</button><button class="choice">2 a 4 horas</button><button class="choice">4 a 6 horas</button><button class="choice">Mais de 6 horas</button></div>
+    </div>
+    <div class="card dq" data-q="Pré-venda da turma fundadora" data-mode="one">
+      <div class="qh"><h3>8. Topa a pré-venda da turma fundadora de 26/01 a 07/02?</h3></div>
+      <div class="choices"><button class="choice">Sim</button><button class="choice">Não</button><button class="choice">Depende da pesquisa</button></div>
+    </div>
+    <div class="card dq" data-q="Teste de chamada para ação no LinkedIn" data-mode="one">
+      <div class="qh"><h3>9. Topa testar uma chamada para ação no LinkedIn?</h3></div>
+      <div class="choices"><button class="choice">Sim, vamos testar</button><button class="choice">Prefiro manter só posicionamento</button></div>
+    </div>
+    <div class="card dq">
+      <div class="qh"><h3>10. Algo mais que você queira ajustar?</h3></div>
+      <textarea class="notes" id="notes" placeholder="Escreva aqui o que quiser mudar, tirar ou acrescentar."></textarea>
+    </div>
+  </div>
+
+  <div class="sticky-cta">
+    <span class="meta" id="dqCount">0 de 9 respondidas</span>
+    <span style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="dqClear"><i data-lucide="rotate-ccw"></i>Limpar</button>
+      <button class="btn primary" id="dqCopy"><i data-lucide="copy"></i>Copiar respostas</button>
+    </span>
+  </div>
+  <textarea id="dqOut" readonly aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"></textarea>
+</section>
+
+</main>
+
+<div class="wrap"><footer>Planejamento preparado por Carlos Primo · C2Pro, a partir da call de 24/09/2026 e do rascunho de estrutura de 25/09. Tudo aqui é hipótese até a pesquisa responder.</footer></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+(function(){
+  var KEY='growth-plan-';
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(KEY+k);localStorage.setItem(KEY+k,v)}catch(e){return null}}
+
+  /* abas + navegação */
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  var ids=panels.map(function(p){return p.id});
+  panels.forEach(function(p,i){
+    var pg=document.createElement('div');pg.className='pager';
+    var prev=panels[i-1],next=panels[i+1];
+    pg.innerHTML=(prev?'<button class="btn ghost" data-go="'+prev.id+'"><i data-lucide="arrow-left"></i><span>'+prev.dataset.title+'</span></button>':'<span></span>')+
+      (next?'<button class="btn primary next" data-go="'+next.id+'"><span>Próximo: '+next.dataset.title+'</span><i data-lucide="arrow-right"></i></button>':'<button class="btn primary next" data-go="'+panels[0].id+'"><span>Voltar ao início</span><i data-lucide="arrow-up"></i></button>');
+    p.appendChild(pg);
+  });
+  function show(id,scroll){
+    if(ids.indexOf(id)<0)id=ids[0];
+    panels.forEach(function(p){p.hidden=p.id!==id});
+    tabs.forEach(function(t){
+      var on=t.dataset.tab===id;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;
+      if(on){var box=t.parentNode;try{box.scrollTo({left:t.offsetLeft-(box.clientWidth-t.offsetWidth)/2,behavior:'smooth'})}catch(e){box.scrollLeft=t.offsetLeft}}
+    });
+    store('tab',id);
+    try{history.replaceState(null,'','#'+id)}catch(e){}
+    if(scroll){var bar=document.querySelector('.tabbar');var y=bar.getBoundingClientRect().top+window.scrollY;if(window.scrollY>y)window.scrollTo({top:y,behavior:'smooth'})}
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){show(t.dataset.tab,true)});
+    t.addEventListener('keydown',function(e){
+      var j=null;if(e.key==='ArrowRight')j=(i+1)%tabs.length;if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;
+      if(j!==null){e.preventDefault();tabs[j].focus();show(tabs[j].dataset.tab,false)}
+    });
+  });
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(b)show(b.dataset.go,true)});
+  show((location.hash||'').replace('#','')||store('tab')||ids[0],false);
+
+  /* checklist */
+  var boxes=[].slice.call(document.querySelectorAll('.check input'));
+  var saved={};try{saved=JSON.parse(store('checks')||'{}')||{}}catch(e){saved={}}
+  boxes.forEach(function(b){b.checked=!!saved[b.id];b.addEventListener('change',upd)});
+  function upd(){
+    var s={},n=0;boxes.forEach(function(b){if(b.checked){s[b.id]=1;n++}});
+    store('checks',JSON.stringify(s));
+    document.getElementById('progTxt').textContent=n+' de '+boxes.length;
+    document.getElementById('progBar').style.width=(boxes.length?Math.round(n/boxes.length*100):0)+'%';
+  }
+  upd();
+
+  /* copiar */
+  function flash(btn,txt){var old=btn.innerHTML;btn.textContent=txt;setTimeout(function(){btn.innerHTML=old},1800)}
+  function copyText(text,btn,area){
+    function fallback(){
+      area.value=text;area.style.left='0';area.select();
+      try{document.execCommand('copy');flash(btn,'Copiado')}catch(e){flash(btn,'Não foi possível copiar')}
+      area.style.left='-9999px';
+    }
+    try{navigator.clipboard.writeText(text).then(function(){flash(btn,'Copiado')},fallback)}catch(e){fallback()}
+  }
+  var out=document.getElementById('dqOut');
+  document.querySelectorAll('[data-copy]').forEach(function(btn){
+    btn.addEventListener('click',function(e){e.preventDefault();copyText(document.getElementById(btn.dataset.copy).textContent.trim(),btn,out)});
+  });
+
+  /* decisões */
+  var dqs=[].slice.call(document.querySelectorAll('.dq[data-q]'));
+  var ans={};try{ans=JSON.parse(store('dec')||'{}')||{}}catch(e){ans={}}
+  var notes=document.getElementById('notes');
+  notes.value=store('notes')||'';
+  notes.addEventListener('input',function(){store('notes',notes.value)});
+  function paint(){
+    var n=0;
+    dqs.forEach(function(q){
+      var sel=ans[q.dataset.q]||[];if(sel.length)n++;
+      q.querySelectorAll('.choice').forEach(function(c){c.setAttribute('aria-pressed',sel.indexOf(c.textContent)>=0?'true':'false')});
+    });
+    document.getElementById('dqCount').textContent=n+' de '+dqs.length+' respondidas';
+    store('dec',JSON.stringify(ans));
+  }
+  dqs.forEach(function(q){
+    q.querySelectorAll('.choice').forEach(function(c){
+      c.addEventListener('click',function(){
+        var k=q.dataset.q,sel=(ans[k]||[]).slice(),v=c.textContent,i=sel.indexOf(v);
+        if(q.dataset.mode==='many'){if(i>=0)sel.splice(i,1);else sel.push(v)}
+        else sel=i>=0?[]:[v];
+        ans[k]=sel;paint();
+      });
+    });
+  });
+  paint();
+  document.getElementById('dqClear').addEventListener('click',function(){ans={};notes.value='';store('notes','');paint()});
+  document.getElementById('dqCopy').addEventListener('click',function(){
+    var lines=['*Decisões do planejamento*',''];
+    dqs.forEach(function(q,i){var sel=ans[q.dataset.q]||[];lines.push((i+1)+'. *'+q.dataset.q+':* '+(sel.length?sel.join(', '):'sem resposta'))});
+    if(notes.value.trim()){lines.push('');lines.push('*Ajustes:* '+notes.value.trim())}
+    copyText(lines.join('\n'),this,out);
+  });
+
+  if(window.lucide&&lucide.createIcons){try{lucide.createIcons({attrs:{'stroke-width':2}})}catch(e){}}
+})();
+</script>
+</body>
+</html>
