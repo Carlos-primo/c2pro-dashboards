@@ -45,9 +45,12 @@ jobs:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_vendas.py
 
-      # Paginas estaticas (planejamentos de cliente): so copiar pro site.
+      # Paginas estaticas (planejamentos e relatorios fechados de cliente): so copiar pro site.
       - name: Copiar planejamentos
         run: mkdir -p site && cp -r planejamento site/planejamento
+
+      - name: Copiar relatorios
+        run: mkdir -p site && cp -r relatorios site/relatorios
 
       - uses: actions/upload-pages-artifact@v4
         with:

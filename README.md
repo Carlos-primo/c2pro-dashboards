@@ -99,3 +99,16 @@ https://carlos-primo.github.io/c2pro-dashboards/planejamento/<cliente>/
 | Cliente | Link |
 |---|---|
 | Mariana Groth (Growth Compliance) | https://carlos-primo.github.io/c2pro-dashboards/planejamento/mariana-groth/ |
+
+## Relatórios
+
+Relatórios fechados de um período (não atualizam sozinhos). Os dados ficam dentro do próprio HTML, em
+`relatorios/<cliente>/index.html`, e o workflow só copia a pasta pro site:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/relatorios/<cliente>/
+```
+
+| Cliente | Relatório | Link |
+|---|---|---|
+| Todos Arquitetura | Vendas de ingressos (captação 27/08 a 15/09/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/todos-arquitetura/ |
