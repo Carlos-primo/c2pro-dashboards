@@ -212,7 +212,17 @@ async function iniciar(){
 let D, PER = "7";
 try { PER = localStorage.getItem("c2pro-dash-periodo") || "7"; } catch(_){}
 
-function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; desenhar(); }
+function render(dados){
+  D = dados; MOEDA = D.moeda || "BRL";
+  if (!D.periodos[PER]) PER = Object.keys(D.periodos)[0];
+  desenhar();
+}
+
+function rotuloPeriodo(k, p){
+  if (k === "7") return "Últimos 7 dias";
+  if (k === "30") return "Últimos 30 dias";
+  return p.rotulo || `${dataBRano(p.inicio)} a ${dataBRano(p.fim)}`;
+}
 
 function delta(atual, anterior, melhorQuando){
   if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
@@ -249,19 +259,19 @@ function desenhar(){
   const a = derivadas(P.atual), b = derivadas(P.anterior);
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   const tempo = v => v ? new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v) + "s" : "-";
+  const dt = D.fixo ? dataBRano : dataBR;
 
   app.innerHTML = `<div class="wrap">
   <header>
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Dashboard Meta Ads")}</div><h1>${esc(D.nome)}</h1></div></div>
     <div class="pills" role="group" aria-label="Período">
-      <button data-p="7" aria-pressed="${PER==="7"}">Últimos 7 dias</button>
-      <button data-p="30" aria-pressed="${PER==="30"}">Últimos 30 dias</button>
+      ${Object.entries(D.periodos).map(([k,p]) => `<button data-p="${k}" aria-pressed="${PER===k}">${esc(rotuloPeriodo(k,p))}</button>`).join("")}
     </div>
   </header>
   <div class="meta">
-    <span>Período: ${dataBR(P.inicio)} a ${dataBR(P.fim)}</span>
-    <span>Comparado com: ${dataBR(P.ant_inicio)} a ${dataBR(P.ant_fim)}</span>
+    <span>Período: ${dt(P.inicio)} a ${dt(P.fim)}</span>
+    <span>Comparado com: ${dt(P.ant_inicio)} a ${dt(P.ant_fim)}</span>
     <span>Atualizado em ${quando}</span>
   </div>
 
@@ -301,7 +311,7 @@ function desenhar(){
   </section>
 
   <section>
-    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Últimos 30 dias, independente do período selecionado.</p></div></div>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">${D.fixo ? "Todos os dias do período." : "Últimos 30 dias, independente do período selecionado."}</p></div></div>
     <div class="charts">
       <div class="card chart"><h3>Views de 3s por dia</h3>
         <div class="tot">Total: ${fmtInt(D.diario.reduce((s,d)=>s+d.views3s,0))}</div><svg id="c-views"></svg></div>
@@ -336,7 +346,9 @@ function desenhar(){
     <div class="defs"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos.
       <b>Custo por view 25/50/75%:</b> investimento ÷ pessoas que assistiram até esse ponto do vídeo.
       <b>Custo por engajamento:</b> investimento ÷ engajamentos com a publicação.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome. ${D.fixo
+      ? `Período fixo de ${dataBRano(P.inicio)} a ${dataBRano(P.fim)}.`
+      : "Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem."}</div>
   </footer>
   </div>`;
 

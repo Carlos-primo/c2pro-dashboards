@@ -13,6 +13,7 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 | C2Pro | https://carlos-primo.github.io/c2pro-dashboards/c2pro/ |
 | Evaldit Rafaela | https://carlos-primo.github.io/c2pro-dashboards/evaldit-rafaela-ibama/ |
 | Método NeuroappAvalia | https://carlos-primo.github.io/c2pro-dashboards/metodo-neuroapp-avalia-cartao/ |
+| Amanda Elia Advogada (período fixo: 22/12/2025 a 18/02/2026) | https://carlos-primo.github.io/c2pro-dashboards/amanda-elia/ |
 
 ## O que cada dashboard de distribuição mostra
 

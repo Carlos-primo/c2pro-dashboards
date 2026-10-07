@@ -7,6 +7,9 @@ Uso local:   python gerar.py            (todos os clientes)
              python gerar.py c2pro      (so um)
 No GitHub:   roda sozinho todo dia as 2h (ver .github/workflows/atualizar.yml)
 
+config.json opcional: "periodo_fixo": {"inicio": "AAAA-MM-DD", "fim": "AAAA-MM-DD", "rotulo": "..."}
+troca os ultimos 7/30 dias por essa janela (campanha que ja acabou ou com data marcada).
+
 Variaveis de ambiente:
   META_ADS_TOKEN   token da Meta (local: cai no .env da skill meta-ads do workspace ao lado)
   SENHA_<SLUG>     opcional (ex: SENHA_C2PRO): se definida, o dashboard daquele cliente pede senha
@@ -127,8 +130,23 @@ def conta_total(inicio, fim):
 
 
 def periodo(dias, ontem):
-    fim = ontem
-    inicio = fim - dt.timedelta(days=dias - 1)
+    return periodo_entre(ontem - dt.timedelta(days=dias - 1), ontem)
+
+
+def periodo_fixo(ontem):
+    """Janela fechada do config ("periodo_fixo": {"inicio", "fim"}) no lugar dos ultimos 7/30 dias.
+    Serve pra campanha que ja acabou: o dashboard mostra so as datas dela."""
+    pf = CFG.get("periodo_fixo")
+    if not pf:
+        return None
+    inicio = dt.date.fromisoformat(pf["inicio"])
+    fim = min(dt.date.fromisoformat(pf["fim"]), ontem)
+    conferir(inicio <= fim, f"periodo_fixo invalido: {pf}")
+    return inicio, fim
+
+
+def periodo_entre(inicio, fim):
+    dias = (fim - inicio).days + 1
     ant_fim = inicio - dt.timedelta(days=1)
     ant_inicio = ant_fim - dt.timedelta(days=dias - 1)
 
@@ -187,12 +205,11 @@ def detalhes_anuncios(anuncios):
             a["previa"] = info.get("preview_shareable_link", "")
 
 
-def serie_diaria(ontem):
-    inicio = ontem - dt.timedelta(days=29)
+def serie_diaria(inicio, fim):
     por_dia = {l["date_start"]: metricas(l) for l in insights(
-        "account", inicio, ontem, CAMPOS_METRICAS, time_increment=1)}
+        "account", inicio, fim, CAMPOS_METRICAS, time_increment=1)}
     dias = []
-    for n in range(30):
+    for n in range((fim - inicio).days + 1):
         d = (inicio + dt.timedelta(days=n)).isoformat()
         m = por_dia.get(d, metricas({}))
         dias.append({"data": d, "gasto": m["gasto"], "impressoes": m["impressoes"],
@@ -224,6 +241,14 @@ def gerar_cliente(slug):
     agora = dt.datetime.now(fuso)
     ontem = agora.date() - dt.timedelta(days=1)
 
+    fixo = periodo_fixo(ontem)
+    if fixo:
+        periodos = {"fixo": {**periodo_entre(*fixo), "rotulo": CFG["periodo_fixo"].get("rotulo", "")}}
+        diario, chave = serie_diaria(*fixo), "fixo"
+    else:
+        periodos = {"7": periodo(7, ontem), "30": periodo(30, ontem)}
+        diario, chave = serie_diaria(ontem - dt.timedelta(days=29), ontem), "30"
+
     dados = {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
@@ -232,12 +257,13 @@ def gerar_cliente(slug):
         "filtro": FILTRO,
         "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],
-        "periodos": {"7": periodo(7, ontem), "30": periodo(30, ontem)},
-        "diario": serie_diaria(ontem),
+        "fixo": bool(fixo),
+        "periodos": periodos,
+        "diario": diario,
     }
-    soma_diaria = sum(d["gasto"] for d in dados["diario"])
-    conferir(abs(soma_diaria - dados["periodos"]["30"]["atual"]["gasto"]) < 0.05,
-             "serie diaria nao bate com o total de 30 dias")
+    soma_diaria = sum(d["gasto"] for d in diario)
+    conferir(abs(soma_diaria - periodos[chave]["atual"]["gasto"]) < 0.05,
+             "serie diaria nao bate com o total do periodo")
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     senha = os.environ.get(f"SENHA_{slug.upper().replace('-', '_')}", "")
@@ -249,9 +275,10 @@ def gerar_cliente(slug):
     (saida / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
-    p30 = dados["periodos"]["30"]
-    print(f"OK {slug}: 30d R$ {p30['atual']['gasto']:.2f}, "
-          f"{len(p30['campanhas'])} campanhas, {len(p30['anuncios'])} anuncios | "
+    p = periodos[chave]
+    janela = f"{p['inicio']} a {p['fim']}" if fixo else "30d"
+    print(f"OK {slug}: {janela} R$ {p['atual']['gasto']:.2f}, "
+          f"{len(p['campanhas'])} campanhas, {len(p['anuncios'])} anuncios | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")
 
 
