@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Leads C2Pro</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --bg-deep:#030507; --solid:#0A0E14;
+  --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E;
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-body);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 16px 64px}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:40px}
+.sec-head{margin-bottom:16px}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.brand{display:flex;gap:16px;align-items:center}
+.brand img{width:52px;height:52px;object-fit:contain}
+.pills{display:inline-flex;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.pills button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.pills button:hover{color:var(--t-strong)}
+.pills button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.pills button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.tile{padding:20px}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.tile .val{font:600 28px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.tile.hero .val{color:var(--acc-h)}
+.tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+
+/* ---------- criativos ---------- */
+.ads{display:flex;flex-direction:column;gap:12px}
+.ad{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:16px;padding:14px 18px 14px 14px;align-items:center}
+.ad.top{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.ad .thumb{position:relative;display:block;width:72px;height:96px;border-radius:12px;overflow:hidden;background:var(--s2);border:1px solid var(--b-sub)}
+.ad .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ad .rank{position:absolute;top:6px;left:6px;min-width:22px;padding:2px 6px;border-radius:999px;background:rgba(5,7,10,.8);
+  border:1px solid var(--b-def);font:600 11px/1.4 var(--mono);color:var(--t-strong);text-align:center}
+.ad .nm{color:var(--t-strong);font-weight:600;font-size:15px;line-height:1.3;word-break:break-word}
+.ad .cp{color:var(--t-faint);font:400 12px/1.4 var(--mono);margin-top:2px}
+.ad .bar{height:6px;border-radius:3px;background:var(--s2);margin-top:10px;overflow:hidden}
+.ad .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.ad .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ad .qtd{text-align:right;min-width:72px}
+.ad .qtd b{display:block;font:600 32px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.ad.top .qtd b{color:var(--acc-h);text-shadow:0 0 18px rgba(0,216,245,.45)}
+.ad .qtd span{font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.lnk{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--b-def);
+  color:var(--t-body);font:500 12px/1.2 Inter,sans-serif;text-decoration:none;transition:.15s}
+.lnk:hover{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.lnk svg{width:14px;height:14px}
+.lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);letter-spacing:.06em;border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px}
+.badge.on{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.sem{margin-top:14px;font-size:13px;color:var(--t-faint);line-height:1.6}
+.sem b{color:var(--t-muted);font-weight:500}
+.empty{padding:24px;color:var(--t-muted);font-size:14px}
+
+/* ---------- funil ---------- */
+.funil{padding:28px 24px 24px}
+.fn-row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0 24px;align-items:center}
+.fn-nome .n{color:var(--t-strong);font-weight:600;font-size:15px;line-height:1.3}
+.fn-nome .d{color:var(--t-faint);font-size:12px;line-height:1.4;margin-top:2px}
+.fn-forma{position:relative;height:72px}
+.fn-forma svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fn-forma .q{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.fn-forma .q b{font:600 24px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.fn-forma .q span{font:400 11px/1.2 var(--mono);color:var(--t-muted)}
+.fn-row.fim .fn-forma .q b{color:var(--acc-h);text-shadow:0 0 18px rgba(0,216,245,.45)}
+.fn-conn{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0 24px;align-items:center;min-height:52px}
+.fn-conn .chip{grid-column:2;justify-self:center;display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+  padding:6px 14px;border-radius:999px;border:1px solid var(--b-def);background:var(--solid);font:400 12px/1.3 var(--mono);color:var(--t-muted)}
+.fn-conn .chip b{color:var(--t-strong);font-weight:600;font-size:14px}
+.fn-conn .chip .k{font-family:Inter,sans-serif;font-weight:500;color:var(--t-body)}
+.fn-conn .chip svg{width:14px;height:14px;color:var(--acc)}
+.fn-rodape{margin-top:24px;padding-top:18px;border-top:1px solid var(--b-sub);display:flex;flex-wrap:wrap;gap:12px 32px;font:400 12px/1.5 var(--mono);color:var(--t-muted)}
+.fn-rodape b{color:var(--t-strong);font-weight:600}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+footer b{color:var(--t-muted);font-weight:500}
+
+.lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lock form{width:100%;max-width:380px;padding:32px;text-align:center}
+.lock img{width:64px;margin-bottom:16px}
+.lock input[type=password]{width:100%;margin:20px 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--b-def);
+  background:rgba(0,0,0,.35);color:var(--t-strong);font:400 15px Inter,sans-serif}
+.lock input:focus{outline:2px solid var(--acc);outline-offset:1px;border-color:transparent}
+.lock .row{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--t-muted);margin-bottom:16px}
+.btn{all:unset;cursor:pointer;display:block;width:100%;padding:12px 0;border-radius:12px;background:var(--acc);color:var(--on-acc);
+  font:600 15px Inter,sans-serif;box-shadow:0 0 12px -2px rgba(0,216,245,.45);transition:.15s;text-align:center}
+.btn:hover{background:var(--acc-h);transform:translateY(-2px);box-shadow:var(--glow)}
+.btn:active{transform:scale(.975)}
+.err{color:var(--neg);font-size:13px;min-height:20px;margin-top:12px}
+
+@media (max-width:640px){
+  .ad{grid-template-columns:56px minmax(0,1fr) auto;gap:12px;padding:12px}
+  .ad .thumb{width:56px;height:76px}
+  .ad .qtd b{font-size:26px}
+  .funil{padding:20px 16px}
+  .fn-row{grid-template-columns:1fr;gap:8px}
+  .fn-nome{text-align:center}
+  .fn-conn{grid-template-columns:1fr;min-height:0;padding:14px 0}
+  .fn-conn .chip{grid-column:1}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(() => {
+const app = document.getElementById("app");
+const payload = JSON.parse(document.getElementById("payload").textContent);
+const CHAVE_SENHA = "c2pro-leads-senha";
+
+// ---------- formatação pt-BR ----------
+const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
+const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
+const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
+const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const div = (a,b) => b ? a/b : null;
+const pctOu = v => v == null ? "-" : fmtPct(v);
+const plural = (n, um, varios) => `${fmtInt(n)} ${n === 1 ? um : varios}`;
+
+// Taxas do funil, em %.
+function derivadas(m){
+  return { ...m,
+    ctr: div(m.cliques*100, m.impressoes), connect: div(m.visitas*100, m.cliques),
+    conv: div(m.leads*100, m.visitas || m.cliques) };
+}
+
+// ---------- tela de senha ----------
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decifrar(senha){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha), "PBKDF2", false, ["deriveKey"]);
+  const chave = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(payload.sal), iterations:payload.iter, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const txt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(payload.iv)}, chave, b64(payload.ct));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
+
+function telaSenha(){
+  app.innerHTML = `<div class="lock"><form class="card" id="f">
+    <img src="logo.png" alt="C2Pro">
+    <div class="eyebrow" style="justify-content:center">Dashboard protegido</div>
+    <input type="password" id="s" placeholder="Senha" autocomplete="current-password" aria-label="Senha" autofocus>
+    <label class="row"><input type="checkbox" id="lembrar" checked> Lembrar neste navegador</label>
+    <button class="btn" type="submit">Abrir dashboard</button>
+    <div class="err" id="err"></div></form></div>`;
+  document.getElementById("f").addEventListener("submit", async e => {
+    e.preventDefault();
+    const senha = document.getElementById("s").value;
+    try {
+      const dados = await decifrar(senha);
+      try { if (document.getElementById("lembrar").checked) localStorage.setItem(CHAVE_SENHA, senha); } catch(_){}
+      render(dados);
+    } catch(_) { document.getElementById("err").textContent = "Senha incorreta."; }
+  });
+}
+
+async function iniciar(){
+  if (!payload.enc) return render(payload.dados);
+  let salva = null;
+  try { salva = localStorage.getItem(CHAVE_SENHA); } catch(_){}
+  if (salva) { try { return render(await decifrar(salva)); } catch(_){ try{localStorage.removeItem(CHAVE_SENHA);}catch(_){} } }
+  telaSenha();
+}
+
+// ---------- dashboard ----------
+let D, PER = "30";
+try { PER = localStorage.getItem("c2pro-leads-periodo") || "30"; } catch(_){}
+
+function render(dados){ D = dados; if (!D.periodos[PER]) PER = "30"; desenhar(); }
+
+function tile(lbl, val, extra, hero){
+  return `<div class="card tile${hero?" hero":""}"><div class="lbl">${esc(lbl)}</div>
+    <div class="val">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}</div>`;
+}
+
+const ICO_IG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`;
+const ICO_EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ICO_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>`;
+
+// Visitas à página só entram no funil quando a conta registra o evento (formulário instantâneo não registra).
+function etapas(a){
+  const comVisitas = a.visitas > 0;
+  const lista = [
+    {k:"impressoes", nome:"Impressões",       desc:"Vezes que o anúncio apareceu"},
+    {k:"cliques",    nome:"Cliques no link",  desc:comVisitas ? "Quem clicou pra ir à página" : "Quem clicou pra abrir o formulário"},
+  ];
+  const taxas = [{k:"ctr", nome:"CTR", formula:"cliques ÷ impressões"}];
+  if (comVisitas) {
+    lista.push({k:"visitas", nome:"Visitas à página", desc:"Quem esperou a página carregar"});
+    taxas.push({k:"connect", nome:"Connect rate", formula:"visitas ÷ cliques"});
+  }
+  lista.push({k:"leads", nome:"Leads", desc:"Contatos recebidos"});
+  taxas.push({k:"conv", nome:"Conversão em lead", formula:comVisitas ? "leads ÷ visitas" : "leads ÷ cliques"});
+  return {lista, taxas};
+}
+
+function forma(i, n){
+  // Trapézio: cada etapa começa na largura em que a anterior terminou.
+  const larg = j => 100 - j * (70 / n);
+  const t = (100 - larg(i)) / 2, b = (100 - larg(i+1)) / 2;
+  const fim = i === n - 1;
+  const fill = .05 + i * (.17 / Math.max(1, n - 1));
+  return `<svg viewBox="0 0 100 72" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="${t},0 ${100-t},0 ${100-b},72 ${b},72" fill="rgba(0,216,245,${fill})"
+      stroke="${fim ? "rgba(0,216,245,.6)" : "rgba(0,216,245,.28)"}" stroke-width="1" vector-effect="non-scaling-stroke"
+      ${fim ? 'style="filter:drop-shadow(0 0 14px rgba(0,216,245,.35))"' : ""}/></svg>`;
+}
+
+function funil(a){
+  const {lista, taxas} = etapas(a);
+  let html = `<div class="card funil">`;
+  lista.forEach((e, i) => {
+    const pctTopo = i && a.impressoes ? `${fmtPct(a[e.k]*100/a.impressoes)} das impressões` : (i ? "" : "topo do funil");
+    html += `<div class="fn-row${i === lista.length-1 ? " fim" : ""}">
+      <div class="fn-nome"><div class="n">${e.nome}</div><div class="d">${e.desc}</div></div>
+      <div class="fn-forma">${forma(i, lista.length)}<div class="q"><b>${fmtInt(a[e.k])}</b><span>${pctTopo}</span></div></div>
+    </div>`;
+    const t = taxas[i];
+    if (t) html += `<div class="fn-conn">
+      <div class="chip">${ICO_DOWN}<span class="k">${t.nome}</span><b>${pctOu(a[t.k])}</b></div></div>`;
+  });
+  html += `<div class="fn-rodape">
+      <div>Pessoas alcançadas: <b>${fmtInt(a.alcance)}</b></div>
+      ${taxas.map(t => `<div>${t.nome}: ${t.formula}</div>`).join("")}
+    </div>`;
+  return html + `</div>`;
+}
+
+const NOMES_PER = {"7":"Últimos 7 dias","30":"Últimos 30 dias"};
+
+function desenhar(){
+  const P = D.periodos[PER];
+  const a = derivadas(P.atual);
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+  const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
+  const comLead = P.criativos.filter(c => c.leads > 0);
+
+  app.innerHTML = `<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.png" alt="C2Pro">
+      <div><div class="eyebrow">${esc(D.subtitulo || "Avaliação de leads")}</div><h1>${esc(D.nome)}</h1></div></div>
+    <div class="pills" role="group" aria-label="Período">
+      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${NOMES_PER[k] || k+" dias"}</button>`).join("")}
+    </div>
+  </header>
+  <div class="meta">
+    <span>Período: ${faixa(P.inicio, P.fim)}</span>
+    <span>Atualizado em ${quando}</span>
+  </div>
+
+  <section>
+    <div class="tiles">
+      ${tile("Leads", fmtInt(a.leads), null, true)}
+      ${tile("Criativos que geraram lead", fmtInt(comLead.length), `de ${plural(P.criativos.length, "criativo que rodou", "criativos que rodaram")}`)}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Criativos que mais geraram leads</h2>
+      <p class="sub">Cada criativo somado em todos os públicos em que rodou.</p></div>
+    ${criativos(P.criativos)}
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Funil geral</h2>
+      <p class="sub">Todas as campanhas juntas: quantas pessoas passam em cada etapa até virar lead.</p></div>
+    ${funil(a)}
+  </section>
+
+  <footer>
+    <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta. Leads são os que a Meta registrou (formulário ou pixel) e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+  </footer>
+  </div>`;
+
+  app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
+    PER = bt.dataset.p; try { localStorage.setItem("c2pro-leads-periodo", PER); } catch(_){}
+    desenhar();
+  }));
+}
+
+function cardCriativo(c, pos, max){
+  const link = c.instagram || c.previa;
+  const img = c.thumb ? `<img src="${esc(c.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+  const thumb = link ? `<a class="thumb" href="${esc(link)}" target="_blank" rel="noopener" aria-label="Abrir criativo">${img}<span class="rank">${pos}</span></a>`
+                     : `<div class="thumb">${img}<span class="rank">${pos}</span></div>`;
+  return `<div class="card ad${pos === 1 ? " top" : ""}">${thumb}<div>
+    <div class="nm">${esc(c.nome)}${c.ativo ? `<span class="badge on">no ar</span>` : ""}</div>
+    <div class="cp">${c.conjuntos > 1 ? `rodou em ${c.conjuntos} públicos` : "rodou em 1 público"}</div>
+    <div class="bar"><i style="width:${max ? c.leads/max*100 : 0}%"></i></div>
+    <div class="links">
+      ${c.instagram ? `<a class="lnk" href="${esc(c.instagram)}" target="_blank" rel="noopener">${ICO_IG}Ver no Instagram</a>` : ""}
+      ${c.previa ? `<a class="lnk" href="${esc(c.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia do anúncio</a>` : ""}
+    </div></div>
+    <div class="qtd"><b>${fmtInt(c.leads)}</b><span>${c.leads === 1 ? "lead" : "leads"}</span></div></div>`;
+}
+
+function criativos(lista){
+  const com = lista.filter(c => c.leads > 0), sem = lista.filter(c => !c.leads);
+  if (!com.length) return `<div class="card empty">Nenhum criativo gerou lead no período.</div>`;
+  const max = com[0].leads;
+  return `<div class="ads">${com.map((c,i) => cardCriativo(c, i+1, max)).join("")}</div>
+    ${sem.length ? `<div class="sem"><b>Sem lead no período:</b> ${sem.map(c => esc(c.nome)).join(", ")}.</div>` : ""}`;
+}
+
+iniciar();
+})();
+</script>
+</body>
+</html>

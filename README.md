@@ -51,6 +51,27 @@ Ontem, últimos 3, 7 ou 30 dias, comparados com o período anterior. Compras e f
 Pelo Claude Code: skill `c2pro-dashboard-vendas`. Rodar no PC: `python gerar_vendas.py [slug]` e abrir `site/vendas/<slug>/index.html`.
 Senha opcional: secret `SENHA_VENDAS_<SLUG>` no passo "Gerar dashboards de vendas" do workflow.
 
+## Dashboards de leads
+
+Avaliação de leads: só volume, sem investimento, custo ou comparação com período anterior (nada disso vai pro payload).
+Entram todas as campanhas da conta. Cada cliente é uma pasta `leads/<slug>/config.json` e o link fica:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/leads/<cliente>/
+```
+
+| Cliente | Link |
+|---|---|
+| Atento Corretora | https://carlos-primo.github.io/c2pro-dashboards/leads/atento/ |
+
+- **Resumo:** leads no período e quantos criativos geraram lead
+- **Criativos que mais geraram leads:** ranking por quantidade de leads, cada criativo somado em todos os públicos em que rodou, com link pro Instagram e prévia
+- **Funil geral:** impressões > cliques no link (CTR) > visitas à página, quando houver > leads (conversão em lead)
+
+Últimos 7 ou 30 dias. Leads são os que a Meta registrou (formulário ou pixel).
+Rodar no PC: `python gerar_leads.py [slug]` e abrir `site/leads/<slug>/index.html`.
+Senha opcional: secret `SENHA_LEADS_<SLUG>` no passo "Gerar dashboards de leads" do workflow.
+
 ## Adicionar um cliente
 
 Pelo Claude Code, no workspace da agência: skill `c2pro-dashboard-distribuicao` (é só dizer o nome do cliente). Manualmente:

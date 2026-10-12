@@ -3,6 +3,7 @@
 # Secret necessario (Settings > Secrets and variables > Actions): META_ADS_TOKEN
 # Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
 # Dashboards de vendas: SENHA_VENDAS_<SLUG>, no bloco env do passo "Gerar dashboards de vendas".
+# Dashboards de leads: SENHA_LEADS_<SLUG>, no bloco env do passo "Gerar dashboards de leads".
 
 name: Atualizar dashboards
 
@@ -44,6 +45,11 @@ jobs:
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_vendas.py
+
+      - name: Gerar dashboards de leads
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+        run: python gerar_leads.py
 
       # Paginas estaticas (planejamentos e relatorios fechados de cliente): so copiar pro site.
       - name: Copiar planejamentos
