@@ -133,3 +133,4 @@ https://carlos-primo.github.io/c2pro-dashboards/relatorios/<cliente>/
 | Cliente | Relatório | Link |
 |---|---|---|
 | Todos Arquitetura | Vendas de ingressos (captação 27/08 a 15/09/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/todos-arquitetura/ |
+| BJJ Protech | Análise do fim de semana de queda (10 e 11/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/bjj-protech-fim-de-semana/ |

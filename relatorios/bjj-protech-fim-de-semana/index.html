@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Análise do fim de semana de queda</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --solid:#0A0E14;
+  --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E; --warn:#F5B83D; --warn-soft:rgba(245,184,61,.1);
+  --grid:rgba(255,255,255,.07);
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-body);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 16px 64px}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+h3{margin:0;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:36px}
+.panel > section:first-child{margin-top:8px}
+.sec-head{margin-bottom:16px}
+
+header{display:flex;gap:16px;align-items:center}
+header img{width:52px;height:52px;object-fit:contain}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+.meta b{color:var(--t-muted);font-weight:500}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:28px -16px 0;padding:4px 16px 12px;scroll-padding-inline:16px;
+  position:sticky;top:0;z-index:4;background:linear-gradient(180deg,var(--bg) 75%,transparent)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{all:unset;cursor:pointer;flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:999px;
+  border:1px solid var(--b-def);background:var(--s1);color:var(--t-muted);font:500 13.5px/1 Inter,sans-serif;transition:.15s;margin-top:10px}
+.tab .n{font:600 11px/1 var(--mono);color:var(--t-faint)}
+.tab:hover{color:var(--t-strong);border-color:var(--b-strong)}
+.tab[aria-selected="true"]{border-color:var(--b-acc);background:rgba(0,216,245,.16);color:#b3f7ff;box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.tab[aria-selected="true"] .n{color:var(--acc)}
+.tab:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.panel[hidden]{display:none}
+
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.tile{padding:20px}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.tile .val{font:600 22px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tile .val .de{font-size:15px;color:var(--t-faint);font-weight:500}
+.tile .val .seta{font-size:14px;color:var(--t-faint)}
+.tile.hero .val .para{color:var(--acc-h)}
+.tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.var{display:inline-block;padding:2px 8px;border-radius:999px;font:500 11px/1.6 var(--mono);border:1px solid var(--b-def);color:var(--t-muted)}
+.var.ruim{border-color:rgba(245,184,61,.5);color:var(--warn)}
+.var.ok{border-color:rgba(35,209,139,.4);color:var(--pos)}
+
+.leitura{padding:22px 22px 18px}
+.leitura ol{margin:12px 0 0;padding-left:20px;display:grid;gap:10px}
+.leitura li{color:var(--t-body)}
+.leitura li b{color:var(--t-strong)}
+
+.aviso{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:14px;border:1px solid var(--b-def);background:var(--s1);font-size:14px;color:var(--t-body)}
+.aviso svg{flex:none;width:18px;height:18px;margin-top:2px;color:var(--acc)}
+.aviso b{color:var(--t-strong)}
+.aviso.bonus{border-color:var(--b-acc);background:var(--acc-soft)}
+.aviso.warn{border-color:rgba(245,184,61,.45);background:var(--warn-soft)}
+.aviso.warn svg{color:var(--warn)}
+
+/* funil comparado */
+.fc{padding:8px 0}
+.fc-row{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 1fr 110px;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--b-sub)}
+.fc-row:last-child{border-bottom:0}
+.fc-row.head{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-faint);padding-top:16px;padding-bottom:12px}
+.fc-row .nm{color:var(--t-strong);font-weight:600;font-size:14.5px}
+.fc-row .nm small{display:block;color:var(--t-faint);font-weight:400;font-size:12px;margin-top:2px}
+.fc-row .v{font:500 15px/1.2 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body)}
+.fc-row .v.depois{color:var(--t-strong)}
+.fc-row .d{text-align:right}
+.fc-row.alerta{background:var(--warn-soft);box-shadow:inset 3px 0 0 var(--warn)}
+.fc-row.alerta .v.depois{color:var(--warn)}
+.fc-row .mob{display:none;font:400 11px/1 var(--mono);color:var(--t-faint);margin-right:6px}
+
+/* linha do tempo */
+.tl{list-style:none;margin:0;padding:6px 0 0 0;position:relative}
+.tl::before{content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;background:var(--b-def)}
+.tl li{position:relative;padding:0 0 22px 40px}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:5px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--solid);border:2px solid var(--acc)}
+.tl li.queda::before{border-color:var(--warn);background:var(--warn)}
+.tl .dt{font:600 12px/1.3 var(--mono);color:var(--acc);letter-spacing:.04em}
+.tl li.queda .dt{color:var(--warn)}
+.tl .tx{color:var(--t-body);margin-top:2px}
+.tl .tx b{color:var(--t-strong)}
+
+.ev-lista{display:grid;gap:14px}
+.ev{padding:20px;display:grid;grid-template-columns:40px 1fr;gap:4px 16px}
+.ev .num{grid-row:span 2;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--b-acc);
+  background:var(--acc-soft);font:600 14px/1 var(--mono);color:var(--acc-h)}
+.ev h3{font-size:16px;line-height:1.35}
+.ev p{margin:4px 0 0;font-size:14.5px}
+.ev p b{color:var(--t-strong);font-family:var(--mono);font-weight:600;font-size:13.5px}
+
+.hip{padding:20px}
+.hip .tag{display:inline-block;padding:3px 10px;border-radius:999px;font:500 10.5px/1.5 var(--mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--b-def);color:var(--t-muted);margin-bottom:10px}
+.hip .tag.principal{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.hip .tag.warn{border-color:rgba(245,184,61,.5);color:var(--warn)}
+.hip h3{font-size:17px;margin-bottom:6px}
+.hip p{margin:6px 0 0;font-size:14.5px}
+.hip p b{color:var(--t-strong)}
+.hip.principal{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+
+/* graficos */
+.chart{padding:20px 20px 12px;position:relative}
+.chart .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:4px 0 12px}
+.chart svg{display:block;width:100%;height:220px;overflow:visible;touch-action:pan-y}
+.axis{font:400 10px var(--mono);fill:var(--t-faint)}
+.marco{font:500 10px var(--mono);fill:var(--t-muted)}
+.tip{position:absolute;pointer-events:none;background:var(--solid);border:1px solid var(--b-def);border-radius:10px;
+  padding:8px 10px;font:400 12px/1.45 var(--mono);color:var(--t-body);white-space:nowrap;box-shadow:0 4px 16px -4px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .1s;z-index:9}
+.tip b{color:var(--t-strong);font-weight:600}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-muted);margin-top:8px}
+.legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.tbl-wrap{overflow-x:auto;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-faint);text-align:right;padding:14px 10px;border-bottom:1px solid var(--b-def);white-space:nowrap}
+td{padding:12px 10px;border-bottom:1px solid var(--b-sub);text-align:right;white-space:nowrap;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body)}
+th:first-child,td:first-child{text-align:left;padding-left:16px}
+td:first-child{font-family:Inter,sans-serif;color:var(--t-strong);white-space:normal;min-width:190px}
+td:first-child small{display:block;font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-top:2px}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--s1)}
+tr.fds td{background:var(--warn-soft)}
+td .a{color:var(--t-faint)}
+td .seta{color:var(--t-faint);margin:0 4px}
+td.ruim{color:var(--warn)}
+th.grp{text-align:center;border-bottom:1px solid var(--b-sub)}
+
+.passos{display:grid;gap:14px}
+.passo{padding:20px;display:grid;grid-template-columns:40px 1fr;gap:4px 16px}
+.passo .num{grid-row:span 3;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--b-acc);
+  background:var(--acc-soft);font:600 14px/1 var(--mono);color:var(--acc-h)}
+.passo h3{font-size:16px;line-height:1.35}
+.passo p{margin:4px 0 0;font-size:14.5px}
+.passo .quem{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.passo .quem span{padding:3px 10px;border-radius:999px;font:500 11px/1.5 var(--mono);border:1px solid var(--b-def);color:var(--t-muted)}
+.passo .quem span.q{border-color:var(--b-acc);color:var(--acc-h)}
+.passo .quem span.hoje{border-color:rgba(245,184,61,.5);color:var(--warn)}
+
+.defs{font-size:12px;color:var(--t-faint);line-height:1.7}
+.defs b{color:var(--t-muted);font-weight:500}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+
+@media (max-width:760px){
+  .fc-row{grid-template-columns:1fr auto;grid-template-areas:"nm d" "a b";gap:6px 12px;padding:14px 16px}
+  .fc-row.head{display:none}
+  .fc-row .nm{grid-area:nm}
+  .fc-row .d{grid-area:d}
+  .fc-row .v.antes{grid-area:a}
+  .fc-row .v.depois{grid-area:b;text-align:right}
+  .fc-row .mob{display:inline}
+  .ev,.passo{grid-template-columns:1fr}
+  .ev .num,.passo .num{grid-row:auto;width:34px;height:34px;margin-bottom:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <img src="logo.png" alt="C2Pro">
+  <div>
+    <div class="eyebrow">BJJ Protech · Meta Ads</div>
+    <h1>Análise do fim de semana de queda</h1>
+    <p class="sub">Sábado 10/10 e domingo 11/10 comparados com a semana de 03 a 09/10, a melhor de outubro até aqui.</p>
+  </div>
+</header>
+<div class="meta">
+  <span><b>Conta:</b> CA 02 - BJJ Protech</span>
+  <span><b>Fonte:</b> pixel da Meta</span>
+  <span><b>Gerado em:</b> 12/10/2026</span>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Seções">
+  <button class="tab" role="tab" data-aba="resumo"><span class="n">01</span>Resumo</button>
+  <button class="tab" role="tab" data-aba="funil"><span class="n">02</span>Funil</button>
+  <button class="tab" role="tab" data-aba="porque"><span class="n">03</span>Por que caiu</button>
+  <button class="tab" role="tab" data-aba="dias"><span class="n">04</span>Dia a dia</button>
+  <button class="tab" role="tab" data-aba="campanhas"><span class="n">05</span>Campanhas</button>
+  <button class="tab" role="tab" data-aba="passos"><span class="n">06</span>Próximos passos</button>
+</nav>
+
+<!-- 01 RESUMO -->
+<div class="panel" role="tabpanel" data-painel="resumo">
+  <section>
+    <div class="sec-head">
+      <h2>Em uma frase</h2>
+      <p class="sub">A mídia entregou igual. O que mudou foi a decisão de compra: o público segurou a compra dos planos esperando a Black.</p>
+    </div>
+    <div class="tiles">
+      <div class="card tile hero">
+        <div class="lbl">Ticket médio</div>
+        <div class="val"><span class="de">R$ 273</span><span class="seta">→</span><span class="para">R$ 77</span></div>
+        <div class="extra"><span class="var ruim">-72%</span> quase só isca vendeu</div>
+      </div>
+      <div class="card tile">
+        <div class="lbl">Compras por dia</div>
+        <div class="val"><span class="de">11,6</span><span class="seta">→</span><span>6</span></div>
+        <div class="extra"><span class="var ruim">-48%</span></div>
+      </div>
+      <div class="card tile">
+        <div class="lbl">Faturamento atribuído por dia</div>
+        <div class="val"><span class="de">R$ 3.157</span><span class="seta">→</span><span>R$ 464</span></div>
+        <div class="extra"><span class="var ruim">-85%</span></div>
+      </div>
+      <div class="card tile">
+        <div class="lbl">ROAS</div>
+        <div class="val"><span class="de">5,09</span><span class="seta">→</span><span>0,65</span></div>
+        <div class="extra">retorno sobre o investimento</div>
+      </div>
+      <div class="card tile">
+        <div class="lbl">Visitas à página por dia</div>
+        <div class="val"><span class="de">332</span><span class="seta">→</span><span>325</span></div>
+        <div class="extra"><span class="var ok">estável</span> o tráfego chegou</div>
+      </div>
+      <div class="card tile">
+        <div class="lbl">CPM</div>
+        <div class="val"><span class="de">R$ 11,56</span><span class="seta">→</span><span>R$ 11,90</span></div>
+        <div class="extra"><span class="var ok">estável</span> custo de aparecer igual</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card leitura">
+      <h3>O que aconteceu</h3>
+      <ol>
+        <li><b>Os anúncios funcionaram igual.</b> Mesmo custo, mesmo CTR, mesma quantidade de gente chegando na página.</li>
+        <li><b>Menos gente foi para o checkout.</b> De cada 100 visitas, 7,6 iam para o pagamento. No fim de semana foram 4,3.</li>
+        <li><b>Quase ninguém comprou plano.</b> As vendas que saíram foram das iscas do Esquenta, de R$ 28 a R$ 62. Por isso o ticket caiu de R$ 273 para R$ 77.</li>
+        <li><b>Isso é o efeito espera da Black.</b> Quem pensava em assinar já sabe que vem uma condição especial e segurou a compra. É o efeito colateral natural de um Esquenta, e mostra que a Black está gerando expectativa.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="aviso">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <div>São <b>2 dias e 12 compras</b>, um volume pequeno. A Meta ainda pode atribuir vendas a esses dias, e uma única venda de Premium muda o ROAS de um dia inteiro. Leia como sinal, não como veredito.</div>
+    </div>
+  </section>
+</div>
+
+<!-- 02 FUNIL -->
+<div class="panel" role="tabpanel" data-painel="funil" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>Funil, etapa por etapa</h2>
+      <p class="sub">Média por dia. Semana de 03 a 09/10 contra o fim de semana de 10 e 11/10. Em amarelo, onde quebrou.</p>
+    </div>
+    <div class="card fc" id="fc"></div>
+  </section>
+  <section>
+    <div class="grid2">
+      <div class="card hip">
+        <span class="tag">Antes do checkout</span>
+        <h3>A página parou de levar para o pagamento</h3>
+        <p>A taxa de página para checkout caiu <b>43%</b>. Isso aconteceu em todas as campanhas ao mesmo tempo, das de planos às do catálogo e do Esquenta.</p>
+      </div>
+      <div class="card hip">
+        <span class="tag">Depois do checkout</span>
+        <h3>Quem chegou no checkout comprou normal</h3>
+        <p>De quem iniciou o checkout, <b>46%</b> comprava na semana anterior. No fim de semana foram <b>43%</b>. O checkout está funcionando. A hesitação está antes dele.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 03 POR QUE -->
+<div class="panel" role="tabpanel" data-painel="porque" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>Linha do tempo</h2>
+      <p class="sub">A queda veio logo depois de a Black começar a aparecer para o público.</p>
+    </div>
+    <div class="card" style="padding:22px">
+      <ul class="tl">
+        <li><div class="dt">01/10</div><div class="tx"><b>Esquenta da Black começa.</b> Campanhas de cadastro e iscas (Guia do Faixa Branca e Guia do Professor).</div></li>
+        <li><div class="dt">03 a 09/10</div><div class="tx"><b>Melhor semana do mês.</b> ROAS de 5,09 e 81 compras.</div></li>
+        <li><div class="dt">06/10</div><div class="tx"><b>Anúncios da Live da Black entram no ar.</b></div></li>
+        <li><div class="dt">08/10</div><div class="tx"><b>Vídeos "Black Fase 01" entram no ar</b> para alunos e professores.</div></li>
+        <li class="queda"><div class="dt">10 e 11/10</div><div class="tx"><b>Os planos param de vender.</b> As iscas continuam vendendo.</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>O que os dados mostram</h2>
+    </div>
+    <div class="ev-lista">
+      <div class="card ev"><div class="num">1</div>
+        <h3>Os mesmos anúncios, com o mesmo CTR, pararam de vender plano</h3>
+        <p>O vídeo "2 ERROS" (Professor) teve CTR de <b>1,23%</b> e <b>14 compras</b> de 03 a 07/10. No fim de semana, CTR de <b>1,11%</b> e <b>1 compra</b>. O vídeo do catálogo foi de <b>8 compras</b> para <b>1</b>, com o CTR igual. O criativo não cansou de uma hora para outra.</p>
+      </div>
+      <div class="card ev"><div class="num">2</div>
+        <h3>A queda foi igual em todas as campanhas</h3>
+        <p>Planos de aluno, planos de professor, catálogo, instrucionais e Esquenta caíram juntos. Quando tudo cai junto, a causa não é uma campanha. É algo que afeta todo mundo que entra na página.</p>
+      </div>
+      <div class="card ev"><div class="num">3</div>
+        <h3>As iscas continuaram vendendo, os planos não</h3>
+        <p>As compras do fim de semana foram quase todas de <b>R$ 28 a R$ 62</b>. Faz sentido: a isca dá acesso à oferta exclusiva da Black. Já o plano, a pessoa prefere comprar na Black.</p>
+      </div>
+      <div class="card ev"><div class="num">4</div>
+        <h3>O checkout seguiu fechando</h3>
+        <p>Quem chegou no pagamento comprou no mesmo ritmo (<b>46%</b> para <b>43%</b>). Ninguém travou no meio da compra. A decisão foi não ir comprar.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>As explicações, em ordem</h2>
+    </div>
+    <div class="grid2">
+      <div class="card hip principal">
+        <span class="tag principal">Explicação principal</span>
+        <h3>O público está esperando a Black</h3>
+        <p>Quando a gente anuncia que vem uma condição especial, parte de quem ia comprar agora segura a compra. É o <b>efeito colateral natural de um Esquenta</b>.</p>
+        <p>E é um bom sinal: mostra que a Black está criando expectativa. A demanda dos planos deve aparecer na Black.</p>
+      </div>
+      <div class="card hip">
+        <span class="tag warn">Descartar hoje</span>
+        <h3>Algo mudou na página ou no checkout</h3>
+        <p>Uma mudança no site também derrubaria todas as campanhas juntas. Hoje (12/10, dado parcial) foram <b>104 visitas e 1 checkout</b>. Pode ser só o começo do dia, mas um teste de compra resolve a dúvida em minutos.</p>
+      </div>
+      <div class="card hip">
+        <span class="tag">Pesa um pouco</span>
+        <h3>Pouco volume e fim de semana</h3>
+        <p>O fim de semana de 26 e 27/09, antes da Black aparecer, também foi fraco (ROAS de <b>2,82</b> e <b>0,37</b>). Já o de 03 e 04/10 foi ótimo. Parte da oscilação é normal, mas não explica sozinha uma queda desse tamanho.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 04 DIA A DIA -->
+<div class="panel" role="tabpanel" data-painel="dias" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>Dia a dia, de 26/09 a 11/10</h2>
+      <p class="sub">Passe o dedo ou o mouse nas barras para ver os números de cada dia.</p>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr">
+      <div class="card chart" id="ch-fat">
+        <h3>Faturamento atribuído por dia</h3>
+        <div class="tot">Barras em amarelo: o fim de semana de 10 e 11/10</div>
+        <svg role="img" aria-label="Faturamento atribuído por dia"></svg>
+        <div class="tip"></div>
+      </div>
+      <div class="card chart" id="ch-chk">
+        <h3>Página para checkout, por dia</h3>
+        <div class="tot">De cada 100 visitas à página, quantas foram para o pagamento</div>
+        <svg role="img" aria-label="Taxa de página para checkout por dia"></svg>
+        <div class="tip"></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <details>
+      <summary>Ver a tabela com todos os dias</summary>
+      <div class="card tbl-wrap" style="margin-top:14px">
+        <table id="tb-dias">
+          <thead><tr><th>Dia</th><th>Investimento</th><th>Visitas</th><th>Checkouts</th><th>Pág. → checkout</th><th>Compras</th><th>Ticket</th><th>Faturamento</th><th>ROAS</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+
+<!-- 05 CAMPANHAS -->
+<div class="panel" role="tabpanel" data-painel="campanhas" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>Campanha por campanha</h2>
+      <p class="sub">Semana de 03 a 09/10 → fim de semana. Investimento é média por dia. Compras é o total de cada período (7 dias e 2 dias).</p>
+    </div>
+    <div class="card tbl-wrap">
+      <table>
+        <thead><tr><th>Campanha</th><th>Invest./dia</th><th>Pág. → checkout</th><th>Compras</th><th>Ticket</th><th>ROAS</th></tr></thead>
+        <tbody id="tb-camp"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Pontos de atenção</h2>
+    </div>
+    <div class="grid2">
+      <div class="card hip">
+        <span class="tag warn">Esquenta</span>
+        <h3>O cadastro ficou mais caro</h3>
+        <p>O custo por cadastro do Esquenta subiu de <b>R$ 2,46</b> para <b>R$ 4,13</b> no fim de semana, e os cadastros caíram de <b>46</b> para <b>37</b> por dia. Como a Black depende dessa base, vale olhar os criativos do Esquenta essa semana.</p>
+      </div>
+      <div class="card hip">
+        <span class="tag warn">Verba sem retorno</span>
+        <h3>ERP e Automação Esquenta</h3>
+        <p>A campanha de ERP gastou <b>R$ 51 por dia</b> sem nenhum checkout. A Automação Esquenta (engajamento) gastou <b>R$ 41 por dia</b>, com CPM de R$ 30 e sem resultado medido. Juntas, cerca de 13% da verba do fim de semana.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 06 PROXIMOS PASSOS -->
+<div class="panel" role="tabpanel" data-painel="passos" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>O que fazer daqui até a Black</h2>
+      <p class="sub">A Black é a prioridade. Os passos protegem ela.</p>
+    </div>
+    <div class="passos">
+      <div class="card passo"><div class="num">1</div>
+        <h3>Testar a compra de cada plano no celular</h3>
+        <p>Aluno, Professor e Premium, do anúncio até a tela de pagamento. Conferir se o botão leva ao checkout e se o preço está certo. É só para descartar problema na página.</p>
+        <div class="quem"><span class="q">Rodrigo</span><span class="hoje">Hoje</span></div>
+      </div>
+      <div class="card passo"><div class="num">2</div>
+        <h3>Comparar com as vendas reais da plataforma</h3>
+        <p>Ver quantos planos foram vendidos no sábado e no domingo na plataforma. Se lá tiver mais venda de plano do que a Meta mostrou, a diferença é de registro do pixel.</p>
+        <div class="quem"><span class="q">Rodrigo</span><span class="hoje">Hoje</span></div>
+      </div>
+      <div class="card passo"><div class="num">3</div>
+        <h3>Medir o Esquenta pelo que importa</h3>
+        <p>Até a Black, o termômetro é cadastro, custo por cadastro e comprador de isca. O ROAS diário dos planos vai oscilar e não deve ser motivo para cortar verba das campanhas de vendas.</p>
+        <div class="quem"><span class="q">Tráfego</span><span>Até a Black</span></div>
+      </div>
+      <div class="card passo"><div class="num">4</div>
+        <h3>Renovar os criativos do Esquenta</h3>
+        <p>O custo por cadastro subiu 68% no fim de semana. Novos ângulos para aluno e professor seguram a base da Black crescendo no mesmo ritmo.</p>
+        <div class="quem"><span class="q">Tráfego</span><span class="q">André</span><span>Esta semana</span></div>
+      </div>
+      <div class="card passo"><div class="num">5</div>
+        <h3>Deixar claro para quem é a Black</h3>
+        <p>A vantagem da Black é para quem comprou o Guia e para quem já é assinante. Repetir isso na comunicação dá a quem está de fora um motivo para entrar pela isca agora, em vez de só esperar.</p>
+        <div class="quem"><span class="q">André</span><span class="q">Rodrigo</span><span>Esta semana</span></div>
+      </div>
+      <div class="card passo"><div class="num">6</div>
+        <h3>Rever ERP e Automação Esquenta</h3>
+        <p>Pausar ou reduzir até ter um resultado que dê para medir, e passar a verba para o que está trazendo cadastro e venda.</p>
+        <div class="quem"><span class="q">Tráfego</span><span>Esta semana</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="defs">
+    <b>Como ler.</b> Compras, faturamento e ROAS são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento.
+    <b>Pág. → checkout:</b> de cada 100 visitas à página, quantas iniciaram o checkout.
+    <b>Ticket:</b> faturamento dividido pelo número de compras.
+    <b>ROAS:</b> faturamento dividido pelo investimento.
+  </div>
+  <div style="margin-top:10px">C2Pro · relatório fechado, não atualiza sozinho</div>
+</footer>
+</div>
+
+<script>
+const DIAS = [
+  ["2026-09-26",488,177,8,5,1378],["2026-09-27",587,204,9,2,217],["2026-09-28",577,237,14,6,1261],
+  ["2026-09-29",560,154,24,7,3237],["2026-09-30",561,158,10,4,1288],["2026-10-01",653,246,15,7,1510],
+  ["2026-10-02",658,306,31,16,1818],["2026-10-03",486,268,25,15,3619],["2026-10-04",636,361,32,13,5654],
+  ["2026-10-05",621,382,26,10,1974],["2026-10-06",698,372,25,15,4756],["2026-10-07",655,394,31,11,2621],
+  ["2026-10-08",635,301,20,9,809],["2026-10-09",608,249,17,8,2666],["2026-10-10",655,244,11,3,153],
+  ["2026-10-11",778,405,17,9,775]
+].map(([d,g,v,c,p,f]) => ({d,g,v,c,p,f}));
+const FDS = new Set(["2026-10-10","2026-10-11"]);
+const MARCOS = {"2026-10-01":"Esquenta","2026-10-06":"Live BF","2026-10-08":"Black F1"};
+
+const FUNIL = [
+  {nm:"Investimento por dia", s:"", a:"R$ 620", b:"R$ 717", d:"+16%", t:"neutro"},
+  {nm:"CPM", s:"custo de 1.000 impressões", a:"R$ 11,56", b:"R$ 11,90", d:"+3%", t:"ok"},
+  {nm:"CTR do link", s:"quem viu e clicou", a:"1,77%", b:"1,70%", d:"-0,1 pp", t:"ok"},
+  {nm:"Visitas à página por dia", s:"", a:"332", b:"325", d:"-2%", t:"ok"},
+  {nm:"Página → checkout", s:"quem visitou e foi para o pagamento", a:"7,6%", b:"4,3%", d:"-43%", t:"ruim", alerta:true},
+  {nm:"Checkout → dados de pagamento", s:"", a:"67%", b:"71%", d:"+4 pp", t:"ok"},
+  {nm:"Checkout → compra", s:"quem foi para o pagamento e comprou", a:"46%", b:"43%", d:"-3 pp", t:"ok"},
+  {nm:"Compras por dia", s:"", a:"11,6", b:"6", d:"-48%", t:"ruim"},
+  {nm:"Ticket médio", s:"valor médio de cada compra", a:"R$ 273", b:"R$ 77", d:"-72%", t:"ruim", alerta:true},
+  {nm:"Custo por compra", s:"", a:"R$ 54", b:"R$ 119", d:"+122%", t:"ruim"},
+  {nm:"ROAS", s:"", a:"5,09", b:"0,65", d:"-87%", t:"ruim"}
+];
+
+const CAMP = [
+  ["Plataforma + Planos","Aluno",96,93,"5,5%","13,5%",5,4,"R$ 545","R$ 33","4,08","0,72"],
+  ["Catálogo V2","Todos",67,75,"4,9%","1,1%",12,1,"R$ 412","R$ 28","10,48","0,19"],
+  ["Plataforma + Planos","Professor",63,66,"9,2%","5,4%",19,1,"R$ 161","R$ 58","6,99","0,44"],
+  ["Esquenta Guia do Professor","Professor · cadastros",55,83,"5,5%","3,4%",7,2,"R$ 68","R$ 62","1,22","0,76"],
+  ["Esquenta Faixa Branca","Aluno · cadastros",58,68,"8,0%","5,8%",7,2,"R$ 28","R$ 28","0,48","0,41"],
+  ["Remarketing Quentes","Todos",43,49,"16,0%","7,7%",2,0,"R$ 579","-","3,83","0,00"],
+  ["Instrucionais","Todos",39,40,"18,4%","4,2%",17,0,"R$ 142","-","8,89","0,00"],
+  ["Plataforma + Planos (teste valor)","Aluno",33,34,"12,7%","4,5%",4,1,"R$ 769","R$ 479","13,12","7,14"],
+  ["Catálogo V1","Todos",24,28,"3,6%","0,0%",2,1,"R$ 959","R$ 48","11,31","0,85"],
+  ["ERP","Professor · duas campanhas antes",30,51,"2,3%","0,0%",1,0,"R$ 80","-","0,38","0,00"],
+  ["Automação Esquenta","Engajamento",17,41,"-","-",0,0,"-","-","-","-"]
+];
+
+const brl = n => "R$ " + Math.round(n).toLocaleString("pt-BR");
+const pct = n => n.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1}) + "%";
+const dm = d => d.slice(8,10) + "/" + d.slice(5,7);
+const dow = d => ["dom","seg","ter","qua","qui","sex","sáb"][new Date(d+"T12:00:00").getDay()];
+
+// funil comparado
+document.getElementById("fc").innerHTML =
+  `<div class="fc-row head"><div>Etapa</div><div>03 a 09/10</div><div>10 e 11/10</div><div class="d">Variação</div></div>` +
+  FUNIL.map(r => `<div class="fc-row${r.alerta?" alerta":""}">
+    <div class="nm">${r.nm}${r.s?`<small>${r.s}</small>`:""}</div>
+    <div class="v antes"><span class="mob">antes</span>${r.a}</div>
+    <div class="v depois"><span class="mob">fim de semana</span>${r.b}</div>
+    <div class="d"><span class="var ${r.t==="ruim"?"ruim":r.t==="ok"?"ok":""}">${r.d}</span></div>
+  </div>`).join("");
+
+// tabela de campanhas
+document.getElementById("tb-camp").innerHTML = CAMP.map(c => `<tr>
+  <td>${c[0]}<small>${c[1]}</small></td>
+  <td><span class="a">R$ ${c[2]}</span><span class="seta">→</span>R$ ${c[3]}</td>
+  <td><span class="a">${c[4]}</span><span class="seta">→</span>${c[5]}</td>
+  <td><span class="a">${c[6]}</span><span class="seta">→</span>${c[7]}</td>
+  <td><span class="a">${c[8]}</span><span class="seta">→</span>${c[9]}</td>
+  <td><span class="a">${c[10]}</span><span class="seta">→</span>${c[11]}</td>
+</tr>`).join("");
+
+// tabela de dias
+document.getElementById("tb-dias").querySelector("tbody").innerHTML = DIAS.map(x => `<tr${FDS.has(x.d)?' class="fds"':""}>
+  <td>${dm(x.d)} <small style="display:inline;margin-left:4px">${dow(x.d)}</small></td>
+  <td>${brl(x.g)}</td><td>${x.v}</td><td>${x.c}</td><td>${pct(x.c/x.v*100)}</td>
+  <td>${x.p}</td><td>${brl(x.f/x.p)}</td><td>${brl(x.f)}</td>
+  <td>${(x.f/x.g).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+</tr>`).join("");
+
+// graficos de barras
+const css = getComputedStyle(document.documentElement);
+const COR = css.getPropertyValue("--acc").trim(), COR_FDS = css.getPropertyValue("--warn").trim();
+function barras(id, valor, fmtEixo, tip, maxFix){
+  const box = document.getElementById(id), svg = box.querySelector("svg"), tipEl = box.querySelector(".tip");
+  const W = svg.clientWidth || 600, H = 220, pl = 46, pr = 6, pt = 22, pb = 26;
+  const vals = DIAS.map(valor), max = maxFix || Math.max(...vals) * 1.08;
+  const n = DIAS.length, slot = (W - pl - pr) / n, bw = Math.max(6, Math.min(26, slot - 4));
+  const y = v => pt + (H - pt - pb) * (1 - v / max);
+  let s = "";
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, yy = y(v);
+    s += `<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="var(--grid)"/>`;
+    s += `<text class="axis" x="${pl-8}" y="${yy+3}" text-anchor="end">${fmtEixo(v)}</text>`;
+  }
+  DIAS.forEach((x, i) => {
+    const cx = pl + slot * i + slot / 2;
+    if (MARCOS[x.d]) {
+      const lx = pl + slot * i;
+      s += `<line x1="${lx}" x2="${lx}" y1="${pt-6}" y2="${H-pb}" stroke="var(--b-strong)" stroke-dasharray="3 3"/>`;
+      s += `<text class="marco" x="${lx+4}" y="${MARCOS[x.d]==="Black F1" ? pt+6 : pt-8}">${MARCOS[x.d]}</text>`;
+    }
+    const v = vals[i], top = y(v), h = Math.max(0, H - pb - top), r = Math.min(4, bw / 2, h);
+    const c = FDS.has(x.d) ? COR_FDS : COR, x0 = cx - bw / 2, yb = H - pb;
+    s += h > 0 ? `<path d="M${x0},${yb} V${top+r} Q${x0},${top} ${x0+r},${top} H${x0+bw-r} Q${x0+bw},${top} ${x0+bw},${top+r} V${yb} Z" fill="${c}"/>` : "";
+    const passo = slot < 34 ? 4 : 2;
+    if (i % passo === 0 || i === n - 1) s += `<text class="axis" x="${cx}" y="${H-8}" text-anchor="middle">${dm(x.d)}</text>`;
+    s += `<rect data-i="${i}" x="${pl+slot*i}" y="${pt}" width="${slot}" height="${H-pt-pb}" fill="transparent"/>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = s;
+  const mostrar = e => {
+    const t = e.target.closest("rect[data-i]"); if (!t) return;
+    const x = DIAS[+t.dataset.i];
+    tipEl.innerHTML = `<b>${dm(x.d)} (${dow(x.d)})</b><br>` + tip(x);
+    const br = box.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    let left = tr.left - br.left + tr.width / 2 - tipEl.offsetWidth / 2;
+    left = Math.max(8, Math.min(left, br.width - tipEl.offsetWidth - 8));
+    tipEl.style.left = left + "px"; tipEl.style.top = (svg.offsetTop + 4) + "px"; tipEl.style.opacity = 1;
+  };
+  svg.onpointermove = mostrar; svg.onpointerdown = mostrar;
+  svg.onpointerleave = () => tipEl.style.opacity = 0;
+}
+function desenharGraficos(){
+  barras("ch-fat", x => x.f, v => v >= 1000 ? (v/1000).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " mil" : Math.round(v),
+    x => `Faturamento: <b>${brl(x.f)}</b><br>Compras: <b>${x.p}</b> · ticket <b>${brl(x.f/x.p)}</b><br>Investimento: ${brl(x.g)} · ROAS ${(x.f/x.g).toLocaleString("pt-BR",{maximumFractionDigits:2})}`);
+  barras("ch-chk", x => x.c / x.v * 100, v => Math.round(v) + "%",
+    x => `Página → checkout: <b>${pct(x.c/x.v*100)}</b><br>${x.v} visitas · ${x.c} checkouts`, 18);
+}
+
+// abas
+const tabs = [...document.querySelectorAll(".tab")], paineis = [...document.querySelectorAll(".panel")];
+function abrir(aba){
+  if (!paineis.some(p => p.dataset.painel === aba)) aba = "resumo";
+  tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.aba === aba));
+  paineis.forEach(p => p.hidden = p.dataset.painel !== aba);
+  history.replaceState(null, "", "#" + aba);
+  if (aba === "dias") desenharGraficos();
+}
+tabs.forEach(t => t.addEventListener("click", () => { abrir(t.dataset.aba); scrollTo({top:0}); }));
+addEventListener("resize", () => { if (!document.querySelector('[data-painel="dias"]').hidden) desenharGraficos(); });
+abrir(location.hash.slice(1) || "resumo");
+</script>
+</body>
+</html>
