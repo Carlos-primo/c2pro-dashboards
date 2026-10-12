@@ -68,7 +68,7 @@ https://carlos-primo.github.io/c2pro-dashboards/leads/<cliente>/
 - **Criativos que mais geraram leads:** ranking por quantidade de leads, cada criativo somado em todos os públicos em que rodou, com link pro Instagram e prévia
 - **Funil geral:** impressões > cliques no link (CTR) > visitas à página, quando houver > leads (conversão em lead)
 
-Últimos 7 ou 30 dias. Leads são os que a Meta registrou (formulário ou pixel).
+Últimos 30 dias. Leads são os que a Meta registrou (formulário ou pixel).
 Rodar no PC: `python gerar_leads.py [slug]` e abrir `site/leads/<slug>/index.html`.
 Senha opcional: secret `SENHA_LEADS_<SLUG>` no passo "Gerar dashboards de leads" do workflow.
 

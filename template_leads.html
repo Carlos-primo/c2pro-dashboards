@@ -276,12 +276,12 @@ function desenhar(){
   <header>
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Avaliação de leads")}</div><h1>${esc(D.nome)}</h1></div></div>
-    <div class="pills" role="group" aria-label="Período">
+    ${Object.keys(D.periodos).length > 1 ? `<div class="pills" role="group" aria-label="Período">
       ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${NOMES_PER[k] || k+" dias"}</button>`).join("")}
-    </div>
+    </div>` : ""}
   </header>
   <div class="meta">
-    <span>Período: ${faixa(P.inicio, P.fim)}</span>
+    <span>${NOMES_PER[PER] || PER+" dias"}: ${faixa(P.inicio, P.fim)}</span>
     <span>Atualizado em ${quando}</span>
   </div>
 
