@@ -72,6 +72,35 @@ https://carlos-primo.github.io/c2pro-dashboards/leads/<cliente>/
 Rodar no PC: `python gerar_leads.py [slug]` e abrir `site/leads/<slug>/index.html`.
 Senha opcional: secret `SENHA_LEADS_<SLUG>` no passo "Gerar dashboards de leads" do workflow.
 
+## Dashboards de lançamento (captação de lançamento pago)
+
+Para a captação de um lançamento pago (venda de ingresso). Entram só campanhas com `CAPTACAO` **e** o código
+do lançamento no nome (ex: `LP05`). `CAPTACAO` é fixo no `gerar_lancamento.py`; o código vem do config.
+Cada lançamento é uma pasta `lancamento/<slug>/config.json` e o link fica:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/lancamento/<slug>/
+```
+
+| Cliente | Lançamento | Link |
+|---|---|---|
+| Rafaela Evaldt | LP05 (desde 02/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/rafaela-lp05/ |
+
+- **Visão geral:** custo por ingresso, ingressos, investimento, faturamento, ROAS, ticket médio, o funil de vendas
+  (impressões > cliques > visitas > checkouts > ingressos), entrega, dia a dia desde o início, tabelas de campanhas
+  e públicos (clicáveis) e ranking de criativos (cada criativo somado em todos os públicos)
+- **Funil filtrado:** escolhe campanha, público e/ou criativo (combináveis) e vê o funil, os números e os ingressos
+  por dia só daquilo, com tabela pra comparar lado a lado. Link direto: `.../lancamento/<slug>/#filtro`
+
+Períodos: ontem, últimos 3 e 7 dias e "lançamento todo" (do `inicio` até ontem). Só compara com o período anterior
+quando ele cabe dentro do lançamento. Cadastros (lead) aparecem à parte, fora do funil.
+
+config.json: `nome`, `subtitulo`, `conta_anuncio`, `lancamento` (código no nome das campanhas), `inicio` (AAAA-MM-DD),
+`criativos_gasto_minimo`, `fim` opcional (quando a captação acabar) e `apelidos` opcional
+(`{"NOME_NO_GERENCIADOR": "nome que o cliente entende"}` para públicos e campanhas).
+Rodar no PC: `python gerar_lancamento.py [slug]` e abrir `site/lancamento/<slug>/index.html`.
+Senha opcional: secret `SENHA_LANCAMENTO_<SLUG>` no passo "Gerar dashboards de lançamento" do workflow.
+
 ## Adicionar um cliente
 
 Pelo Claude Code, no workspace da agência: skill `c2pro-dashboard-distribuicao` (é só dizer o nome do cliente). Manualmente:
