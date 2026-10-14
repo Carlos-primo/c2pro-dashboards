@@ -177,3 +177,4 @@ imagens em `img/`, e o workflow só copia a pasta pro site. Setas ou toque pra n
 | Apresentação | Link |
 |---|---|
 | Pitch Dobre seus Lucros com IA (Universo Subido + Viver de IA) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/dobre-seus-lucros-com-ia/ |
+| Debriefing EARQ Mind, 1º lançamento (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/earq-debriefing-l01/ |
