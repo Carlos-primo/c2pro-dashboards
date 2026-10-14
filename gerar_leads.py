@@ -205,8 +205,17 @@ def main():
     (SITE / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
         '<title>C2Pro</title><body style="background:#05070A"></body>', encoding="utf-8")
+    falhas = []
     for slug in sys.argv[1:] or todos:
-        gerar_cliente(slug)
+        # Um cliente com erro (token sem acesso, consistencia) nao derruba os outros: fica de fora
+        # do site nesta rodada e aparece como erro no log do GitHub Actions.
+        try:
+            gerar_cliente(slug)
+        except SystemExit as erro:
+            falhas.append(slug)
+            print(f"::error::{slug} ficou de fora: {erro}")
+    if falhas and sys.argv[1:]:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
