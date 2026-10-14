@@ -90,7 +90,8 @@ https://carlos-primo.github.io/c2pro-dashboards/lancamento/<slug>/
 | AgroFácil (Athila) | Imersão Consultor Pecuário, campanhas ICP (22/09 a 17/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/agrofacil-athila/ |
 
 - **Visão geral:** custo por ingresso, ingressos, investimento, faturamento, ROAS, ticket médio, o funil de vendas
-  (impressões > cliques > visitas > checkouts > ingressos), entrega, dia a dia desde o início, tabelas de campanhas
+  (impressões > cliques > visitas > checkouts > ingressos), entrega, dia a dia desde o início (ingressos, checkouts e
+  custo por ingresso de cada dia, com a média do lançamento), tabelas de campanhas
   e públicos (clicáveis) e ranking de criativos (cada criativo somado em todos os públicos)
 - **Funil filtrado:** escolhe campanha, público e/ou criativo (combináveis) e vê o funil, os números e os ingressos
   por dia só daquilo, com tabela pra comparar lado a lado. Link direto: `.../lancamento/<slug>/#filtro`

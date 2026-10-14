@@ -547,6 +547,8 @@ function visaoGeral(P){
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.compras,0))} ingressos</div><svg id="c-compras"></svg></div>
       <div class="card chart"><h3>Checkouts iniciados por dia</h3>
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.checkouts,0))} checkouts</div><svg id="c-checkouts"></svg></div>
+      <div class="card chart"><h3>Custo por ingresso por dia</h3>
+        <div class="tot">Média do lançamento: ${moedaOu(div(DD.reduce((s,d)=>s+d.gasto,0), DD.reduce((s,d)=>s+d.compras,0)))} (linha tracejada)</div><svg id="c-cpa"></svg></div>
     </div>
     <details><summary>Ver o funil de cada dia em tabela</summary>
       <div class="card tbl-wrap" style="margin-top:12px"><table>
@@ -706,7 +708,10 @@ function visaoFiltro(P){
 
   <section>
     <div class="sec-head"><div><h2>Ingressos por dia</h2><p class="sub">Desde o início do lançamento, só o que está filtrado.</p></div></div>
-    <div class="card chart"><div class="tot" id="tot-filtro"></div><svg id="c-filtro"></svg></div>
+    <div class="charts">
+      <div class="card chart"><h3>Ingressos por dia</h3><div class="tot" id="tot-filtro"></div><svg id="c-filtro"></svg></div>
+      <div class="card chart"><h3>Custo por ingresso por dia</h3><div class="tot" id="tot-filtro-cpa"></div><svg id="c-filtro-cpa"></svg></div>
+    </div>
   </section>` : `<section><div class="card empty">Essa combinação não teve investimento no período. Troque o período ou limpe algum filtro.</div></section>`}
 
   <section>
@@ -732,6 +737,7 @@ function graficos(P){
       p => `<b>${dataBRano(p.x)}</b><br>Ingressos: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por ingresso: ${moedaOu(div(p.g,p.y))}`);
     graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
       p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+    graficoCusto(document.getElementById("c-cpa"), DD.map(d => ({x:d.data, g:d.gasto, n:d.compras})));
     return;
   }
   const svg = document.getElementById("c-filtro");
@@ -742,6 +748,32 @@ function graficos(P){
     `Total: ${fmtInt(pts.reduce((s,p)=>s+p.y,0))} ingressos, ${fmtMoeda(pts.reduce((s,p)=>s+p.g,0))} investidos`;
   graficoBarras(svg, pts,
     p => `<b>${dataBRano(p.x)}</b><br>Ingressos: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por ingresso: ${moedaOu(div(p.g,p.y))}`);
+  const totG = pts.reduce((s,p)=>s+p.g,0), totN = pts.reduce((s,p)=>s+p.y,0);
+  document.getElementById("tot-filtro-cpa").textContent = `Média: ${moedaOu(div(totG, totN))} (linha tracejada)`;
+  graficoCusto(document.getElementById("c-filtro-cpa"), pts.map(p => ({x:p.x, g:p.g, n:p.y})));
+}
+
+// Custo por ingresso de cada dia (investimento ÷ ingressos). Dia com gasto e sem venda fica sem ponto
+// (custo infinito) e aparece marcado no eixo; a linha tracejada é a média do período todo.
+function graficoCusto(svg, dias){
+  if (!svg) return;
+  const pts = dias.map(d => ({x:d.x, g:d.g, n:d.n, y: d.n > 0 ? d.g / d.n : null}));
+  const media = div(pts.reduce((s,p)=>s+p.g,0), pts.reduce((s,p)=>s+p.n,0));
+  const geo = base(svg, pts.map(p => ({x:p.x, y: Math.max(p.y || 0, media || 0)})), v => "R$" + fmtCompacto(v));
+  let g = "", trecho = [];
+  const fechar = () => { if (trecho.length > 1) g += `<polyline fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" points="${trecho.join(" ")}"/>`; trecho = []; };
+  pts.forEach((p,i) => { if (p.y == null) fechar(); else trecho.push(`${geo.x(i)},${geo.y(p.y)}`); });
+  fechar();
+  if (media != null) g += `<line x1="${geo.L}" x2="${geo.W-geo.Rr}" y1="${geo.y(media)}" y2="${geo.y(media)}" stroke="var(--t-muted)" stroke-width="1" stroke-dasharray="4 4"/>`;
+  pts.forEach((p,i) => {
+    if (p.y != null) g += `<circle data-i="${i}" cx="${geo.x(i)}" cy="${geo.y(p.y)}" r="3" fill="var(--acc)"/>`;
+    else if (p.g > 0) g += `<circle data-i="${i}" cx="${geo.x(i)}" cy="${geo.y(0)}" r="3" fill="none" stroke="var(--neg)" stroke-width="1.5"/>`;
+  });
+  svg.insertAdjacentHTML("beforeend", g);
+  const pontos = [...svg.querySelectorAll("circle[data-i]")];
+  hover(svg, pts, geo,
+    p => `<b>${dataBRano(p.x)}</b><br>Custo por ingresso: ${p.y == null ? (p.g > 0 ? "sem venda" : "-") : moedaOu(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Ingressos: ${fmtInt(p.n)}`,
+    i => pontos.forEach(c => c.setAttribute("r", +c.dataset.i === i ? 5 : 3)));
 }
 
 function escala(max){
