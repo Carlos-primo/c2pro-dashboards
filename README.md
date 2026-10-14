@@ -167,3 +167,13 @@ https://carlos-primo.github.io/c2pro-dashboards/relatorios/<cliente>/
 |---|---|---|
 | Todos Arquitetura | Vendas de ingressos (captação 27/08 a 15/09/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/todos-arquitetura/ |
 | BJJ Protech | Análise do fim de semana de queda (10 e 11/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/bjj-protech-fim-de-semana/ |
+
+## Apresentações
+
+Slides estáticos da C2Pro (pitch, palestra). Cada um fica em `apresentacoes/<nome>/index.html`, com as
+imagens em `img/`, e o workflow só copia a pasta pro site. Setas ou toque pra navegar, `F` tela cheia,
+`N` mostra o roteiro (ou `?roteiro` no link).
+
+| Apresentação | Link |
+|---|---|
+| Pitch Dobre seus Lucros com IA (Universo Subido + Viver de IA) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/dobre-seus-lucros-com-ia/ |

@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Pitch C2Pro</title>
+<meta name="description" content="Pitch da C2Pro para o programa Dobre seus Lucros com IA, do Universo Subido com o Viver de IA.">
+<link rel="icon" href="img/logo-c2pro.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-app:#05070a; --bg-deep:#030507; --surface-solid:#0a0e14;
+  --text-strong:#f2f6fa; --text-body:#c9d2dd; --text-muted:#9aa6b6; --text-faint:#6b788a;
+  --accent:#00d8f5; --accent-hover:#37e6ff; --text-on-accent:#00171c; --text-accent:#37e6ff;
+  --brand-blue:#004aad; --positive:#23d18b; --attention:#ffb020;
+  --border-subtle:rgba(255,255,255,.07); --border-default:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.2); --border-accent:rgba(0,216,245,.45);
+  --surface-card:linear-gradient(180deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.018) 100%);
+  --grad-halo:radial-gradient(60% 60% at 50% 0%,rgba(0,216,245,.22) 0%,rgba(0,74,173,.10) 45%,rgba(0,0,0,0) 100%);
+  --grad-hairline:linear-gradient(90deg,rgba(0,216,245,0) 0%,rgba(0,216,245,.75) 50%,rgba(0,216,245,0) 100%);
+  --grad-protect:linear-gradient(180deg,rgba(5,7,10,0) 0%,rgba(5,7,10,.72) 55%,#05070a 100%);
+  --grad-ink:linear-gradient(180deg,#f2f6fa 0%,#9aa6b6 100%);
+  --elev-card:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --elev-card-hover:0 28px 64px -16px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08),0 0 28px -10px rgba(0,216,245,.4);
+  --glow-sm:0 0 12px -2px rgba(0,216,245,.45),0 0 2px rgba(0,216,245,.5);
+  --glow-md:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --glow-text-strong:0 0 8px rgba(0,216,245,.6),0 0 28px rgba(0,216,245,.4);
+  --glow-positive:0 0 18px -4px rgba(35,209,139,.5);
+  --t-hover:transform 160ms cubic-bezier(.2,.7,.2,1),box-shadow 160ms cubic-bezier(.2,.7,.2,1),border-color 160ms cubic-bezier(.2,.7,.2,1);
+  --ease-out:cubic-bezier(.22,1,.36,1); --ease-entrance:cubic-bezier(.16,1,.3,1);
+  --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg-deep);color:var(--text-body);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+body{touch-action:pan-y}
+
+/* Palco 1280x720 escalado pra caber na tela */
+#viewport{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1280px;height:720px;position:relative;transform-origin:center center;flex:none;background:var(--bg-app);overflow:hidden;border-radius:6px;box-shadow:0 40px 120px -30px rgba(0,0,0,.9)}
+
+.slide{position:absolute;inset:0;padding:72px 88px 96px;display:flex;flex-direction:column;justify-content:center;opacity:0;visibility:hidden;transition:opacity 420ms var(--ease-out),visibility 0s 420ms}
+.slide.on{opacity:1;visibility:visible;transition:opacity 420ms var(--ease-out),visibility 0s}
+.slide::before{content:"";position:absolute;inset:0;background:var(--grad-halo);pointer-events:none;animation:breathe 6s cubic-bezier(.65,0,.35,1) infinite}
+.slide > *{position:relative}
+@keyframes breathe{0%,100%{opacity:.75}50%{opacity:1}}
+
+/* Entrada escalonada */
+.slide .rv{opacity:0;transform:translateY(14px)}
+.slide.on .rv{animation:fadeUp 600ms var(--ease-entrance) forwards}
+.slide.on .rv:nth-child(2){animation-delay:80ms}
+.slide.on .rv:nth-child(3){animation-delay:160ms}
+.slide.on .rv:nth-child(4){animation-delay:240ms}
+.slide.on .rv:nth-child(5){animation-delay:320ms}
+.slide.on .rv:nth-child(6){animation-delay:400ms}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+
+/* Tipografia */
+.eyebrow{font:600 13px/1.2 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:10px;margin-bottom:22px}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:var(--glow-sm);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.display{font-weight:800;letter-spacing:-.035em;line-height:1.02;font-size:84px;background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.h1{font-weight:700;letter-spacing:-.022em;line-height:1.08;font-size:52px;color:var(--text-strong)}
+.lead{font-size:24px;line-height:1.45;color:var(--text-muted);max-width:40ch}
+.key{color:var(--accent-hover);text-shadow:var(--glow-text-strong);-webkit-text-fill-color:var(--accent-hover)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* Cards de vidro com hover em todo elemento */
+.card{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:18px;box-shadow:var(--elev-card);padding:24px;transition:var(--t-hover)}
+.card:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--elev-card-hover)}
+.card.accent{border-color:var(--border-accent);box-shadow:var(--elev-card),var(--glow-md)}
+.ico{width:26px;height:26px;color:var(--accent);flex:none}
+.ico-box{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:rgba(0,216,245,.08);border:1px solid rgba(0,216,245,.22);margin-bottom:18px}
+.card h3{font-size:22px;font-weight:700;letter-spacing:-.015em;color:var(--text-strong);line-height:1.2}
+.card p{font-size:16px;line-height:1.45;color:var(--text-muted);margin-top:8px}
+
+/* Rodapé do slide */
+.foot{position:absolute;left:88px;right:88px;bottom:32px;display:flex;align-items:center;justify-content:flex-start;gap:16px;font:500 12px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);z-index:3}
+.foot .brand{display:flex;align-items:center;gap:12px}
+.foot img{height:22px;width:22px}
+.foot .pg{padding-left:16px;border-left:1px solid var(--border-default)}
+
+/* 1 Capa */
+.s-capa{padding:0}
+.s-capa .photo{position:absolute;inset:0;background:url(img/mentores.jpg) center 18%/cover no-repeat;filter:saturate(.9) contrast(1.04)}
+.s-capa .protect{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,10,0) 30%,rgba(5,7,10,.78) 62%,#05070a 88%)}
+.s-capa::before{display:none}
+.s-capa .content{position:absolute;left:88px;right:88px;bottom:64px;display:flex;align-items:flex-end;justify-content:space-between;gap:40px}
+.s-capa .display{font-size:92px}
+.s-capa .sub{margin-top:18px;font-size:22px;color:var(--text-body);display:flex;align-items:center;gap:14px}
+.s-capa .sub b{color:var(--text-strong);font-weight:700}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--text-faint);display:inline-block}
+.logos{display:flex;align-items:center;gap:22px;padding:14px 22px;border-radius:999px;background:rgba(5,7,10,.55);border:1px solid var(--border-default);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);flex:none}
+.logos .c2{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--text-strong)}
+.logos .c2 img{width:30px;height:30px}
+.logos .sep{width:1px;height:26px;background:var(--border-strong)}
+.logos .via{height:17px;width:auto}
+
+/* 2 Números */
+.s-num{padding-right:500px}
+.s-num .portrait{position:absolute;right:10px;bottom:0;height:600px;width:auto;filter:contrast(1.04) brightness(.96);-webkit-mask-image:linear-gradient(180deg,#000 75%,transparent 100%);mask-image:linear-gradient(180deg,#000 75%,transparent 100%)}
+.s-num .halo-r{position:absolute;right:30px;top:120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(0,216,245,.2) 0%,rgba(0,74,173,.12) 45%,transparent 70%)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.metric{padding:20px 22px}
+.metric .v{font:600 44px/1 var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text-strong);letter-spacing:-.02em}
+.metric .v small{font-size:22px;color:var(--text-muted);margin-left:2px}
+.metric .l{margin-top:10px;font:500 12px/1.2 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.metric.hl{border-color:var(--border-accent)}
+.metric.hl .v{color:var(--accent-hover);text-shadow:var(--glow-text-strong)}
+
+/* 3 Gargalo */
+.s-gar{align-items:center;text-align:center}
+.chain{display:flex;align-items:center;gap:22px;margin:36px 0 40px}
+.chip{padding:26px 34px;border-radius:999px;font-size:38px;font-weight:700;letter-spacing:-.022em;color:var(--text-strong);background:var(--surface-card);border:1px solid var(--border-default);box-shadow:var(--elev-card);transition:var(--t-hover)}
+.chip:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--elev-card-hover)}
+.chip.warn{color:var(--attention);border-color:rgba(255,176,32,.38);background:linear-gradient(180deg,rgba(255,176,32,.13),rgba(255,176,32,.035))}
+.chip.warn:hover{border-color:rgba(255,176,32,.65);box-shadow:var(--elev-card),0 0 30px -8px rgba(255,176,32,.38)}
+.arrow{width:34px;height:34px;color:var(--text-faint)}
+
+/* 4 IA aqui dentro */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+.seal{margin-top:34px;align-self:flex-start;display:inline-flex;align-items:center;gap:12px;padding:14px 22px;border-radius:999px;border:1px solid var(--border-accent);background:rgba(0,216,245,.08);color:var(--text-strong);font-size:18px;font-weight:600;box-shadow:var(--glow-sm);transition:var(--t-hover)}
+.seal:hover{transform:translateY(-2px);box-shadow:var(--glow-md)}
+.seal .ico{width:22px;height:22px}
+
+/* 5 Ponto cego */
+.s-cego{padding-left:600px}
+.s-cego .side{position:absolute;left:0;top:0;bottom:0;width:560px;background:url(img/carlos-palco-01.jpg) 40% 30%/cover no-repeat;filter:saturate(.75) contrast(1.06)}
+.s-cego .side::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,7,10,0) 55%,#05070a 100%),linear-gradient(180deg,rgba(5,7,10,0) 70%,rgba(5,7,10,.7) 100%)}
+.s-cego .display{font-size:80px}
+.s-cego .display + .display{margin-top:10px}
+.s-cego .lead{margin-top:34px}
+
+/* 6 Oportunidade */
+.s-op{padding-right:520px}
+.s-op .side{position:absolute;right:0;top:0;bottom:0;width:520px;background:url(img/carlos-palco-02.jpg) 50% 28%/cover no-repeat;filter:saturate(.75) contrast(1.06)}
+.s-op .side::after{content:"";position:absolute;inset:0;background:linear-gradient(270deg,rgba(5,7,10,0) 50%,#05070a 100%),linear-gradient(180deg,rgba(5,7,10,0) 70%,rgba(5,7,10,.7) 100%)}
+.big{font:600 220px/0.9 var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.05em;color:var(--accent-hover);text-shadow:var(--glow-text-strong)}
+.big-l{font:600 16px/1.2 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-top:14px}
+.s-op .h1{margin-top:40px;font-size:46px}
+
+/* 7 Produtos */
+.grid-prod{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+.more{margin-top:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 28px}
+.more .t{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--text-strong)}
+.more .t span{color:var(--accent-hover);text-shadow:var(--glow-text-strong)}
+.more .l{font:500 12px/1.3 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);text-align:right}
+
+/* 8 Modelo */
+.steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:18px;margin-top:44px}
+.step{padding:30px 28px}
+.step .n{font:600 14px/1 var(--font-mono);letter-spacing:.14em;color:var(--text-faint);margin-bottom:22px}
+.step h3{font-size:34px;letter-spacing:-.025em}
+.step .ico-box{margin-bottom:22px}
+.step.accent .n{color:var(--accent)}
+
+/* 9 Meta */
+.s-meta{align-items:center;text-align:center}
+.goal{display:flex;align-items:center;gap:40px;margin:40px 0 36px}
+.goal .box{padding:30px 40px;text-align:left}
+.goal .v{font:600 76px/1 var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--text-muted)}
+.goal .v small{font-size:30px}
+.goal .l{margin-top:14px;font:500 12px/1.2 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint)}
+.goal .box.win{border-color:rgba(35,209,139,.4)}
+.goal .box.win .v{color:var(--positive);text-shadow:var(--glow-positive)}
+.goal .box.win .l{color:var(--text-muted)}
+.goal .arrow{width:46px;height:46px;color:var(--accent)}
+
+/* 10 Fechamento */
+.s-fim{padding-right:540px}
+.s-fim .portrait{position:absolute;right:10px;bottom:0;height:640px;width:auto;-webkit-mask-image:linear-gradient(180deg,#000 78%,transparent 100%);mask-image:linear-gradient(180deg,#000 78%,transparent 100%)}
+.s-fim .halo-r{position:absolute;right:60px;top:80px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(0,216,245,.22) 0%,rgba(0,74,173,.14) 45%,transparent 70%)}
+.s-fim .display{font-size:72px}
+.s-fim .display + .display{margin-top:8px}
+.sign{margin-top:44px;display:flex;align-items:center;gap:22px}
+.handle{font:600 22px/1 var(--font-mono);color:var(--text-strong);padding:16px 24px;border-radius:999px;border:1px solid var(--border-accent);background:rgba(0,216,245,.08);box-shadow:var(--glow-sm);transition:var(--t-hover)}
+.handle:hover{transform:translateY(-2px);box-shadow:var(--glow-md)}
+
+/* Barra de progresso */
+#progress{position:absolute;left:0;bottom:0;height:2px;background:var(--grad-hairline);background-size:100% 100%;transition:width 420ms var(--ease-out);z-index:5;box-shadow:0 0 10px rgba(0,216,245,.6)}
+
+/* Controles (fora do palco) */
+#controls{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:10;opacity:.55;transition:opacity 200ms}
+#controls:hover{opacity:1}
+#controls button{width:44px;height:44px;border-radius:12px;border:1px solid var(--border-default);background:rgba(10,14,20,.75);color:var(--text-strong);display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:var(--t-hover)}
+#controls button:hover{transform:translateY(-2px);border-color:var(--border-strong)}
+#controls button:active{transform:scale(.975)}
+#controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#controls svg{width:18px;height:18px}
+#prev svg{transform:scaleX(-1)}
+
+/* Roteiro (tecla N ou ?roteiro na URL) */
+#notes{position:fixed;left:16px;right:16px;bottom:72px;max-width:760px;margin:0 auto;padding:18px 22px;border-radius:18px;background:rgba(10,14,20,.92);border:1px solid var(--border-default);box-shadow:var(--elev-card);font-size:16px;line-height:1.55;color:var(--text-body);z-index:9;display:none;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#notes.show{display:block}
+#notes .t{font:600 11px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+
+#rotate{position:fixed;left:0;right:0;top:max(16px,env(safe-area-inset-top));text-align:center;font:500 11px/1.4 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);display:none;padding:0 16px}
+@media (orientation:portrait) and (max-width:700px){#rotate{display:block}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-delay:0ms!important;transition-duration:1ms!important}
+  .card:hover,.chip:hover,.seal:hover,.handle:hover,#controls button:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.94 14.66a1 1 0 0 1-.8-.8l-.76-3.83a1 1 0 0 0-.79-.78l-3.83-.77a1 1 0 0 1 0-1.96l3.83-.77a1 1 0 0 0 .79-.78l.76-3.83a1 1 0 0 1 1.96 0l.77 3.83a1 1 0 0 0 .78.78l3.83.77a1 1 0 0 1 0 1.96l-3.83.77a1 1 0 0 0-.78.78l-.77 3.83a1 1 0 0 1-1.16.8zM18 16l.9 2.1 2.1.9-2.1.9L18 22l-.9-2.1-2.1-.9 2.1-.9zM5 17l.6 1.4L7 19l-1.4.6L5 21l-.6-1.4L3 19l1.4-.6z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
+    <symbol id="i-dashboard" viewBox="0 0 24 24"><path d="M10 4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1zM20 4h-6a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1zM20 13h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zM10 16H4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/></symbol>
+    <symbol id="i-line-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16M7 16l4-6 4 3 5-7"/></symbol>
+    <symbol id="i-git-branch" viewBox="0 0 24 24"><path d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM15 6a9 9 0 0 0-9 9"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83zM2 12.18l8.58 3.91a2 2 0 0 0 1.66 0L21 12.18M2 17.18l8.58 3.91a2 2 0 0 0 1.66 0L21 17.18"/></symbol>
+    <symbol id="i-search-check" viewBox="0 0 24 24"><path d="M8 11l2 2 4-4M21 21l-4.34-4.34M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+    <symbol id="i-trending-up" viewBox="0 0 24 24"><path d="M16 7h6v6M22 7l-8.5 8.5-5-5L2 17"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+    <symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+  </defs>
+</svg>
+
+<div id="rotate">Gire o celular para ver melhor</div>
+
+<div id="viewport">
+<div id="stage">
+
+  <!-- 1 Capa -->
+  <section class="slide s-capa" data-notes="Sou Carlos Primo, tenho 9 anos de tráfego e sou fundador da C2Pro. A gente faz tráfego pra lançamentos e negócios locais, da captação à venda, e também presta consultoria.">
+    <div class="photo" role="img" aria-label="Pedro Sobral com o time do Viver de IA"></div>
+    <div class="protect"></div>
+    <div class="content">
+      <div>
+        <div class="eyebrow rv">Universo Subido + Viver de IA</div>
+        <h1 class="display rv">Dobre seus lucros com IA</h1>
+        <div class="sub rv"><span>Pitch <b>C2Pro</b></span><span class="dot"></span><span>Carlos Primo</span></div>
+      </div>
+      <div class="logos rv">
+        <span class="c2"><img src="img/logo-c2pro.png" alt="">C2Pro</span>
+        <span class="sep"></span>
+        <img class="via" src="img/logo-viver-de-ia.png" alt="Viver de IA">
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 Números -->
+  <section class="slide s-num" data-notes="Esse é o negócio hoje. É saudável e dá lucro. Mas travou num ponto.">
+    <div class="halo-r"></div>
+    <img class="portrait" src="img/carlos-retrato.webp" alt="Carlos Primo">
+    <div class="eyebrow rv">A C2Pro hoje</div>
+    <h2 class="h1 rv">Tráfego pra lançamentos<br>e negócios locais.</h2>
+    <div class="metrics rv">
+      <div class="card metric"><div class="v">9</div><div class="l">anos de tráfego</div></div>
+      <div class="card metric"><div class="v">22</div><div class="l">clientes ativos</div></div>
+      <div class="card metric"><div class="v">19</div><div class="l">pessoas no time</div></div>
+      <div class="card metric"><div class="v"><small>R$</small>98<small>mil</small></div><div class="l">faturamento / mês</div></div>
+      <div class="card metric hl"><div class="v">40%</div><div class="l">margem de lucro</div></div>
+    </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 3 Gargalo -->
+  <section class="slide s-gar" data-notes="Pra crescer, eu preciso contratar. Quanto mais gente entra, mais difícil fica manter a qualidade da entrega. Esse é o teto do meu lucro.">
+    <div class="eyebrow rv">O gargalo</div>
+    <div class="chain rv">
+      <span class="chip">Mais clientes</span>
+      <svg class="arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg>
+      <span class="chip">mais gente</span>
+      <svg class="arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg>
+      <span class="chip warn">menos qualidade</span>
+    </div>
+    <p class="lead rv">Esse é o teto do meu lucro.</p>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 4 IA aqui dentro -->
+  <section class="slide" data-notes="Fui pra IA pra resolver isso. Hoje, quando entra cliente novo, o Drive e o ClickUp dele são criados sozinhos. Os criativos novos saem a partir dos que mais convertem. Os anúncios sobem no nosso padrão sem retrabalho, e o cliente tem dashboard de vendas e planejamento interativo. Inclusive, esta apresentação que vocês estão vendo foi criada e melhorada com IA.">
+    <div class="eyebrow rv">O que já roda</div>
+    <h2 class="h1 rv">A IA já trabalha aqui dentro.</h2>
+    <div class="grid4 rv">
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-users"/></svg></div><h3>Onboarding</h3><p>Drive e ClickUp do cliente criados sozinhos</p></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sparkles"/></svg></div><h3>Criativos</h3><p>Novos, a partir dos que mais convertem</p></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-target"/></svg></div><h3>Anúncios</h3><p>Sobem no padrão, sem retrabalho</p></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-dashboard"/></svg></div><h3>Dashboards</h3><p>Vendas e planejamento ao vivo pro cliente</p></div>
+    </div>
+    <div class="seal rv"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sparkles"/></svg>Esta apresentação foi criada e melhorada com IA.</div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 5 Ponto cego -->
+  <section class="slide s-cego" data-notes="Tudo isso me economiza tempo, mas não gera um real de receita nova. Eu construí os produtos e só eu uso.">
+    <div class="side" role="img" aria-label="Carlos Primo no palco do Subido Master"></div>
+    <div class="eyebrow rv">O ponto cego</div>
+    <h2 class="display rv">Eu uso IA.</h2>
+    <h2 class="display rv">Ainda não <span class="key">vendo</span> IA.</h2>
+    <p class="lead rv">Economiza tempo. Não gera receita nova.</p>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 6 Oportunidade -->
+  <section class="slide s-op" data-notes="Não preciso achar cliente pra testar. Eles já confiam em mim e já sofrem com os problemas que essas ferramentas resolvem.">
+    <div class="side" role="img" aria-label="Carlos Primo no palco do Subido Master"></div>
+    <div class="eyebrow rv">A oportunidade</div>
+    <div class="big rv">22</div>
+    <div class="big-l rv">clientes ativos</div>
+    <h2 class="h1 rv">Base pronta pra<br>testar amanhã.</h2>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 7 Produtos -->
+  <section class="slide" data-notes="Isso é só uma amostra. Tem muito mais rodando na C2Pro do que cabe num slide. Esses quatro são os que eu vejo virando produto primeiro. Já funcionam, só falta virar oferta.">
+    <div class="eyebrow rv">Produtos na mesa</div>
+    <h2 class="h1 rv">Já rodam. Falta virar oferta.</h2>
+    <div class="grid-prod rv">
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-line-chart"/></svg></div><h3>Dashboard de vendas ao vivo</h3></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-git-branch"/></svg></div><h3>Planejamento interativo</h3></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-sparkles"/></svg></div><h3>Criativos em escala</h3></div>
+      <div class="card"><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-search-check"/></svg></div><h3>Dossiê do lead</h3></div>
+    </div>
+    <div class="card accent more rv">
+      <div class="t"><span>+</span> muito mais rodando aqui dentro</div>
+      <div class="l">Não cabe num slide</div>
+    </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 8 O que eu quero -->
+  <section class="slide" data-notes="Não preciso de ajuda pra usar IA. Preciso transformar o que eu faço em modelo: qual produto vender primeiro, quanto cobrar e como entregar sem depender de mim.">
+    <div class="eyebrow rv">O que eu quero de vocês</div>
+    <h2 class="h1 rv">Transformar o que eu faço em modelo.</h2>
+    <div class="steps rv">
+      <div class="card step"><div class="n">01</div><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-layers"/></svg></div><h3>Empacotar</h3><p>Qual produto primeiro</p></div>
+      <svg class="arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg>
+      <div class="card step"><div class="n">02</div><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></div><h3>Precificar</h3><p>Quanto cobrar</p></div>
+      <svg class="arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg>
+      <div class="card step accent"><div class="n">03</div><div class="ico-box"><svg class="ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-trending-up"/></svg></div><h3>Vender</h3><p>Entregar sem depender de mim</p></div>
+    </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 9 Meta -->
+  <section class="slide s-meta" data-notes="Dobrar o lucro sem dobrar o time. A margem sobe porque a IA entrega e a gente vende.">
+    <div class="eyebrow rv">A meta</div>
+    <div class="goal rv">
+      <div class="card box"><div class="v"><small>R$</small> 39<small> mil</small></div><div class="l">lucro / mês hoje</div></div>
+      <svg class="arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg>
+      <div class="card box win"><div class="v"><small>R$</small> 78<small> mil</small></div><div class="l">lucro / mês com IA</div></div>
+    </div>
+    <h2 class="h1 rv">Dobrar o lucro sem dobrar o time.</h2>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 10 Fechamento -->
+  <section class="slide s-fim" data-notes="Sou o caso perfeito pro reality: a estrutura existe, o antes é claro e o depois dá pra medir rápido. Gravo vídeo com facilidade e tenho a base pronta. Quando isso virar modelo, a C2Pro vai pra outro nível.">
+    <div class="halo-r"></div>
+    <img class="portrait" src="img/carlos-subido.webp" alt="Carlos Primo com a camiseta do Subido Master">
+    <div class="eyebrow rv">Por que eu</div>
+    <h2 class="display rv">Já implemento.</h2>
+    <h2 class="display rv">Falta virar <span class="key">modelo</span>.</h2>
+    <div class="sign rv">
+      <span class="handle">@ocarlosprimo</span>
+      <div class="logos">
+        <span class="c2"><img src="img/logo-c2pro.png" alt="">C2Pro</span>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <div id="progress"></div>
+</div>
+</div>
+
+<div id="notes"><div class="t">Roteiro</div><div class="b"></div></div>
+
+<div id="controls">
+  <button id="prev" aria-label="Slide anterior"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg></button>
+  <button id="next" aria-label="Próximo slide"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-right"/></svg></button>
+  <button id="full" aria-label="Tela cheia"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-maximize"/></svg></button>
+</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var total=slides.length, cur=0;
+  var notes=document.getElementById('notes'), notesB=notes.querySelector('.b');
+  var progress=document.getElementById('progress');
+  function pad(n){return (n<10?'0':'')+n}
+
+  slides.forEach(function(s,i){
+    var pg=s.querySelector('.pg'); if(pg) pg.textContent=pad(i+1)+' / '+pad(total);
+  });
+
+  function fit(){
+    var s=Math.min(window.innerWidth/1280,window.innerHeight/720);
+    stage.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  function go(i){
+    i=Math.max(0,Math.min(total-1,i));
+    slides[cur].classList.remove('on'); cur=i; slides[cur].classList.add('on');
+    progress.style.width=((cur+1)/total*100)+'%';
+    notesB.textContent=slides[cur].getAttribute('data-notes')||'';
+    try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+  }
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  go(isNaN(start)?0:start-1);
+
+  if(/[?&]roteiro/.test(location.search)) notes.classList.add('show');
+
+  function full(){
+    var d=document, el=d.documentElement;
+    if(!d.fullscreenElement && !d.webkitFullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el)}
+    else{(d.exitFullscreen||d.webkitExitFullscreen||function(){}).call(d)}
+  }
+
+  document.addEventListener('keydown',function(e){
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();go(cur+1)}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();go(cur-1)}
+    else if(k==='Home'){go(0)} else if(k==='End'){go(total-1)}
+    else if(k==='f'||k==='F'){full()}
+    else if(k==='n'||k==='N'){notes.classList.toggle('show')}
+  });
+
+  document.getElementById('prev').addEventListener('click',function(e){e.stopPropagation();go(cur-1)});
+  document.getElementById('next').addEventListener('click',function(e){e.stopPropagation();go(cur+1)});
+  document.getElementById('full').addEventListener('click',function(e){e.stopPropagation();full()});
+
+  document.getElementById('viewport').addEventListener('click',function(e){
+    if(e.target.closest('a,button')) return;
+    if(e.clientX<window.innerWidth*0.33) go(cur-1); else go(cur+1);
+  });
+
+  var x0=null,y0=null;
+  document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0===null) return;
+    var dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){go(dx<0?cur+1:cur-1)}
+    x0=null;
+  },{passive:true});
+})();
+</script>
+</body>
+</html>
