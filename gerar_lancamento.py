@@ -16,8 +16,10 @@ config.json:
   inicio       primeiro dia do lancamento (AAAA-MM-DD); "Lancamento todo" vai dele ate ontem
   fim          opcional: ultimo dia, quando a captacao acabar (os periodos param nele)
   apelidos     opcional: {"NOME_NO_GERENCIADOR": "Nome que o cliente entende"} pra publicos/campanhas
+  filtro_campanha  opcional: troca o termo CAPTACAO quando o cliente nomeia as campanhas de outro jeito
+                   (ex: "ICP" no lancamento do Athila). Sem ele, vale CAPTACAO
 
-Regra fixa: so entram campanhas com CAPTACAO e o codigo do lancamento no nome.
+Regra: so entram campanhas com CAPTACAO (ou o filtro_campanha do config) e o codigo do lancamento no nome.
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_LANCAMENTO_<SLUG> opcional).
 """
@@ -38,8 +40,15 @@ SITE = AQUI / "site" / "lancamento"
 CFG = {}
 
 # Regra da agencia: dashboard de lancamento so mostra campanhas de CAPTACAO daquele lancamento.
-# CAPTACAO e fixo no codigo; o codigo do lancamento (LP05 etc.) vem do config.
-FILTRO = "CAPTACAO"
+# CAPTACAO e o padrao; o config pode trocar por outro termo (filtro_campanha) quando o cliente nomeia
+# as campanhas de outro jeito. O codigo do lancamento (LP05 etc.) vem do config.
+FILTRO_PADRAO = "CAPTACAO"
+
+
+def filtros():
+    """Termos que o nome da campanha precisa conter, sem repetir."""
+    termos = [CFG.get("filtro_campanha") or FILTRO_PADRAO, CFG["lancamento"]]
+    return list(dict.fromkeys(sem_acento(t) for t in termos))
 
 PERIODOS = [1, 3, 7]
 
@@ -61,7 +70,7 @@ def sem_acento(txt):
 
 def eh_do_lancamento(nome_campanha):
     nome = sem_acento(nome_campanha)
-    return FILTRO in nome and sem_acento(CFG["lancamento"]) in nome
+    return all(t in nome for t in filtros())
 
 
 def conferir(condicao, mensagem):
@@ -76,10 +85,7 @@ def insights(nivel, inicio, fim, campos, **extra):
         level=nivel,
         fields=campos,
         time_range=json.dumps({"since": inicio.isoformat(), "until": fim.isoformat()}),
-        filtering=json.dumps([
-            {"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO},
-            {"field": "campaign.name", "operator": "CONTAIN", "value": CFG["lancamento"]},
-        ]),
+        filtering=json.dumps([{"field": "campaign.name", "operator": "CONTAIN", "value": t} for t in filtros()]),
         limit=500,
         **extra,
     )
@@ -223,7 +229,7 @@ def gerar_cliente(slug):
         "fim_lancamento": CFG.get("fim"),
         "conta": conta.get("name", ""),
         "moeda": conta.get("currency", "BRL"),
-        "filtro": f"{FILTRO} + {CFG['lancamento']}",
+        "filtro": " + ".join(filtros()),
         "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],
         "campanhas": {i: {"nome": apelidos.get(n, n), "original": n, "status": status_camp.get(i, "")}
