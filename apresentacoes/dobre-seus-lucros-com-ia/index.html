@@ -98,6 +98,11 @@ body{touch-action:pan-y}
 .logos .sep{width:1px;height:26px;background:var(--border-strong)}
 .logos .via{height:17px;width:auto}
 
+/* Coringa em tela cheia (110% e alinhado à esquerda pra esconder a seta do print) */
+.s-joker{padding:0}
+.s-joker::before{display:none}
+.s-joker .photo{position:absolute;inset:0;background:url(img/coringa-tela.jpg) 0% 40%/110% auto no-repeat;filter:saturate(.95) contrast(1.04)}
+
 /* 2 Trajetória */
 .s-traj{padding:69px;flex-direction:row;justify-content:flex-start;gap:53px}
 .s-traj .hero{width:440px;height:100%;flex:none;border-radius:19px;overflow:hidden;background:#080b10;border:1px solid var(--border-accent);box-shadow:var(--glow-md),var(--elev-card)}
@@ -218,6 +223,10 @@ body{touch-action:pan-y}
 .handle{font:600 22px/1 var(--font-mono);color:var(--text-strong);padding:16px 24px;border-radius:999px;border:1px solid var(--border-accent);background:rgba(0,216,245,.08);box-shadow:var(--glow-sm);transition:var(--t-hover)}
 .handle:hover{transform:translateY(-2px);box-shadow:var(--glow-md)}
 
+/* 12 Pergunta final */
+.s-q{align-items:center;text-align:center}
+.s-q .display{font-size:112px;padding-bottom:.08em}
+
 /* Barra de progresso */
 #progress{position:absolute;left:0;bottom:0;height:2px;background:var(--grad-hairline);background-size:100% 100%;transition:width 420ms var(--ease-out);z-index:5;box-shadow:0 0 10px rgba(0,216,245,.6)}
 
@@ -287,7 +296,27 @@ body{touch-action:pan-y}
     </div>
   </section>
 
-  <!-- 2 Trajetória -->
+  <!-- 2 O início -->
+  <section class="slide s-fim" data-notes="Antes de falar da C2Pro, deixa eu contar como tudo começou.">
+    <div class="halo-r"></div>
+    <img class="portrait" src="img/carlos-subido.webp" alt="Carlos Primo com a camiseta do Subido Master">
+    <h2 class="display rv">Carlos Primo</h2>
+    <h2 class="display rv">O <span class="key">Início</span></h2>
+    <div class="sign rv">
+      <span class="handle">@ocarlosprimo</span>
+      <div class="logos">
+        <span class="c2"><img src="img/logo-c2pro.png" alt="">C2Pro</span>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 3 Coringa -->
+  <section class="slide s-joker">
+    <div class="photo" role="img" aria-label="Coringa"></div>
+  </section>
+
+  <!-- 4 Trajetória -->
   <section class="slide s-traj" data-notes="Comecei em 2017, no Krav Maga. Depois veio a agência de tráfego, os projetos digitais de 6 e 7 dígitos, fui campeão do Subido Pro e entrei na primeira turma do Subido Master.">
     <div class="hero">
       <img src="img/carlos-palco-02.jpg" alt="Carlos Primo sentado no palco do Subido Master">
@@ -432,6 +461,12 @@ body{touch-action:pan-y}
         <span class="c2"><img src="img/logo-c2pro.png" alt="">C2Pro</span>
       </div>
     </div>
+    <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
+  </section>
+
+  <!-- 12 Pergunta final -->
+  <section class="slide s-q" data-notes="Quando começamos?">
+    <h2 class="display rv">Quando começamos?</h2>
     <div class="foot"><span class="brand"><img src="img/logo-c2pro.png" alt="">C2Pro</span><span class="pg"></span></div>
   </section>
 
