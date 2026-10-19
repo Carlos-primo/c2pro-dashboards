@@ -15,6 +15,7 @@ Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import sys
 import unicodedata
@@ -51,19 +52,31 @@ def eh_vendas(nome_campanha):
     return FILTRO in sem_acento(nome_campanha)
 
 
+def temperatura(nome_campanha):
+    """quente (token Q), frio (token ASP ou F) ou "" se o nome nao diz. Ex: ..._MAP_DO_FIO_Q_OUT_26 -> quente."""
+    tokens = set(re.split(r"[^A-Z0-9]+", sem_acento(nome_campanha)))
+    quente = "Q" in tokens
+    frio = bool(tokens & {"ASP", "F"})
+    return "quente" if quente and not frio else "frio" if frio and not quente else ""
+
+
 def conferir(condicao, mensagem):
     """Aborta a geracao em vez de publicar um dashboard com dado fora da regra."""
     if not condicao:
         sys.exit(f"ERRO de consistencia ({CFG.get('nome')}): {mensagem}")
 
 
-def insights(nivel, inicio, fim, campos, **extra):
+def insights(nivel, inicio, fim, campos, ids=None, **extra):
+    """ids: restringe a essas campanhas (segmento quente/frio), sempre dentro do filtro VENDAS."""
+    filtro = [{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]
+    if ids is not None:
+        filtro.append({"field": "campaign.id", "operator": "IN", "value": ids})
     return api(
         f"{CFG['conta_anuncio']}/insights",
         level=nivel,
         fields=campos,
         time_range=json.dumps({"since": inicio.isoformat(), "until": fim.isoformat()}),
-        filtering=json.dumps([{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]),
+        filtering=json.dumps(filtro),
         limit=500,
         **extra,
     )
@@ -91,8 +104,8 @@ def metricas(linha):
     }
 
 
-def conta_total(inicio, fim):
-    linhas = insights("account", inicio, fim, CAMPOS_METRICAS)
+def conta_total(inicio, fim, ids=None):
+    linhas = insights("account", inicio, fim, CAMPOS_METRICAS, ids=ids)
     return metricas(linhas[0]) if linhas else metricas({})
 
 
@@ -115,7 +128,7 @@ def detalhes_anuncios(anuncios):
             a["previa"] = info.get("preview_shareable_link", "")
 
 
-def periodo(dias, ontem, status_camp):
+def periodo(dias, ontem, status_camp, segmentos):
     fim = ontem
     inicio = fim - dt.timedelta(days=dias - 1)
     ant_fim = inicio - dt.timedelta(days=1)
@@ -127,6 +140,7 @@ def periodo(dias, ontem, status_camp):
         m = metricas(l)
         if m["gasto"] > 0:
             campanhas.append({"id": l["campaign_id"], "nome": l["campaign_name"],
+                              "temp": temperatura(l["campaign_name"]),
                               "status": status_camp.get(l["campaign_id"], ""), **m})
     campanhas.sort(key=lambda c: -c["gasto"])
 
@@ -135,14 +149,23 @@ def periodo(dias, ontem, status_camp):
         conferir(eh_vendas(l["campaign_name"]), f"anuncio de campanha fora do filtro: {l['campaign_name']}")
         m = metricas(l)
         if m["gasto"] > 0:
-            anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha": l["campaign_name"], **m})
+            anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha": l["campaign_name"],
+                             "temp": temperatura(l["campaign_name"]), **m})
 
     atual = conta_total(inicio, fim)
     soma = sum(c["gasto"] for c in campanhas)
     conferir(abs(soma - atual["gasto"]) < 0.05,
              f"total {dias}d (R$ {atual['gasto']:.2f}) difere da soma das campanhas VENDAS (R$ {soma:.2f})")
 
+    seg = {}
+    for nome, ids in segmentos.items():
+        seg_atual = conta_total(inicio, fim, ids)
+        conferir(abs(seg_atual["gasto"] - sum(c["gasto"] for c in campanhas if c["temp"] == nome)) < 0.05,
+                 f"segmento {nome} {dias}d difere da soma das campanhas {nome}")
+        seg[nome] = {"atual": seg_atual, "anterior": conta_total(ant_inicio, ant_fim, ids)}
+
     return {
+        "segmentos": seg,
         "inicio": inicio.isoformat(), "fim": fim.isoformat(),
         "ant_inicio": ant_inicio.isoformat(), "ant_fim": ant_fim.isoformat(),
         "atual": atual,
@@ -152,10 +175,10 @@ def periodo(dias, ontem, status_camp):
     }
 
 
-def serie_diaria(ontem):
+def serie_diaria(ontem, ids=None):
     inicio = ontem - dt.timedelta(days=29)
     por_dia = {l["date_start"]: metricas(l) for l in insights(
-        "account", inicio, ontem, CAMPOS_METRICAS, time_increment=1)}
+        "account", inicio, ontem, CAMPOS_METRICAS, ids=ids, time_increment=1)}
     return [{"data": (inicio + dt.timedelta(days=n)).isoformat(),
              **por_dia.get((inicio + dt.timedelta(days=n)).isoformat(), metricas({}))}
             for n in range(30)]
@@ -171,9 +194,15 @@ def gerar_cliente(slug):
     agora = dt.datetime.now(fuso)
     ontem = agora.date() - dt.timedelta(days=1)
 
-    status_camp = {c["id"]: c["effective_status"] for c in api(
-        f"{CFG['conta_anuncio']}/campaigns", fields="effective_status", limit=500)}
-    periodos = {str(d): periodo(d, ontem, status_camp) for d in PERIODOS}
+    todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name,effective_status", limit=500)
+    status_camp = {c["id"]: c["effective_status"] for c in todas}
+    # Filtro quente/frio: so aparece quando o nome das campanhas VENDAS traz Q (quente) ou ASP/F (frio).
+    segmentos = {}
+    for nome in ("quente", "frio"):
+        ids = [c["id"] for c in todas if eh_vendas(c["name"]) and temperatura(c["name"]) == nome]
+        if ids:
+            segmentos[nome] = ids
+    periodos = {str(d): periodo(d, ontem, status_camp, segmentos) for d in PERIODOS}
 
     # Detalhes dos criativos uma vez so, pra todos os anuncios de todos os periodos.
     todos = {a["id"]: a for p in periodos.values() for a in p["anuncios"]}
@@ -193,6 +222,8 @@ def gerar_cliente(slug):
         "periodos": periodos,
         "diario": serie_diaria(ontem),
     }
+    if segmentos:
+        dados["diario_segmentos"] = {n: serie_diaria(ontem, ids) for n, ids in segmentos.items()}
     soma_diaria = sum(d["gasto"] for d in dados["diario"])
     conferir(abs(soma_diaria - periodos["30"]["atual"]["gasto"]) < 0.05,
              "serie diaria nao bate com o total de 30 dias")

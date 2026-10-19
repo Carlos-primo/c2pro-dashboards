@@ -254,7 +254,8 @@ async function iniciar(){
 
 // ---------- dashboard ----------
 let D, PER = "7";
-try { PER = localStorage.getItem("c2pro-vendas-periodo") || "7"; } catch(_){}
+let SEG = "todos";
+try { PER = localStorage.getItem("c2pro-vendas-periodo") || "7"; SEG = localStorage.getItem("c2pro-vendas-publico") || "todos"; } catch(_){}
 
 function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7"; desenhar(); }
 
@@ -363,12 +364,19 @@ try { ORDEM = localStorage.getItem("c2pro-vendas-ordem") || "cpa"; if (!ORDENS[O
 
 const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias"};
 
+const NOMES_SEG = {todos:"Todas as campanhas", quente:"Público quente", frio:"Público frio"};
+
 function desenhar(){
-  const P = D.periodos[PER];
+  const P0 = D.periodos[PER];
+  // Filtro quente/frio: só existe quando o gerador achou campanhas com Q (quente) ou ASP/F (frio) no nome.
+  const segs = Object.keys(P0.segmentos || {});
+  const seg = segs.includes(SEG) ? SEG : "todos";
+  const P = seg === "todos" ? P0 : {...P0, atual: P0.segmentos[seg].atual, anterior: P0.segmentos[seg].anterior,
+    campanhas: P0.campanhas.filter(c => c.temp === seg), anuncios: P0.anuncios.filter(x => x.temp === seg)};
   const a = derivadas(P.atual), b = derivadas(P.anterior);
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
-  const DD = D.diario.map(d => derivadas(d));
+  const DD = (seg === "todos" ? D.diario : D.diario_segmentos[seg]).map(d => derivadas(d));
 
   app.innerHTML = `<div class="wrap">
   <header>
@@ -378,7 +386,11 @@ function desenhar(){
       ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${NOMES_PER[k] || k+" dias"}</button>`).join("")}
     </div>
   </header>
+  ${segs.length ? `<div class="pills" role="group" aria-label="Público" style="margin-bottom:12px">
+      ${["todos", ...segs].map(k => `<button data-s="${k}" aria-pressed="${seg===k}">${NOMES_SEG[k]}</button>`).join("")}
+    </div>` : ""}
   <div class="meta">
+    ${seg !== "todos" ? `<span>Filtro: ${NOMES_SEG[seg].toLowerCase()} (${seg === "quente" ? "campanhas com Q no nome" : "campanhas com ASP ou F no nome"})</span>` : ""}
     <span>Período: ${faixa(P.inicio, P.fim)}</span>
     <span>Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}</span>
     <span>Atualizado em ${quando}</span>
@@ -455,6 +467,10 @@ function desenhar(){
   app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
     PER = bt.dataset.p; try { localStorage.setItem("c2pro-vendas-periodo", PER); } catch(_){}
     desenhar();
+  }));
+  app.querySelectorAll("[data-s]").forEach(bt => bt.addEventListener("click", () => {
+    SEG = bt.dataset.s; try { localStorage.setItem("c2pro-vendas-publico", SEG); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
   }));
   app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
     ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-vendas-ordem", ORDEM); } catch(_){}
