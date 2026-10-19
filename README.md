@@ -42,6 +42,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 | Cliente | Link |
 |---|---|
 | Ordus System | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
+| Vita Hair | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
 
 - **Resumo:** custo por compra, compras, investimento, faturamento, ROAS e ticket médio
 - **Funil visual:** impressões (CPM) > cliques no link (CTR, CPC) > visitas à página (connect rate, custo por visita) > checkouts (página para checkout, custo por checkout) > compras (checkout para compra, custo por compra), com variação em pontos percentuais e alerta na etapa que mais caiu
