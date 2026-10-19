@@ -52,6 +52,22 @@ Ontem, últimos 3, 7 ou 30 dias, comparados com o período anterior. Compras e f
 Pelo Claude Code: skill `c2pro-dashboard-vendas`. Rodar no PC: `python gerar_vendas.py [slug]` e abrir `site/vendas/<slug>/index.html`.
 Senha opcional: secret `SENHA_VENDAS_<SLUG>` no passo "Gerar dashboards de vendas" do workflow.
 
+## Dashboards da Black Friday
+
+Campanhas com `BLACK` no nome (filtro no config), separadas por conta de anuncio. Resultado principal: lead, com compras do pixel como secundario.
+Cada cliente e uma pasta `black/<slug>/config.json` com a lista de `contas`, e o link fica:
+
+```
+https://carlos-primo.github.io/c2pro-dashboards/black/<cliente>/
+```
+
+| Cliente | Contas | Link |
+|---|---|---|
+| Wescley Lima | Camila e Revenda (C.Ad2) | https://carlos-primo.github.io/c2pro-dashboards/black/wescley/ |
+
+Abas por conta + "Todas as contas" (alcance nao soma entre contas). Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`.
+Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black" do workflow.
+
 ## Dashboards de leads
 
 Avaliação de leads: só volume, sem investimento, custo ou comparação com período anterior (nada disso vai pro payload).

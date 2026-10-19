@@ -3,6 +3,7 @@
 # Secret necessario (Settings > Secrets and variables > Actions): META_ADS_TOKEN
 # Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
 # Dashboards de vendas: SENHA_VENDAS_<SLUG>, no bloco env do passo "Gerar dashboards de vendas".
+# Dashboards da Black: SENHA_BLACK_<SLUG>, no bloco env do passo "Gerar dashboards da Black".
 # Dashboards de leads: SENHA_LEADS_<SLUG>, no bloco env do passo "Gerar dashboards de leads".
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 
@@ -46,6 +47,11 @@ jobs:
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_vendas.py
+
+      - name: Gerar dashboards da Black
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+        run: python gerar_black.py
 
       - name: Gerar dashboards de leads
         env:
