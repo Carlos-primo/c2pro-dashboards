@@ -55,15 +55,23 @@ TOKEN = carregar_token()
 
 
 def api(caminho, **params):
-    """GET na Graph API com retry simples e paginacao."""
+    """GET na Graph API com retry simples e paginacao.
+
+    Limite de chamadas da Meta (codigos 4, 17, 32, 613, 80000+) vem como erro no corpo: espera e tenta de novo."""
     params["access_token"] = TOKEN
     url, itens = f"{BASE}/{caminho}", []
     while url:
-        for tentativa in range(4):
+        for tentativa in range(6):
             r = requests.get(url, params=params, timeout=60)
-            if r.status_code < 500 and r.status_code != 429:
-                break
-            time.sleep(5 * (tentativa + 1))
+            if r.status_code >= 500 or r.status_code == 429:
+                time.sleep(5 * (tentativa + 1))
+                continue
+            codigo = r.json().get("error", {}).get("code", 0)
+            if codigo in (4, 17, 32, 613) or 80000 <= codigo <= 80014:
+                print(f"  limite de chamadas da Meta em {caminho}, esperando {60 * (tentativa + 1)}s")
+                time.sleep(60 * (tentativa + 1))
+                continue
+            break
         corpo = r.json()
         if "error" in corpo:
             sys.exit(f"ERRO da Meta em {caminho}: {corpo['error'].get('message')}")
