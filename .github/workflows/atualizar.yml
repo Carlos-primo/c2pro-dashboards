@@ -3,7 +3,7 @@
 #   02:00 distribuicao | 03:00 vendas e Black | 04:00 leads e lancamento
 # Nao usa Claude: e so o gerar*.py chamando a API da Meta.
 #
-# Na hora (botao "Run workflow" ou o botao "Atualizar agora" do dashboard, via n8n):
+# Na hora (botao "Run workflow" no GitHub, ou gh workflow run atualizar.yml -f dashboard=...):
 #   dashboard = caminho de um so (ex: vendas/vita-hair, black/wescley, clientes/c2pro)
 #   grupo     = todos | distribuicao | vendas | leads (vale quando dashboard fica vazio)
 # O que nao e gerado na rodada continua no ar com a ultima versao publicada.
@@ -16,7 +16,7 @@
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 
 name: Atualizar dashboards
-# O n8n le esse titulo pra nao pedir o mesmo dashboard duas vezes em poucos minutos.
+# Titulo da rodada mostra qual dashboard foi pedido, pra achar no historico do Actions.
 run-name: ${{ inputs.dashboard && format('Atualizar {0}', inputs.dashboard) || 'Atualizar dashboards' }}
 
 on:

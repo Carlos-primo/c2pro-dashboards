@@ -32,9 +32,6 @@ SITE = AQUI / "site"
 ENV_SKILL = AQUI.parent / "Claude Code" / ".claude" / "skills" / "meta-ads" / ".env"
 BASE = "https://graph.facebook.com/v26.0"
 CFG = {}  # config do cliente sendo gerado, preenchida em gerar_cliente()
-# Workflow "Dashboards - Atualizar agora" do n8n: dispara o atualizar.yml so pra um dashboard.
-WEBHOOK_ATUALIZAR = "https://automacoescpro-n8n-2.mwo6wk.easypanel.host/webhook/dashboards-atualizar"
-BOTAO_ATUALIZAR = False  # liga quando a credencial "GitHub - Dashboards" do n8n estiver configurada
 
 CAMPOS_METRICAS = ",".join([
     "spend", "impressions", "reach", "actions",
@@ -259,18 +256,6 @@ def serie_diaria(inicio, fim):
     return dias
 
 
-def botao_atualizar(html, dashboard):
-    """Troca __ATUALIZAR__ pelo botao "Atualizar agora" (botao_atualizar.html).
-    dashboard: caminho no repositorio (clientes/c2pro, vendas/vita-hair...), que o n8n repassa ao workflow."""
-    if not BOTAO_ATUALIZAR:
-        return html.replace("__ATUALIZAR__", "")
-    trecho = (AQUI / "botao_atualizar.html").read_text(encoding="utf-8")
-    trecho = (trecho.replace("__DASHBOARD__", dashboard)
-              .replace("__GERADO__", dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"))
-              .replace("__WEBHOOK__", WEBHOOK_ATUALIZAR))
-    return html.replace("__ATUALIZAR__", trecho)
-
-
 def criptografar(texto, senha):
     """AES-GCM com chave PBKDF2, no mesmo formato que o WebCrypto do navegador le."""
     from cryptography.hazmat.primitives import hashes
@@ -326,7 +311,6 @@ def gerar_cliente(slug):
     saida.mkdir(parents=True, exist_ok=True)
     html = (AQUI / "template.html").read_text(encoding="utf-8")
     html = html.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
-    html = botao_atualizar(html, f"clientes/{slug}")
     (saida / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 

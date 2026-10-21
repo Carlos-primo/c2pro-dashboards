@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from gerar import api, criptografar, botao_atualizar
+from gerar import api, criptografar
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "leads"
@@ -189,7 +189,6 @@ def gerar_cliente(slug):
     saida.mkdir(parents=True, exist_ok=True)
     html = (AQUI / "template_leads.html").read_text(encoding="utf-8")
     html = html.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
-    html = botao_atualizar(html, f"leads/{slug}")
     (saida / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 

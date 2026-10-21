@@ -22,7 +22,7 @@ import unicodedata
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from gerar import api, criptografar, diario_seguro, botao_atualizar
+from gerar import api, criptografar, diario_seguro
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "vendas"
@@ -235,7 +235,6 @@ def gerar_cliente(slug):
     saida.mkdir(parents=True, exist_ok=True)
     html = (AQUI / "template_vendas.html").read_text(encoding="utf-8")
     html = html.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
-    html = botao_atualizar(html, f"vendas/{slug}")
     (saida / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
