@@ -33,7 +33,7 @@ import unicodedata
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from gerar import api, criptografar
+from gerar import api, criptografar, diario_seguro
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "lancamento"
@@ -124,8 +124,12 @@ def conta_total(inicio, fim):
 def linhas_anuncio(inicio, fim, **extra):
     """Uma linha por anuncio (com campanha e publico), base de todos os filtros do dashboard."""
     linhas = []
-    for l in insights("ad", inicio, fim,
-                      "ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name," + CAMPOS_LINHA, **extra):
+    campos = "ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name," + CAMPOS_LINHA
+    if extra.get("time_increment") == 1:
+        brutas = diario_seguro(lambda i, f, **e: insights("ad", i, f, campos, **e), inicio, fim)
+    else:
+        brutas = insights("ad", inicio, fim, campos, **extra)
+    for l in brutas:
         conferir(eh_do_lancamento(l["campaign_name"]), f"anuncio de campanha fora do filtro: {l['campaign_name']}")
         m = metricas(l, com_alcance=False)
         if m["gasto"] > 0 or m["impressoes"] > 0:
@@ -204,8 +208,8 @@ def gerar_cliente(slug):
     periodos["todo"] = periodo(inicio_lanc, fim_lanc, comparar=False)
 
     # Dia a dia do lancamento: total da conta e por anuncio (pro funil filtrado).
-    por_dia = {l["date_start"]: metricas(l) for l in insights(
-        "account", inicio_lanc, fim_lanc, CAMPOS_METRICAS, time_increment=1)}
+    por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
+        lambda i, f, **e: insights("account", i, f, CAMPOS_METRICAS, **e), inicio_lanc, fim_lanc)}
     n_dias = (fim_lanc - inicio_lanc).days + 1
     diario = [{"data": (inicio_lanc + dt.timedelta(days=n)).isoformat(),
                **por_dia.get((inicio_lanc + dt.timedelta(days=n)).isoformat(), metricas({}))}

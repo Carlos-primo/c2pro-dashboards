@@ -27,6 +27,9 @@ concurrency:
 jobs:
   gerar:
     runs-on: ubuntu-latest
+    # Um gerador com erro nao trava os outros (continue-on-error); o job publicar marca a execucao como falha no fim.
+    outputs:
+      falhou: ${{ steps.distribuicao.outcome == 'failure' || steps.vendas.outcome == 'failure' || steps.black.outcome == 'failure' || steps.leads.outcome == 'failure' || steps.lancamento.outcome == 'failure' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -38,30 +41,58 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Gerar dashboards
+        id: distribuicao
+        continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
           SENHA_C2PRO: ${{ secrets.SENHA_C2PRO }}
         run: python gerar.py
 
       - name: Gerar dashboards de vendas
+        id: vendas
+        continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_vendas.py
 
       - name: Gerar dashboards da Black
+        id: black
+        continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_black.py
 
       - name: Gerar dashboards de leads
+        id: leads
+        continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_leads.py
 
       - name: Gerar dashboards de lancamento
+        id: lancamento
+        continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
         run: python gerar_lancamento.py
+
+      # O Pages troca o site inteiro a cada publicacao: dashboard que nao foi gerado hoje sumiria do ar.
+      # Pra nao quebrar o link do cliente, volta a ultima versao publicada dele.
+      - name: Manter no ar a ultima versao dos que falharam
+        run: |
+          for cfg in clientes/*/config.json vendas/*/config.json black/*/config.json leads/*/config.json lancamento/*/config.json; do
+            dir=$(dirname "$cfg"); slug=$(basename "$dir"); tipo=$(dirname "$dir")
+            if [ "$tipo" = clientes ]; then destino="$slug"; else destino="$tipo/$slug"; fi
+            [ -f "site/$destino/index.html" ] && continue
+            mkdir -p "site/$destino"
+            if curl -sfL "https://carlos-primo.github.io/c2pro-dashboards/$destino/" -o "site/$destino/index.html"; then
+              cp logo.png "site/$destino/logo.png"
+              echo "::warning::$destino nao foi gerado hoje; ficou no ar a ultima versao publicada"
+            else
+              rm -rf "site/$destino"
+              echo "::warning::$destino nao foi gerado hoje e nao tinha versao publicada"
+            fi
+          done
 
       # Paginas estaticas (planejamentos, relatorios fechados de cliente e apresentacoes): so copiar pro site.
       - name: Copiar planejamentos
@@ -93,3 +124,9 @@ jobs:
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      - name: Avisar se algum gerador falhou
+        if: needs.gerar.outputs.falhou == 'true'
+        run: |
+          echo "::error::Algum gerador falhou. Os outros dashboards foram publicados; ver o job gerar."
+          exit 1

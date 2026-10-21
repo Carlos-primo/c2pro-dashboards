@@ -22,7 +22,7 @@ import unicodedata
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from gerar import api, criptografar
+from gerar import api, criptografar, diario_seguro
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "vendas"
@@ -177,8 +177,8 @@ def periodo(dias, ontem, status_camp, segmentos):
 
 def serie_diaria(ontem, ids=None):
     inicio = ontem - dt.timedelta(days=29)
-    por_dia = {l["date_start"]: metricas(l) for l in insights(
-        "account", inicio, ontem, CAMPOS_METRICAS, ids=ids, time_increment=1)}
+    por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
+        lambda i, f, **e: insights("account", i, f, CAMPOS_METRICAS, ids=ids, **e), inicio, ontem)}
     return [{"data": (inicio + dt.timedelta(days=n)).isoformat(),
              **por_dia.get((inicio + dt.timedelta(days=n)).isoformat(), metricas({}))}
             for n in range(30)]

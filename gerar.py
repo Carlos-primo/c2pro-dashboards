@@ -105,6 +105,23 @@ def insights(nivel, inicio, fim, campos, **extra):
     )
 
 
+def diario_seguro(consulta, inicio, fim):
+    """Linhas dia a dia. consulta(inicio, fim, **extra) faz o GET de insights ja com nivel e campos.
+
+    Em 21/10/2026 a Meta passou a devolver a quebra diaria (time_increment=1) com gasto 0 em todo dia,
+    com o total do periodo certo. Quando a soma dos dias nao bate com o total, refaz um dia por vez."""
+    linhas = consulta(inicio, fim, time_increment=1)
+    gasto = lambda ls: sum(float(l.get("spend", 0)) for l in ls)
+    if abs(gasto(linhas) - gasto(consulta(inicio, fim))) < 0.05:
+        return linhas
+    print(f"  aviso: quebra diaria da Meta nao bate com o total, buscando um dia por vez ({inicio} a {fim})")
+    linhas = []
+    for n in range((fim - inicio).days + 1):
+        dia = inicio + dt.timedelta(days=n)
+        linhas += [{**l, "date_start": dia.isoformat()} for l in consulta(dia, dia)]
+    return linhas
+
+
 def metricas(linha):
     """Normaliza uma linha de insights no formato que o dashboard usa."""
     acoes = {a["action_type"]: float(a["value"]) for a in linha.get("actions", [])}
@@ -206,8 +223,8 @@ def detalhes_anuncios(anuncios):
 
 
 def serie_diaria(inicio, fim):
-    por_dia = {l["date_start"]: metricas(l) for l in insights(
-        "account", inicio, fim, CAMPOS_METRICAS, time_increment=1)}
+    por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
+        lambda i, f, **e: insights("account", i, f, CAMPOS_METRICAS, **e), inicio, fim)}
     dias = []
     for n in range((fim - inicio).days + 1):
         d = (inicio + dt.timedelta(days=n)).isoformat()
