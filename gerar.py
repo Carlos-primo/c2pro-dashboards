@@ -113,20 +113,34 @@ def insights(nivel, inicio, fim, campos, **extra):
     )
 
 
-def diario_seguro(consulta, inicio, fim):
-    """Linhas dia a dia. consulta(inicio, fim, **extra) faz o GET de insights ja com nivel e campos.
+def diario_seguro(consulta, campos, inicio, fim):
+    """Linhas dia a dia. consulta(campos, inicio, fim, **extra) faz o GET de insights ja com o nivel.
 
-    Em 21/10/2026 a Meta passou a devolver a quebra diaria (time_increment=1) com gasto 0 em todo dia,
-    com o total do periodo certo. Quando a soma dos dias nao bate com o total, refaz um dia por vez."""
-    linhas = consulta(inicio, fim, time_increment=1)
+    Em 21/10/2026 a Meta passou a devolver a quebra diaria (time_increment=1) com gasto 0 em todo dia
+    quando a chamada pede varias metricas juntas (o total do periodo vem certo). Se a soma dos dias nao
+    bate com o total, pede uma metrica por chamada e junta pelo dia (sem reach: por dia ele volta zerado
+    e nao e usado na serie). So se ainda nao bater, busca um dia por vez."""
     gasto = lambda ls: sum(float(l.get("spend", 0)) for l in ls)
-    if abs(gasto(linhas) - gasto(consulta(inicio, fim))) < 0.05:
+    linhas = consulta(campos, inicio, fim, time_increment=1)
+    total = gasto(consulta(campos, inicio, fim))
+    if abs(gasto(linhas) - total) < 0.05:
         return linhas
+
+    lista = campos.split(",")
+    chaves = [c for c in lista if c.endswith(("_id", "_name"))]
+    juntas = {}
+    for metrica in (c for c in lista if c not in chaves and c != "reach"):
+        for l in consulta(",".join(chaves + [metrica]), inicio, fim, time_increment=1):
+            juntas.setdefault((l["date_start"], *(l.get(c) for c in chaves)), {}).update(l)
+    if abs(gasto(juntas.values()) - total) < 0.05:
+        print(f"  aviso: quebra diaria da Meta veio zerada, montada com uma metrica por chamada ({inicio} a {fim})")
+        return list(juntas.values())
+
     print(f"  aviso: quebra diaria da Meta nao bate com o total, buscando um dia por vez ({inicio} a {fim})")
     linhas = []
     for n in range((fim - inicio).days + 1):
         dia = inicio + dt.timedelta(days=n)
-        linhas += [{**l, "date_start": dia.isoformat()} for l in consulta(dia, dia)]
+        linhas += [{**l, "date_start": dia.isoformat()} for l in consulta(campos, dia, dia)]
     return linhas
 
 
@@ -232,7 +246,7 @@ def detalhes_anuncios(anuncios):
 
 def serie_diaria(inicio, fim):
     por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
-        lambda i, f, **e: insights("account", i, f, CAMPOS_METRICAS, **e), inicio, fim)}
+        lambda c, i, f, **e: insights("account", i, f, c, **e), CAMPOS_METRICAS, inicio, fim)}
     dias = []
     for n in range((fim - inicio).days + 1):
         d = (inicio + dt.timedelta(days=n)).isoformat()

@@ -126,7 +126,7 @@ def linhas_anuncio(inicio, fim, **extra):
     linhas = []
     campos = "ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name," + CAMPOS_LINHA
     if extra.get("time_increment") == 1:
-        brutas = diario_seguro(lambda i, f, **e: insights("ad", i, f, campos, **e), inicio, fim)
+        brutas = diario_seguro(lambda c, i, f, **e: insights("ad", i, f, c, **e), campos, inicio, fim)
     else:
         brutas = insights("ad", inicio, fim, campos, **extra)
     for l in brutas:
@@ -209,7 +209,7 @@ def gerar_cliente(slug):
 
     # Dia a dia do lancamento: total da conta e por anuncio (pro funil filtrado).
     por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
-        lambda i, f, **e: insights("account", i, f, CAMPOS_METRICAS, **e), inicio_lanc, fim_lanc)}
+        lambda c, i, f, **e: insights("account", i, f, c, **e), CAMPOS_METRICAS, inicio_lanc, fim_lanc)}
     n_dias = (fim_lanc - inicio_lanc).days + 1
     diario = [{"data": (inicio_lanc + dt.timedelta(days=n)).isoformat(),
                **por_dia.get((inicio_lanc + dt.timedelta(days=n)).isoformat(), metricas({}))}
