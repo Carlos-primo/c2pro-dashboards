@@ -1,0 +1,82 @@
+<!-- Botao "Atualizar agora" (colocado pelo botao_atualizar() do gerar.py no fim de cada pagina).
+     Pede ao n8n uma rodada so deste dashboard e espera a versao nova sair no Pages. -->
+<meta name="c2pro-gerado" content="__GERADO__">
+<style>
+#c2-atu{position:fixed;right:16px;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+  font:500 13px/1.4 Inter,system-ui,sans-serif;max-width:calc(100vw - 32px)}
+#c2-atu button{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;cursor:pointer;
+  font:inherit;font-weight:600;color:var(--t-strong,#F2F6FA);background:var(--solid,#0A0E14);
+  border:1px solid var(--b-acc,rgba(0,216,245,.45));box-shadow:var(--elev,0 12px 32px -8px rgba(0,0,0,.7))}
+#c2-atu button:hover:not(:disabled){border-color:var(--acc,#00D8F5);color:var(--acc-h,#37E6FF)}
+#c2-atu button:focus-visible{outline:2px solid var(--acc,#00D8F5);outline-offset:2px}
+#c2-atu button:disabled{cursor:default;opacity:.85}
+#c2-atu svg{width:15px;height:15px;flex:none}
+#c2-atu .gira svg{animation:c2-gira 1s linear infinite}
+@keyframes c2-gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#c2-atu .gira svg{animation:none}}
+#c2-atu .msg{padding:10px 14px;border-radius:12px;max-width:300px;color:var(--t-body,#C9D2DD);
+  background:var(--solid,#0A0E14);border:1px solid var(--b-def,rgba(255,255,255,.12));box-shadow:var(--elev,0 12px 32px -8px rgba(0,0,0,.7))}
+#c2-atu .msg.erro{border-color:var(--neg,#FF4D5E)}
+#c2-atu .msg[hidden]{display:none}
+</style>
+<div id="c2-atu" aria-live="polite">
+  <div class="msg" hidden></div>
+  <button type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Atualizar agora</span></button>
+</div>
+<script>
+(() => {
+  const DASH = "__DASHBOARD__", GERADO = "__GERADO__", WEBHOOK = "__WEBHOOK__";
+  const ESPERA_MAX = 15 * 60 * 1000, CHAVE = "c2pro-atualizando:" + DASH;
+  const ERRO = "Não conseguimos atualizar agora. Entre em contato com o time no grupo.";
+  const raiz = document.getElementById("c2-atu"), btn = raiz.querySelector("button"),
+        rotulo = btn.querySelector("span"), msg = raiz.querySelector(".msg");
+  const guardar = v => { try { v ? sessionStorage.setItem(CHAVE, String(v)) : sessionStorage.removeItem(CHAVE); } catch (_) {} };
+  const lido = () => { try { return Number(sessionStorage.getItem(CHAVE)) || 0; } catch (_) { return 0; } };
+
+  function estado(texto, aviso, tipo) {
+    rotulo.textContent = texto;
+    btn.disabled = tipo === "esperando";
+    btn.classList.toggle("gira", tipo === "esperando");
+    msg.hidden = !aviso; msg.textContent = aviso || "";
+    msg.classList.toggle("erro", tipo === "erro");
+  }
+
+  async function versaoNova() {
+    try {
+      const r = await fetch(location.pathname + "?t=" + Date.now(), { cache: "no-store" });
+      const m = (await r.text()).match(/name="c2pro-gerado" content="([^"]+)"/);
+      return m && m[1] !== GERADO;
+    } catch (_) { return false; }
+  }
+
+  function esperar(inicio) {
+    estado("Atualizando...", "Buscando os números novos na Meta. Leva uns 5 minutos, pode deixar a página aberta.", "esperando");
+    const ciclo = async () => {
+      // O Pages guarda a pagina em cache por ate 10 min: recarrega com ?v= pra pegar a versao nova.
+      if (await versaoNova()) { guardar(0); location.replace(location.pathname + "?v=" + Date.now()); return; }
+      if (Date.now() - inicio > ESPERA_MAX) { guardar(0); estado("Tentar de novo", ERRO, "erro"); return; }
+      setTimeout(ciclo, 20000);
+    };
+    setTimeout(ciclo, 20000);
+  }
+
+  btn.addEventListener("click", async () => {
+    estado("Pedindo...", "", "esperando");
+    try {
+      const r = await fetch(WEBHOOK, { method: "POST", headers: { "Content-Type": "application/json" },
+                                       body: JSON.stringify({ dashboard: DASH }) });
+      const corpo = await r.json().catch(() => ({}));
+      if (corpo.ok) { const agora = Date.now(); guardar(agora); esperar(agora); return; }
+      if (corpo.motivo === "recente") {
+        estado("Atualizar agora", "Esse dashboard já está sendo atualizado ou acabou de ser. Tente de novo daqui a alguns minutos.", "");
+        return;
+      }
+      estado("Tentar de novo", ERRO, "erro");
+    } catch (_) { estado("Tentar de novo", ERRO, "erro"); }
+  });
+
+  // Se a página foi recarregada no meio da espera, continua esperando.
+  const inicio = lido();
+  if (inicio && Date.now() - inicio < ESPERA_MAX) esperar(inicio); else guardar(0);
+})();
+</script>

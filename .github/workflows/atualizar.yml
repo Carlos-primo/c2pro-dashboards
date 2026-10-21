@@ -1,5 +1,13 @@
-# Atualiza os dashboards todo dia as 2h (Brasilia) e publica no GitHub Pages.
-# Nao usa Claude: e so o gerar.py chamando a API da Meta.
+# Atualiza os dashboards todo dia de madrugada (Brasilia) e publica no GitHub Pages, em tres grupos
+# separados por 1 hora pra nao dividir o limite de chamadas da Meta (janela movel de 1 hora):
+#   02:00 distribuicao | 03:00 vendas e Black | 04:00 leads e lancamento
+# Nao usa Claude: e so o gerar*.py chamando a API da Meta.
+#
+# Na hora (botao "Run workflow" ou o botao "Atualizar agora" do dashboard, via n8n):
+#   dashboard = caminho de um so (ex: vendas/vita-hair, black/wescley, clientes/c2pro)
+#   grupo     = todos | distribuicao | vendas | leads (vale quando dashboard fica vazio)
+# O que nao e gerado na rodada continua no ar com a ultima versao publicada.
+#
 # Secret necessario (Settings > Secrets and variables > Actions): META_ADS_TOKEN
 # Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
 # Dashboards de vendas: SENHA_VENDAS_<SLUG>, no bloco env do passo "Gerar dashboards de vendas".
@@ -8,11 +16,25 @@
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 
 name: Atualizar dashboards
+# O n8n le esse titulo pra nao pedir o mesmo dashboard duas vezes em poucos minutos.
+run-name: ${{ inputs.dashboard && format('Atualizar {0}', inputs.dashboard) || 'Atualizar dashboards' }}
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 05:00 UTC = 02:00 em Brasilia
-  workflow_dispatch:       # botao "Run workflow" pra rodar na hora
+    - cron: "0 5 * * *"   # 02:00 em Brasilia: distribuicao
+    - cron: "0 6 * * *"   # 03:00 em Brasilia: vendas e Black
+    - cron: "0 7 * * *"   # 04:00 em Brasilia: leads e lancamento
+  workflow_dispatch:
+    inputs:
+      dashboard:
+        description: "So um dashboard (ex: vendas/vita-hair). Vazio = usa o grupo"
+        required: false
+        default: ""
+      grupo:
+        description: "Grupo quando o dashboard fica vazio"
+        type: choice
+        options: [todos, distribuicao, vendas, leads]
+        default: todos
 
 permissions:
   contents: read
@@ -20,9 +42,11 @@ permissions:
   id-token: write
   actions: write           # pro passo que mantem o agendamento ativo
 
+# Fila, sem cancelar: cada rodada copia a versao publicada dos outros dashboards,
+# entao duas rodadas ao mesmo tempo apagariam a atualizacao uma da outra.
 concurrency:
   group: dashboards
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   gerar:
@@ -33,6 +57,38 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Saida por tipo: vazio = nao roda, "todos" = todos daquele tipo, ou o slug de um so.
+      - name: Definir o que gerar
+        id: alvo
+        env:
+          DASHBOARD: ${{ inputs.dashboard }}
+          GRUPO: ${{ inputs.grupo }}
+          AGENDA: ${{ github.event.schedule }}
+        run: |
+          case "$AGENDA" in
+            "0 5 * * *") GRUPO=distribuicao ;;
+            "0 6 * * *") GRUPO=vendas ;;
+            "0 7 * * *") GRUPO=leads ;;
+          esac
+          declare -A tipo=([distribuicao]= [vendas]= [black]= [leads]= [lancamento]=)
+          if [ -n "$DASHBOARD" ]; then
+            caminho="${DASHBOARD#/}"; caminho="${caminho%/}"
+            case "$caminho" in */*) ;; *) caminho="clientes/$caminho" ;; esac
+            if ! [[ "$caminho" =~ ^(clientes|vendas|black|leads|lancamento)/[a-z0-9-]+$ ]] || [ ! -f "$caminho/config.json" ]; then
+              echo "::error::dashboard '$DASHBOARD' nao existe"; exit 1
+            fi
+            pasta="${caminho%%/*}"; [ "$pasta" = clientes ] && pasta=distribuicao
+            tipo[$pasta]="${caminho#*/}"
+          else
+            case "${GRUPO:-todos}" in
+              distribuicao) tipo[distribuicao]=todos ;;
+              vendas) tipo[vendas]=todos; tipo[black]=todos ;;
+              leads) tipo[leads]=todos; tipo[lancamento]=todos ;;
+              *) for t in "${!tipo[@]}"; do tipo[$t]=todos; done ;;
+            esac
+          fi
+          for t in "${!tipo[@]}"; do echo "$t=${tipo[$t]}" >> "$GITHUB_OUTPUT"; echo "$t: ${tipo[$t]:-(nao roda)}"; done
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -42,57 +98,75 @@ jobs:
 
       - name: Gerar dashboards
         id: distribuicao
+        if: steps.alvo.outputs.distribuicao != ''
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
           SENHA_C2PRO: ${{ secrets.SENHA_C2PRO }}
-        run: python gerar.py
+          ALVO: ${{ steps.alvo.outputs.distribuicao }}
+        run: if [ "$ALVO" = todos ]; then python gerar.py; else python gerar.py "$ALVO"; fi
 
       - name: Gerar dashboards de vendas
         id: vendas
+        if: steps.alvo.outputs.vendas != ''
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
-        run: python gerar_vendas.py
+          ALVO: ${{ steps.alvo.outputs.vendas }}
+        run: if [ "$ALVO" = todos ]; then python gerar_vendas.py; else python gerar_vendas.py "$ALVO"; fi
 
       - name: Gerar dashboards da Black
         id: black
+        if: steps.alvo.outputs.black != ''
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
-        run: python gerar_black.py
+          ALVO: ${{ steps.alvo.outputs.black }}
+        run: if [ "$ALVO" = todos ]; then python gerar_black.py; else python gerar_black.py "$ALVO"; fi
 
       - name: Gerar dashboards de leads
         id: leads
+        if: steps.alvo.outputs.leads != ''
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
-        run: python gerar_leads.py
+          ALVO: ${{ steps.alvo.outputs.leads }}
+        run: if [ "$ALVO" = todos ]; then python gerar_leads.py; else python gerar_leads.py "$ALVO"; fi
 
       - name: Gerar dashboards de lancamento
         id: lancamento
+        if: steps.alvo.outputs.lancamento != ''
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
-        run: python gerar_lancamento.py
+          ALVO: ${{ steps.alvo.outputs.lancamento }}
+        run: if [ "$ALVO" = todos ]; then python gerar_lancamento.py; else python gerar_lancamento.py "$ALVO"; fi
 
-      # O Pages troca o site inteiro a cada publicacao: dashboard que nao foi gerado hoje sumiria do ar.
-      # Pra nao quebrar o link do cliente, volta a ultima versao publicada dele.
-      - name: Manter no ar a ultima versao dos que falharam
+      # O Pages troca o site inteiro a cada publicacao: dashboard que nao foi gerado nesta rodada sumiria do ar.
+      # Volta a ultima versao publicada dele (o ?t= fura o cache do Pages). So avisa se era pra ter sido gerado.
+      - name: Manter no ar a ultima versao dos que nao foram gerados
+        env:
+          ALVO_DISTRIBUICAO: ${{ steps.alvo.outputs.distribuicao }}
+          ALVO_VENDAS: ${{ steps.alvo.outputs.vendas }}
+          ALVO_BLACK: ${{ steps.alvo.outputs.black }}
+          ALVO_LEADS: ${{ steps.alvo.outputs.leads }}
+          ALVO_LANCAMENTO: ${{ steps.alvo.outputs.lancamento }}
         run: |
           for cfg in clientes/*/config.json vendas/*/config.json black/*/config.json leads/*/config.json lancamento/*/config.json; do
             dir=$(dirname "$cfg"); slug=$(basename "$dir"); tipo=$(dirname "$dir")
-            if [ "$tipo" = clientes ]; then destino="$slug"; else destino="$tipo/$slug"; fi
+            if [ "$tipo" = clientes ]; then destino="$slug"; var=ALVO_DISTRIBUICAO; else destino="$tipo/$slug"; var="ALVO_${tipo^^}"; fi
             [ -f "site/$destino/index.html" ] && continue
+            alvo="${!var}"; [ "$alvo" = todos ] || [ "$alvo" = "$slug" ] && falhou=1 || falhou=0
             mkdir -p "site/$destino"
-            if curl -sfL "https://carlos-primo.github.io/c2pro-dashboards/$destino/" -o "site/$destino/index.html"; then
+            if curl -sfL "https://carlos-primo.github.io/c2pro-dashboards/$destino/?t=$(date +%s)" -o "site/$destino/index.html"; then
               cp logo.png "site/$destino/logo.png"
-              echo "::warning::$destino nao foi gerado hoje; ficou no ar a ultima versao publicada"
+              [ $falhou = 1 ] && echo "::warning::$destino nao foi gerado; ficou no ar a ultima versao publicada"
             else
               rm -rf "site/$destino"
-              echo "::warning::$destino nao foi gerado hoje e nao tinha versao publicada"
+              [ $falhou = 1 ] && echo "::warning::$destino nao foi gerado e nao tinha versao publicada"
             fi
           done
+          true
 
       # Paginas estaticas (planejamentos, relatorios fechados de cliente e apresentacoes): so copiar pro site.
       - name: Copiar planejamentos
