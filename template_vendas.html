@@ -412,6 +412,8 @@ function desenhar(){
     ${funil(a, b)}
   </section>
 
+  ${blocoCheckout()}
+
   <section>
     <div class="sec-head"><div><h2>Entrega</h2><p class="sub">Verba e alcance das campanhas de vendas.</p></div></div>
     <div class="tiles">
@@ -480,6 +482,37 @@ function desenhar(){
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
     p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+}
+
+function blocoCheckout(){
+  const C = D.checkout;
+  if (!C || !C.dias.length) return "";
+  const soma = k => C.dias.reduce((t,d) => t + d[k], 0);
+  const gasto = D.diario.filter(d => d.data >= C.desde).reduce((t,d) => t + d.gasto, 0);
+  const visitasAnuncio = D.diario.filter(d => d.data >= C.desde).reduce((t,d) => t + d.visitas, 0);
+  const ch = soma("checkouts"), pg = soma("pagamentos"), cp = soma("compras");
+  const fim = C.dias[C.dias.length-1].data;
+  return `<section>
+    <div class="sec-head"><div><h2>Checkout desde o início das campanhas</h2>
+      <p class="sub">De ${dataBRano(C.desde)} a ${dataBRano(fim)}. Tudo o que passou pela página de pagamento, vindo de qualquer origem.</p></div></div>
+    <div class="tiles">
+      ${tile("Checkouts iniciados", fmtInt(ch), "", "pessoas que abriram o pagamento", true)}
+      ${tile("Visitas ao checkout", fmtInt(soma("visitas")), "", "aberturas da página de pagamento")}
+      ${tile("Pagamentos informados", fmtInt(pg), "", "preencheram os dados de pagamento")}
+      ${tile("Compras no checkout", fmtInt(cp), "", "vendas confirmadas no pagamento")}
+      ${tile("Visitas pelos anúncios", fmtInt(visitasAnuncio), "", `${fmtMoeda(gasto)} investidos no período`)}
+    </div>
+    <div class="alerta"><div><b>Como ler:</b> a página de vendas e o checkout registram as visitas em pixels separados,
+      e o checkout não identifica de qual anúncio a pessoa veio. Por isso estes números reúnem todas as origens
+      (anúncios, Instagram, WhatsApp, indicações e e-mail) e não são só das campanhas. A etapa "checkouts" do funil acima
+      mostra apenas o que a Meta conseguiu ligar a um anúncio.</div></div>
+    <details><summary>Ver o checkout dia a dia</summary>
+      <div class="card tbl-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>Dia</th><th>Visitas ao checkout</th><th>Checkouts iniciados</th><th>Pagamentos informados</th><th>Compras</th></tr></thead>
+        <tbody>${C.dias.slice().reverse().map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtInt(d.visitas)}</td>
+          <td>${fmtInt(d.checkouts)}</td><td>${fmtInt(d.pagamentos)}</td><td class="${d.compras?"hl":""}">${fmtInt(d.compras)}</td></tr>`).join("")}</tbody>
+      </table></div></details>
+  </section>`;
 }
 
 function statusBadge(s){

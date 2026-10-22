@@ -2,5 +2,9 @@
   "nome": "Vita Hair",
   "subtitulo": "Campanhas de vendas",
   "conta_anuncio": "act_1320774509162020",
-  "criativos_gasto_minimo": 5
+  "criativos_gasto_minimo": 5,
+  "checkout": {
+    "pixel_id": "1798570677293586",
+    "desde": "2026-10-16"
+  }
 }
