@@ -298,7 +298,7 @@ function desenhar(){
 
   <section>
     <div class="tiles">
-      ${tile(R().pl, fmtInt(a[K()]), K() === "contatos" && a.leads > 0 ? `${plural(a.leads, "lead de formulário", "leads de formulário")}` : null, true)}
+      ${tile(R().pl, fmtInt(a[K()]), null, true)}
       ${tile(`Criativos que geraram ${R().um}`, fmtInt(comLead.length), `de ${plural(P.criativos.length, "criativo que rodou", "criativos que rodaram")}`)}
     </div>
   </section>
