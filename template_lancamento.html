@@ -53,11 +53,12 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:20p
 .meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
 
 .card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
-.tile{padding:20px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.tile{padding:20px;container-type:inline-size;min-width:0}
 .tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
 .tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
-.tile .val{font:600 24px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+/* O valor encolhe com o card (até 14 caracteres cabem numa linha) em vez de vazar pro card do lado. */
+.tile .val{font:600 20px/1.1 var(--mono);font-size:min(24px,11.5cqi);white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
 .tile.hero .val{color:var(--acc-h)}
 .tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
 .delta{display:inline-block;margin-top:10px;font:500 12px/1 var(--mono);color:var(--t-faint)}
@@ -193,6 +194,30 @@ tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
 .ad .acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .lnk.btnf{cursor:pointer;background:none;font-family:Inter,sans-serif}
 .dica{margin-top:10px;font-size:12px;color:var(--t-faint)}
+.alerta.info svg{color:var(--acc)}
+
+/* ---------- distribuição e geral ---------- */
+.ret{padding:20px}
+.ret h3{margin:0 0 4px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.ret .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:0 0 16px}
+.ret-row{display:grid;grid-template-columns:92px 1fr 150px;gap:12px;align-items:center;margin-bottom:10px;font:400 12px/1.3 var(--mono)}
+.ret-row .k{color:var(--t-muted)}
+.ret-row .bar{height:14px;border-radius:0 4px 4px 0;background:var(--acc);min-width:2px}
+.ret-row .track{background:var(--s1);border-radius:0 4px 4px 0}
+.ret-row .v{color:var(--t-strong);text-align:right;white-space:nowrap}
+.ret-row .v span{color:var(--t-faint)}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.split > .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.verba{padding:20px}
+.verba-row{display:grid;grid-template-columns:150px 1fr 190px;gap:12px;align-items:center;margin-bottom:12px;font:400 13px/1.3 var(--mono)}
+.verba-row:last-child{margin-bottom:0}
+.verba-row .k{font-family:Inter,sans-serif;color:var(--t-strong);font-weight:500}
+.verba-row .track{background:var(--s1);border-radius:4px;height:14px}
+.verba-row .bar{height:14px;border-radius:4px;background:var(--acc);min-width:2px}
+.verba-row .bar.dist{background:rgba(0,216,245,.5)}
+.verba-row .bar.outras{background:var(--t-faint)}
+.verba-row .v{text-align:right;color:var(--t-strong);white-space:nowrap}
+.verba-row .v span{color:var(--t-faint)}
 
 @media (max-width:760px){
   .funil{padding:20px 16px}
@@ -204,7 +229,11 @@ tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
   .fn-conn .nota{grid-column:1;text-align:center;margin-top:6px}
   .filtros{grid-template-columns:1fr}
   .tile{padding:16px}
-  .tile .val{font-size:clamp(17px,4.8vw,24px)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split > .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ret-row{grid-template-columns:72px 1fr 112px}
+  .verba-row{grid-template-columns:1fr auto;grid-template-areas:"k v" "t t";gap:6px 12px}
+  .verba-row .k{grid-area:k} .verba-row .v{grid-area:v} .verba-row .track{grid-area:t}
   .ads{grid-template-columns:1fr}
   .ad{grid-template-columns:80px 1fr}
   .ad .thumb{width:80px;height:108px}
@@ -228,7 +257,9 @@ let MOEDA = "BRL";
 const fmtMoeda = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:MOEDA}).format(v||0);
 const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
 const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
-const fmtX = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"x";
+const fmtNum2 = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0);
+// ROAS como o Gerenciador de Anúncios mostra: só o número (2,01 = cada R$ 1 investido voltou R$ 2,01).
+const roasOu = v => v == null ? "-" : fmtNum2(v);
 const fmtCompacto = v => new Intl.NumberFormat("pt-BR",{notation:"compact",maximumFractionDigits:1}).format(v||0);
 const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
 const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
@@ -237,17 +268,39 @@ const div = (a,b) => b ? a/b : null;
 const moedaOu = v => v == null ? "-" : fmtMoeda(v);
 const pctOu = v => v == null ? "-" : fmtPct(v);
 
+// Vendas reais (planilha do cliente). Sem planilha no config, tudo continua vindo do pixel.
+// Com planilha: faturamento = ingressos × ticket líquido (o valor que o pixel manda não é confiável).
+const VR = () => D.vendas_reais || null;
+
+// Ingressos de um dia: planilha até o dia em que ela foi atualizada; depois disso, o pixel daquele dia.
+function vendasDia(d){
+  if (!VR()) return d.compras;
+  return d.data <= VR().ate ? (VR().por_dia[d.data] || 0) : d.compras;
+}
+function vendasEntre(ini, fim){
+  const dias = D.diario.filter(d => d.data >= ini && d.data <= fim);
+  return {n: dias.reduce((s, d) => s + vendasDia(d), 0), diasPixel: VR() ? dias.filter(d => d.data > VR().ate).length : 0};
+}
+// Troca as compras do pixel pelos ingressos reais no total de um período (guarda o pixel pra comparar).
+function comReais(m, ini, fim){
+  if (!m || !VR()) return m;
+  const v = vendasEntre(ini, fim);
+  return {...m, compras_pixel: m.compras, compras: v.n, dias_pixel: v.diasPixel, real: true};
+}
+
 // Métricas do funil. Todas as taxas em %.
 function derivadas(m){
   if (!m) return null;
-  return { ...m,
+  const fat = VR() ? m.compras * VR().ticket_liquido : m.faturamento;
+  return { ...m, faturamento: fat, bruto: VR() ? m.compras * VR().preco : null, lucro: VR() ? fat - m.gasto : null,
     cpm: div(m.gasto*1000, m.impressoes), freq: div(m.impressoes, m.alcance),
     ctr: div(m.cliques*100, m.impressoes), connect: div(m.visitas*100, m.cliques),
     tx_checkout: div(m.checkouts*100, m.visitas), tx_compra: div(m.compras*100, m.checkouts),
     tx_total: div(m.compras*100, m.visitas), tx_cadastro: div(m.cadastros*100, m.visitas),
     cpc: div(m.gasto, m.cliques), c_visita: div(m.gasto, m.visitas), c_cadastro: div(m.gasto, m.cadastros),
-    c_checkout: div(m.gasto, m.checkouts), cpa: div(m.gasto, m.compras),
-    roas: div(m.faturamento, m.gasto), ticket: div(m.faturamento, m.compras) };
+    // Sem investimento não existe custo por ingresso (as vendas vieram de outro lugar).
+    c_checkout: div(m.gasto, m.checkouts), cpa: m.gasto ? div(m.gasto, m.compras) : null,
+    roas: div(fat, m.gasto), ticket: div(fat, m.compras) };
 }
 
 const SOMAVEIS = ["gasto","impressoes","cliques","visitas","cadastros","checkouts","compras","faturamento"];
@@ -301,7 +354,10 @@ async function iniciar(){
 
 // ---------- estado ----------
 let D, PER = ler("c2pro-lanc-periodo", "todo");
-let ABA = location.hash === "#filtro" ? "filtro" : ler("c2pro-lanc-aba", "geral");
+// Abas: geral = captação (nome antigo mantido pra quem já tinha a aba salva), dist = distribuição, total = conta toda.
+const HASH = {filtro:"#filtro", dist:"#distribuicao", total:"#geral"};
+let ABA = Object.keys(HASH).find(k => HASH[k] === location.hash) || ler("c2pro-lanc-aba", "geral");
+let ORDEM_D = ler("c2pro-lanc-ordem-dist", "cpv");
 let ORDEM = ler("c2pro-lanc-ordem", "cpa");
 let DIM = ler("c2pro-lanc-dim", "cr");
 const FILTRO = {cp:"", pb:"", cr:""};
@@ -311,6 +367,8 @@ function render(dados){
   if (!D.periodos[PER]) PER = "todo";
   if (!ORDENS[ORDEM]) ORDEM = "cpa";
   if (!DIMS[DIM]) DIM = "cr";
+  if (!ORDENS_D[ORDEM_D]) ORDEM_D = "cpv";
+  if (!abas().some(t => t.k === ABA)) ABA = "geral";
   desenhar();
 }
 
@@ -386,10 +444,13 @@ function funil(a, b){
 
   let html = `<div class="card funil">
     <div class="fn-cols"><div>Etapa</div><div style="text-align:center">Volume</div><div>Custo por etapa</div></div>`;
+  // Última etapa: diz de onde vem o número de ingressos.
+  const descCompra = a.real ? `Planilha de vendas · o pixel registrou ${fmtInt(a.compras_pixel)}`
+    : VR() ? "Registrados pelo pixel" : ETAPAS[ETAPAS.length-1].desc;
   ETAPAS.forEach((e, i) => {
     const pctTopo = i && a.impressoes ? `${fmtPct(a[e.k]*100/a.impressoes)} das impressões` : (i ? "" : "topo do funil");
     html += `<div class="fn-row${i === ETAPAS.length-1 ? " fim" : ""}">
-      <div class="fn-nome"><div class="n">${e.nome}</div><div class="d">${e.desc}</div></div>
+      <div class="fn-nome"><div class="n">${e.nome}</div><div class="d">${i === ETAPAS.length-1 ? descCompra : e.desc}</div></div>
       <div class="fn-forma">${forma(i)}<div class="q"><b>${fmtInt(a[e.k])}</b><span>${pctTopo}</span></div></div>
       <div class="fn-custo"><div class="l">${e.custo}</div><div class="v">${moedaOu(e.cv(a))}</div>${b ? delta(e.cv(a), e.cv(b), "desce") : ""}</div>
     </div>`;
@@ -400,9 +461,11 @@ function funil(a, b){
   });
   html += `<div class="fn-rodape">
       <div>Da visita à compra: <b>${pctOu(a.tx_total)}</b></div>
-      <div>Faturamento: <b>${fmtMoeda(a.faturamento)}</b></div>
-      <div>ROAS: <b>${a.roas == null ? "-" : fmtX(a.roas)}</b></div>
-      <div>Ticket médio: <b>${moedaOu(a.ticket)}</b></div>
+      ${VR() ? `<div>Faturamento líquido: <b>${fmtMoeda(a.faturamento)}</b></div>
+      <div>Faturamento bruto: <b>${fmtMoeda(a.bruto)}</b></div>
+      <div>ROAS: <b>${roasOu(a.roas)}</b></div>` : `<div>Faturamento: <b>${fmtMoeda(a.faturamento)}</b></div>
+      <div>ROAS: <b>${roasOu(a.roas)}</b></div>
+      <div>Ticket médio: <b>${moedaOu(a.ticket)}</b></div>`}
       <div>Cadastros (lead): <b>${fmtInt(a.cadastros)}</b> · ${moedaOu(a.c_cadastro)} cada</div>
     </div>`;
   if (pior) {
@@ -449,20 +512,30 @@ function desenhar(){
   <div class="meta">
     <span>Período: ${faixa(P.inicio, P.fim)}</span>
     <span>${P.ant_inicio ? `Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}` : "Sem comparação (o lançamento começou em " + dataBR(D.inicio) + ")"}</span>
+    ${VR() ? `<span>Vendas reais: planilha até ${dataBR(VR().ate)}</span>` : ""}
     <span>Atualizado em ${quando}</span>
   </div>
   <div class="tabs" role="tablist">
-    <button role="tab" data-aba="geral" aria-selected="${ABA==="geral"}">Visão geral</button>
-    <button role="tab" data-aba="filtro" aria-selected="${ABA==="filtro"}">Funil filtrado <span style="font-weight:400;color:var(--t-faint)">por campanha, público ou criativo</span></button>
+    ${abas().map(t => `<button role="tab" data-aba="${t.k}" aria-selected="${ABA===t.k}">${t.nome}${t.extra ? ` <span style="font-weight:400;color:var(--t-faint)">${t.extra}</span>` : ""}</button>`).join("")}
   </div>
-  ${ABA === "geral" ? visaoGeral(P) : visaoFiltro(P)}
+  ${{geral: visaoGeral, filtro: visaoFiltro, dist: visaoDist, total: visaoTotal}[ABA](P)}
   <footer>
-    <div class="defs"><b>CPM:</b> investimento ÷ impressões × 1.000. <b>CTR:</b> cliques no link ÷ impressões.
+    ${ABA === "dist" ? `<div class="defs"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos.
+      <b>Custo por view 25/50/75%:</b> investimento ÷ pessoas que assistiram até esse ponto do vídeo.
+      <b>Custo por engajamento:</b> investimento ÷ engajamentos com a publicação.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "DISTRIBUICAO" no nome.`
+    : `<div class="defs"><b>CPM:</b> investimento ÷ impressões × 1.000. <b>CTR:</b> cliques no link ÷ impressões.
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> ingressos vendidos ÷ checkouts iniciados.
-      <b>Cadastros:</b> evento de lead registrado pelo pixel. <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento.
+      <b>Cadastros:</b> evento de lead registrado pelo pixel.
+      ${VR() ? `<b>Faturamento líquido:</b> ingressos × ${fmtMoeda(VR().ticket_liquido)} (o que entra por ingresso depois das taxas). <b>Faturamento bruto:</b> ingressos × ${fmtMoeda(VR().preco)} (preço cobrado).
+      <b>ROAS:</b> faturamento líquido ÷ investimento (2,00 = cada R$ 1 investido voltou R$ 2).`
+      : `<b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento.`}
       <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome. Ingressos e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, ${ABA === "total" ? "todas as campanhas da conta" : `só campanhas com "${esc(D.filtro)}" no nome`}.
+      ${VR() ? `Ingressos vendidos no total do lançamento vêm da planilha de vendas (${esc(VR().fonte)}) Por campanha, público e criativo, só o pixel sabe de onde veio cada venda, então ali os ingressos são os do pixel.`
+      : "Ingressos e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento."}`}
+      Atualiza sozinho todo dia de madrugada. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
@@ -472,6 +545,9 @@ function desenhar(){
   app.querySelectorAll("[data-aba]").forEach(bt => bt.addEventListener("click", () => irAba(bt.dataset.aba)));
   app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
     ORDEM = bt.dataset.o; guardar("c2pro-lanc-ordem", ORDEM); manter(desenhar);
+  }));
+  app.querySelectorAll("[data-od]").forEach(bt => bt.addEventListener("click", () => {
+    ORDEM_D = bt.dataset.od; guardar("c2pro-lanc-ordem-dist", ORDEM_D); manter(desenhar);
   }));
   app.querySelectorAll("[data-dim]").forEach(bt => bt.addEventListener("click", () => {
     DIM = bt.dataset.dim; guardar("c2pro-lanc-dim", DIM); manter(desenhar);
@@ -502,25 +578,55 @@ function manter(fn){ const y = window.scrollY; fn(); window.scrollTo(0, y); }
 
 function irAba(aba, topo){
   ABA = aba; guardar("c2pro-lanc-aba", ABA);
-  history.replaceState(null, "", aba === "filtro" ? "#filtro" : location.pathname + location.search);
+  history.replaceState(null, "", HASH[aba] || location.pathname + location.search);
   if (topo) { desenhar(); document.querySelector(".tabs").scrollIntoView({behavior:"smooth"}); }
   else manter(desenhar);
 }
 
-// ---------- aba 1: visão geral ----------
-function visaoGeral(P){
-  const a = derivadas(P.atual), b = derivadas(P.anterior);
-  const DD = D.diario.map(d => derivadas(d));
-  return `
-  <section>
-    <div class="tiles">
+function abas(){
+  return [
+    {k:"geral", nome:"Captação"},
+    {k:"filtro", nome:"Funil filtrado", extra:"por campanha, público ou criativo"},
+    ...(D.diario_distribuicao ? [{k:"dist", nome:"Distribuição"}] : []),
+    ...(VR() && D.diario_geral ? [{k:"total", nome:"Geral", extra:"todo o investimento × vendas"}] : []),
+  ];
+}
+
+// Aviso quando o período passa do último dia que a planilha cobre (esses dias usam o pixel).
+function avisoPlanilha(a){
+  if (!a || !a.real || !a.dias_pixel) return "";
+  return `<div class="alerta info">${ICO_ALERT}<div>A planilha de vendas vai até <b>${dataBRano(VR().ate)}</b>.
+    ${a.dias_pixel === 1 ? "O dia seguinte usa" : `Os ${a.dias_pixel} dias seguintes usam`} os ingressos registrados pelo pixel até a planilha ser atualizada.</div></div>`;
+}
+
+// Cards do resumo de vendas. Com planilha: ingressos reais, faturamento líquido e resultado; sem: o pixel.
+function tilesVendas(a, b, rotuloInvest){
+  if (!a.real) return `
       ${tile("Custo por ingresso", moedaOu(a.cpa), dl(a,b,"cpa","desce"), `${fmtInt(a.compras)} ingressos`, true)}
       ${tile("Ingressos vendidos", fmtInt(a.compras), dl(a,b,"compras","sobe"))}
-      ${tile("Investimento", fmtMoeda(a.gasto), dl(a,b,"gasto",null))}
+      ${tile(rotuloInvest, fmtMoeda(a.gasto), dl(a,b,"gasto",null))}
       ${tile("Faturamento", fmtMoeda(a.faturamento), dl(a,b,"faturamento","sobe"))}
-      ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), dl(a,b,"roas","sobe"), "faturamento ÷ investimento")}
-      ${tile("Ticket médio", moedaOu(a.ticket), dl(a,b,"ticket","sobe"))}
-    </div>
+      ${tile("ROAS", roasOu(a.roas), dl(a,b,"roas","sobe"), "faturamento ÷ investimento")}
+      ${tile("Ticket médio", moedaOu(a.ticket), dl(a,b,"ticket","sobe"))}`;
+  return `
+      ${tile("Custo por ingresso", moedaOu(a.cpa), dl(a,b,"cpa","desce"), a.gasto ? `${fmtMoeda(a.gasto)} ÷ ${fmtInt(a.compras)} ${a.compras === 1 ? "ingresso" : "ingressos"}` : "sem investimento no período", true)}
+      ${tile("Ingressos vendidos", fmtInt(a.compras), dl(a,b,"compras","sobe"), `planilha · pixel: ${fmtInt(a.compras_pixel)}`)}
+      ${tile(rotuloInvest, fmtMoeda(a.gasto), dl(a,b,"gasto",null))}
+      ${tile("Faturamento líquido", fmtMoeda(a.faturamento), dl(a,b,"faturamento","sobe"), `bruto: ${fmtMoeda(a.bruto)}`)}
+      ${tile("ROAS", roasOu(a.roas), dl(a,b,"roas","sobe"), "faturamento líquido ÷ investimento")}
+      ${tile("Resultado", fmtMoeda(a.lucro), b && b.lucro > 0 ? dl(a,b,"lucro","sobe") : "", "faturamento líquido − investimento")}`;
+}
+
+// ---------- aba 1: captação ----------
+function visaoGeral(P){
+  const a = derivadas(comReais(P.atual, P.inicio, P.fim));
+  const b = P.anterior ? derivadas(comReais(P.anterior, P.ant_inicio, P.ant_fim)) : null;
+  const DD = D.diario.map(d => derivadas({...d, compras: vendasDia(d)}));
+  const fontePorDia = VR() ? ` (planilha${D.diario.some(d => d.data > VR().ate) ? `; depois de ${dataBR(VR().ate)}, pixel` : ""})` : "";
+  return `
+  <section>
+    <div class="tiles">${tilesVendas(a, b, "Investimento")}</div>
+    ${avisoPlanilha(a)}
   </section>
 
   <section>
@@ -533,7 +639,7 @@ function visaoGeral(P){
     <div class="tiles">
       ${tile("Alcance", fmtInt(a.alcance), dl(a,b,"alcance","sobe"))}
       ${tile("Impressões", fmtInt(a.impressoes), dl(a,b,"impressoes","sobe"))}
-      ${tile("Frequência", a.freq==null?"-":fmtX(a.freq).replace("x",""), dl(a,b,"freq",null))}
+      ${tile("Frequência", a.freq==null?"-":fmtNum2(a.freq), dl(a,b,"freq",null))}
       ${tile("CPM", moedaOu(a.cpm), dl(a,b,"cpm","desce"))}
       ${tile("CPC", moedaOu(a.cpc), dl(a,b,"cpc","desce"))}
       ${tile("Cadastros (lead)", fmtInt(a.cadastros), dl(a,b,"cadastros","sobe"), `${moedaOu(a.c_cadastro)} por cadastro`)}
@@ -544,7 +650,7 @@ function visaoGeral(P){
     <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Desde o início do lançamento (${dataBR(D.inicio)}), independente do período selecionado.</p></div></div>
     <div class="charts">
       <div class="card chart"><h3>Ingressos vendidos por dia</h3>
-        <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.compras,0))} ingressos</div><svg id="c-compras"></svg></div>
+        <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.compras,0))} ingressos${fontePorDia}</div><svg id="c-compras"></svg></div>
       <div class="card chart"><h3>Checkouts iniciados por dia</h3>
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.checkouts,0))} checkouts</div><svg id="c-checkouts"></svg></div>
       <div class="card chart"><h3>Custo por ingresso por dia</h3>
@@ -557,10 +663,11 @@ function visaoGeral(P){
           <td>${moedaOu(d.cpm)}</td><td>${pctOu(d.ctr)}</td><td>${pctOu(d.connect)}</td><td>${pctOu(d.tx_checkout)}</td>
           <td>${pctOu(d.tx_compra)}</td><td>${fmtInt(d.checkouts)}</td><td>${fmtInt(d.compras)}</td><td class="${d.compras?"hl":""}">${moedaOu(d.cpa)}</td></tr>`).join("")}</tbody>
       </table></div></details>
+    ${VR() ? `<p class="dica">A planilha guarda o dia em que cada comprador entrou nela; as vendas de antes de ${dataBR(Object.keys(VR().por_dia).sort()[0] || VR().ate)} aparecem somadas nesse dia.</p>` : ""}
   </section>
 
   <section>
-    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Clique numa linha pra ver o funil só dela.</p></div></div>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Clique numa linha pra ver o funil só dela.${VR() ? " Ingressos daqui pra baixo são os do pixel: só ele sabe de qual anúncio veio a venda." : ""}</p></div></div>
     ${tabela(P.linhas, "cp")}
   </section>
 
@@ -592,7 +699,7 @@ function tabela(linhas, dim, selecionado){
     .map(([k, ls]) => ({k, m: derivadas(somar(ls)), ls}))
     .filter(g => g.m.gasto > 0).sort((x, y) => y.m.gasto - x.m.gasto);
   if (!grupos.length) return `<div class="card empty">Nada com investimento no período${temFiltro() ? " com esses filtros" : ""}.</div>`;
-  const d = DIMS[dim];
+  const d = DIMS[dim], px = VR() ? " (pixel)" : "";
   const extra = g => {
     if (dim === "pb") { const cps = [...new Set(g.ls.map(l => l.cp))]; return `<span class="sub-cp">${esc(cps.map(c => DIMS.cp.nome(c)).join(", "))}</span>`; }
     if (dim === "cr") { const n = new Set(g.ls.map(l => l.pb)).size; return `<span class="sub-cp">em ${n} ${n === 1 ? "público" : "públicos"}</span>`; }
@@ -600,13 +707,13 @@ function tabela(linhas, dim, selecionado){
   };
   return `<div class="card tbl-wrap"><table>
     <thead><tr><th>${d.label}</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>Connect</th><th>Pág. para checkout</th>
-      <th>Checkout para compra</th><th>Ingressos</th><th>Custo por ingresso</th><th>Faturamento</th><th>ROAS</th></tr></thead>
+      <th>Checkout para compra</th><th>Ingressos${px}</th><th>Custo por ingresso</th><th>Faturamento${VR() ? " líq." : ""}</th><th>ROAS</th></tr></thead>
     <tbody>${grupos.map(({k, m, ls}) =>
       `<tr class="clic${selecionado === k ? " sel" : ""}" tabindex="0" data-sel='${esc(JSON.stringify([dim, k]))}' title="Ver o funil só deste item">
         <td>${esc(d.nome(k))}${statusBadge(d.status(k))}${extra({ls})}</td><td>${fmtMoeda(m.gasto)}</td><td>${moedaOu(m.cpm)}</td>
         <td>${pctOu(m.ctr)}</td><td>${pctOu(m.connect)}</td><td>${pctOu(m.tx_checkout)}</td><td>${pctOu(m.tx_compra)}</td>
         <td>${fmtInt(m.compras)}</td><td class="hl">${moedaOu(m.cpa)}</td><td>${fmtMoeda(m.faturamento)}</td>
-        <td>${m.roas==null?"-":fmtX(m.roas)}</td></tr>`).join("")}</tbody></table></div>`;
+        <td>${roasOu(m.roas)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function miniFunil(m){
@@ -640,9 +747,9 @@ function cardCriativo(c, pos){
   return `<div class="card ad">${thumb}<div>
     <div class="nm">${esc(c.nome)}${statusBadge(c.status)}</div><div class="cp">em ${c.publicos} ${c.publicos === 1 ? "público" : "públicos"}</div>
     <div class="kpis">
-      ${kpi("cpa","Custo por ingresso",moedaOu(m.cpa))}${kpi("comp","Ingressos",fmtInt(m.compras))}
+      ${kpi("cpa","Custo por ingresso",moedaOu(m.cpa))}${kpi("comp",VR() ? "Ingressos (pixel)" : "Ingressos",fmtInt(m.compras))}
       ${kpi("ctr","CTR",pctOu(m.ctr))}${kpi("cchk","Custo por checkout",moedaOu(m.c_checkout))}
-      ${kpi("","Investido",fmtMoeda(m.gasto))}${kpi("","Faturamento",fmtMoeda(m.faturamento))}
+      ${kpi("","Investido",fmtMoeda(m.gasto))}${kpi("",VR() ? "Faturamento líq." : "Faturamento",fmtMoeda(m.faturamento))}
       ${miniFunil(m)}
     </div>
     <div class="acoes">
@@ -671,7 +778,10 @@ function opcoes(dim){
 
 function visaoFiltro(P){
   const linhas = filtrar(P.linhas), linhasAnt = P.linhas_ant ? filtrar(P.linhas_ant) : null;
-  const a = derivadas(somar(linhas)), b = linhasAnt ? derivadas(somar(linhasAnt)) : null;
+  // Sem filtro é o lançamento todo: vale a planilha. Com filtro, só o pixel sabe de onde veio a venda.
+  const real = !temFiltro();
+  const a = derivadas(real ? comReais(somar(linhas), P.inicio, P.fim) : somar(linhas));
+  const b = linhasAnt ? derivadas(real ? comReais(somar(linhasAnt), P.ant_inicio, P.ant_fim) : somar(linhasAnt)) : null;
   const sel = dim => `<div><label for="f-${dim}">${DIMS[dim].label}</label>
     <select id="f-${dim}" data-f="${dim}" class="${FILTRO[dim] ? "on" : ""}">
       <option value="">${dim === "cr" ? "Todos os criativos" : dim === "pb" ? "Todos os públicos" : "Todas as campanhas"}</option>
@@ -691,14 +801,9 @@ function visaoFiltro(P){
 
   ${a.gasto > 0 || a.impressoes > 0 ? `
   <section>
-    <div class="tiles">
-      ${tile("Custo por ingresso", moedaOu(a.cpa), dl(a,b,"cpa","desce"), `${fmtInt(a.compras)} ingressos`, true)}
-      ${tile("Ingressos vendidos", fmtInt(a.compras), dl(a,b,"compras","sobe"))}
-      ${tile("Investimento", fmtMoeda(a.gasto), dl(a,b,"gasto",null))}
-      ${tile("Faturamento", fmtMoeda(a.faturamento), dl(a,b,"faturamento","sobe"))}
-      ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), dl(a,b,"roas","sobe"), "faturamento ÷ investimento")}
-      ${tile("Cadastros (lead)", fmtInt(a.cadastros), dl(a,b,"cadastros","sobe"), `${moedaOu(a.c_cadastro)} por cadastro`)}
-    </div>
+    <div class="tiles">${tilesVendas(a, b, "Investimento")}</div>
+    ${avisoPlanilha(a)}
+    ${VR() && !real ? `<p class="dica">Com filtro, os ingressos e o faturamento são os do pixel (${fmtMoeda(VR().ticket_liquido)} líquidos por ingresso). Limpe os filtros pra ver o total da planilha.</p>` : ""}
   </section>
 
   <section>
@@ -726,6 +831,192 @@ function visaoFiltro(P){
   </section>`;
 }
 
+// ---------- aba 3: distribuição (mesmas métricas do dashboard de distribuição) ----------
+// Hook rate = views 3s ÷ impressões. Retenção = ThruPlay ÷ views 3s.
+function derivadasDist(m){
+  if (!m) return null;
+  return { ...m,
+    cpm: div(m.gasto*1000, m.impressoes), freq: div(m.impressoes, m.alcance),
+    cpv: div(m.gasto, m.views3s), c25: div(m.gasto, m.p25), c50: div(m.gasto, m.p50), c75: div(m.gasto, m.p75),
+    cthru: div(m.gasto, m.thruplay), ceng: div(m.gasto, m.engajamento),
+    hook: div(m.views3s*100, m.impressoes), ret: div(m.thruplay*100, m.views3s) };
+}
+
+// Custo de view costuma ficar abaixo de 1 centavo: aí mostra 3 casas em vez de "R$ 0,00".
+const moedaFina = v => v == null ? "-" : v < 0.1
+  ? new Intl.NumberFormat("pt-BR",{style:"currency",currency:MOEDA,minimumFractionDigits:3,maximumFractionDigits:3}).format(v) : fmtMoeda(v);
+
+const ORDENS_D = {
+  cpv:  {label:"Custo por view",        val:m => m.cpv,  melhor:"menor"},
+  hook: {label:"Hook rate",             val:m => m.hook, melhor:"maior"},
+  ret:  {label:"Retenção",              val:m => m.ret,  melhor:"maior"},
+  ceng: {label:"Custo por engajamento", val:m => m.ceng, melhor:"menor"},
+};
+
+function visaoDist(P){
+  const X = P.distribuicao;
+  const a = derivadasDist(X.atual), b = derivadasDist(X.anterior);
+  const dd = (k, melhor) => b ? delta(a[k], b[k], melhor) : "";
+  const tempo = v => v ? new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v) + "s" : "-";
+  const DS = D.diario_distribuicao;
+  if (!a.gasto) return `<section><div class="card empty">Nenhuma campanha de distribuição com investimento neste período.</div></section>`;
+  return `
+  <section>
+    <div class="sec-head"><div><h2>Custo de visualização</h2><p class="sub">Quanto custa cada pessoa que assiste, em cada ponto do vídeo.</p></div></div>
+    <div class="tiles">
+      ${tile("Custo por view (3s)", moedaFina(a.cpv), dd("cpv","desce"), `${fmtInt(a.views3s)} views`, true)}
+      ${tile("Custo por view 25%", moedaFina(a.c25), dd("c25","desce"), `${fmtInt(a.p25)} views`)}
+      ${tile("Custo por view 50%", moedaFina(a.c50), dd("c50","desce"), `${fmtInt(a.p50)} views`)}
+      ${tile("Custo por view 75%", moedaFina(a.c75), dd("c75","desce"), `${fmtInt(a.p75)} views`)}
+      ${tile("Custo por engajamento", moedaFina(a.ceng), dd("ceng","desce"), `${fmtInt(a.engajamento)} engajamentos`)}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Atenção e retenção</h2><p class="sub">Quanto o vídeo prende quem é impactado.</p></div></div>
+    <div class="split">
+      <div class="tiles">
+        ${tile("Hook rate", pctOu(a.hook), dd("hook","sobe"), "views 3s ÷ impressões")}
+        ${tile("Retenção", pctOu(a.ret), dd("ret","sobe"), "ThruPlay ÷ views 3s")}
+        ${tile("Tempo médio assistido", tempo(a.tempo_medio), b ? delta(a.tempo_medio||null, b.tempo_medio||null, "sobe") : "")}
+        ${tile("Custo por ThruPlay", moedaFina(a.cthru), dd("cthru","desce"), `${fmtInt(a.thruplay)} ThruPlays`)}
+      </div>
+      ${curvaRetencao(a)}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Entrega</h2><p class="sub">Verba e alcance das campanhas de distribuição.</p></div></div>
+    <div class="tiles">
+      ${tile("Investimento", fmtMoeda(a.gasto), dd("gasto",null))}
+      ${tile("Alcance", fmtInt(a.alcance), dd("alcance","sobe"))}
+      ${tile("Impressões", fmtInt(a.impressoes), dd("impressoes","sobe"))}
+      ${tile("Frequência", a.freq==null ? "-" : fmtNum2(a.freq), dd("freq",null))}
+      ${tile("CPM", moedaOu(a.cpm), dd("cpm","desce"))}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Desde o início do lançamento (${dataBR(D.inicio)}), independente do período selecionado.</p></div></div>
+    <div class="charts">
+      <div class="card chart"><h3>Views de 3s por dia</h3>
+        <div class="tot">Total: ${fmtInt(DS.reduce((s,d)=>s+d.views3s,0))} · ${fmtMoeda(DS.reduce((s,d)=>s+d.gasto,0))} investidos</div><svg id="c-views"></svg></div>
+      <div class="card chart"><h3>Hook rate por dia</h3>
+        <div class="tot">Média do lançamento: ${pctOu(div(DS.reduce((s,d)=>s+d.views3s,0)*100, DS.reduce((s,d)=>s+d.impressoes,0)))}</div><svg id="c-hook"></svg></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Campanhas de distribuição com investimento no período.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Investimento</th><th>Views 3s</th><th>Hook rate</th><th>Retenção</th><th>Custo por view</th>
+        <th>Custo 25%</th><th>Custo 50%</th><th>Custo 75%</th><th>Custo por engaj.</th></tr></thead>
+      <tbody>${X.campanhas.map(c => { const m = derivadasDist(c);
+        return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.views3s)}</td>
+          <td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td class="hl">${moedaFina(m.cpv)}</td><td>${moedaFina(m.c25)}</td>
+          <td>${moedaFina(m.c50)}</td><td>${moedaFina(m.c75)}</td><td>${moedaFina(m.ceng)}</td></tr>`; }).join("")}</tbody></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><h2>Criativos de distribuição</h2><p class="sub">Anúncios com pelo menos ${fmtMoeda(D.gasto_minimo_criativo)} investidos, do melhor para o pior.</p></div>
+      <div class="pills" role="group" aria-label="Ordenar criativos por">
+        ${Object.entries(ORDENS_D).map(([k,o]) => `<button data-od="${k}" aria-pressed="${ORDEM_D===k}">${o.label}</button>`).join("")}
+      </div>
+    </div>
+    ${criativosDist(X.anuncios)}
+  </section>`;
+}
+
+function curvaRetencao(a){
+  const base = a.views3s;
+  const pontos = [["3 segundos", a.views3s], ["25%", a.p25], ["50%", a.p50], ["75%", a.p75], ["100%", a.p100]];
+  return `<div class="card ret"><h3>Curva de retenção</h3>
+    <div class="tot">De cada 100 pessoas que passaram dos 3 segundos, quantas chegaram a cada ponto do vídeo.</div>
+    ${pontos.map(([k,v]) => { const p = base ? v/base*100 : 0;
+      return `<div class="ret-row"><div class="k">${k}</div>
+        <div class="track"><div class="bar" style="width:${Math.min(100,p)}%"></div></div>
+        <div class="v">${base?fmtPct(p):"-"} <span>${fmtInt(v)}</span></div></div>`; }).join("")}
+  </div>`;
+}
+
+function criativosDist(lista){
+  const elegiveis = lista.filter(a => a.gasto >= D.gasto_minimo_criativo);
+  if (!elegiveis.length) return `<div class="card empty">Nenhum anúncio de distribuição atingiu o investimento mínimo no período.</div>`;
+  const o = ORDENS_D[ORDEM_D];
+  const chave = a => { const v = o.val(derivadasDist(a)); return v == null ? (o.melhor === "menor" ? Infinity : -Infinity) : v; };
+  const ord = elegiveis.slice().sort((x,y) => (o.melhor === "menor" ? chave(x) - chave(y) : chave(y) - chave(x)) || y.gasto - x.gasto);
+  return `<div class="ads">${ord.map((ad, i) => {
+    const m = derivadasDist(ad), link = ad.instagram || ad.previa;
+    const img = ad.thumb ? `<img src="${esc(ad.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+    const thumb = link ? `<a class="thumb" href="${esc(link)}" target="_blank" rel="noopener" aria-label="Abrir criativo">${img}<span class="rank">${i+1}</span></a>`
+                       : `<div class="thumb">${img}<span class="rank">${i+1}</span></div>`;
+    const kpi = (k, lbl, v) => `<div class="${ORDEM_D===k?"sel":""}">${lbl}<b>${v}</b></div>`;
+    return `<div class="card ad">${thumb}<div>
+      <div class="nm">${esc(ad.nome)}${statusBadge(ad.status)}</div><div class="cp">${esc(ad.campanha)}</div>
+      <div class="kpis">
+        ${kpi("cpv","Custo por view",moedaFina(m.cpv))}${kpi("hook","Hook rate",pctOu(m.hook))}
+        ${kpi("ret","Retenção",pctOu(m.ret))}${kpi("ceng","Custo por engaj.",moedaFina(m.ceng))}
+        ${kpi("","Investido",fmtMoeda(m.gasto))}${kpi("","Views 3s",fmtInt(m.views3s))}
+      </div>
+      <div class="acoes">
+        ${ad.instagram ? `<a class="lnk" href="${esc(ad.instagram)}" target="_blank" rel="noopener">${ICO_IG}Instagram</a>` : ""}
+        ${ad.previa ? `<a class="lnk" href="${esc(ad.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia</a>` : ""}
+      </div></div></div>`;
+  }).join("")}</div>`;
+}
+
+// ---------- aba 4: geral (conta inteira × vendas reais) ----------
+const TIPOS = {captacao:"Captação", distribuicao:"Distribuição", outras:"Outras campanhas"};
+
+function visaoTotal(P){
+  const G = P.geral;
+  // Base mínima pro funil de vendas: investimento da conta toda e compras do pixel da captação (trocadas pela planilha).
+  const a = derivadas(comReais({gasto: G.gasto, compras: P.atual.compras}, P.inicio, P.fim));
+  const b = P.geral_ant ? derivadas(comReais({gasto: P.geral_ant.gasto, compras: P.anterior.compras}, P.ant_inicio, P.ant_fim)) : null;
+  const porTipo = Object.keys(TIPOS).map(k => ({k, gasto: G.campanhas.filter(c => c.tipo === k).reduce((s,c) => s + c.gasto, 0)}))
+    .filter(t => t.gasto > 0);
+  const capt = porTipo.find(t => t.k === "captacao");
+  const pct = v => G.gasto ? v / G.gasto * 100 : 0;
+  return `
+  <section>
+    <div class="sec-head"><div><h2>Resultado geral do lançamento</h2><p class="sub">Tudo que a conta investiu no período (captação, distribuição e o resto) contra todos os ingressos vendidos da planilha.</p></div></div>
+    <div class="tiles">${tilesVendas(a, b, "Investimento total")}</div>
+    ${avisoPlanilha(a)}
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Para onde foi a verba</h2><p class="sub">Investimento por tipo de campanha${capt && a.compras ? `. Só a captação sai a <b style="color:var(--t-strong)">${fmtMoeda(capt.gasto / a.compras)}</b> por ingresso; com todo o resto, <b style="color:var(--t-strong)">${moedaOu(a.cpa)}</b>` : ""}.</p></div></div>
+    <div class="card verba">
+      ${porTipo.map(t => `<div class="verba-row"><div class="k">${TIPOS[t.k]}${t.k === "captacao" ? " " + esc(D.lancamento) : ""}</div>
+        <div class="track"><div class="bar ${t.k === "captacao" ? "" : t.k === "distribuicao" ? "dist" : "outras"}" style="width:${pct(t.gasto)}%"></div></div>
+        <div class="v">${fmtMoeda(t.gasto)} <span>${fmtNum2(pct(t.gasto)).replace(/,00$/, "")}%</span></div></div>`).join("")
+        || `<div class="empty">Nenhum investimento no período.</div>`}
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Desde o início do lançamento (${dataBR(D.inicio)}), independente do período selecionado.</p></div></div>
+    <div class="charts">
+      <div class="card chart"><h3>Investimento total por dia</h3>
+        <div class="tot">Total: ${fmtMoeda(D.diario_geral.reduce((s,d)=>s+d.gasto,0))}</div><svg id="c-total-gasto"></svg></div>
+      <div class="card chart"><h3>Custo por ingresso por dia (geral)</h3>
+        <div class="tot">Média do lançamento: ${moedaOu(div(D.diario_geral.reduce((s,d)=>s+d.gasto,0), D.diario.reduce((s,d)=>s+vendasDia(d),0)))} (linha tracejada)</div><svg id="c-total-cpa"></svg></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Todas as campanhas</h2><p class="sub">Cada campanha da conta com investimento no período.</p></div></div>
+    ${G.campanhas.length ? `<div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Tipo</th><th>Investimento</th><th>% da verba</th><th>Impressões</th></tr></thead>
+      <tbody>${G.campanhas.map(c => `<tr><td>${esc((D.campanhas[c.id] || {}).nome || c.nome)}</td><td>${TIPOS[c.tipo]}</td>
+        <td>${fmtMoeda(c.gasto)}</td><td>${fmtPct(pct(c.gasto))}</td><td>${fmtInt(c.impressoes)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="card empty">Nenhuma campanha com investimento no período.</div>`}
+    <p class="dica">Os ingressos desta aba são todos os da planilha, venham de anúncio ou não. Por isso o custo por ingresso aqui é o custo de mídia de cada venda do lançamento.
+      A planilha guarda o dia em que cada comprador entrou nela; as vendas de antes de ${dataBR(Object.keys(VR().por_dia).sort()[0] || VR().ate)} aparecem somadas nesse dia.</p>
+  </section>`;
+}
+
 // ---------- gráficos (SVG puro) ----------
 const NS = "http://www.w3.org/2000/svg";
 const tipEl = document.getElementById("tip");
@@ -740,10 +1031,26 @@ function graficos(P){
     graficoCusto(document.getElementById("c-cpa"), DD.map(d => ({x:d.data, g:d.gasto, n:d.compras})));
     return;
   }
+  if (ABA === "dist") {
+    const DS = D.diario_distribuicao;
+    graficoBarras(document.getElementById("c-views"), DS.map(d => ({x:d.data, y:d.views3s, g:d.gasto})),
+      p => `<b>${dataBRano(p.x)}</b><br>Views 3s: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por view: ${moedaOu(div(p.g,p.y))}`);
+    graficoLinha(document.getElementById("c-hook"), DS.map(d => ({x:d.data, y:div(d.views3s*100,d.impressoes)||0, i:d.impressoes})),
+      p => `<b>${dataBRano(p.x)}</b><br>Hook rate: ${p.i?fmtPct(p.y):"-"}<br>Impressões: ${fmtInt(p.i)}`, v => fmtCompacto(v)+"%");
+    return;
+  }
+  if (ABA === "total") {
+    const pts = D.diario_geral.map((g, i) => ({x:g.data, g:g.gasto, n:vendasDia(D.diario[i])}));
+    graficoBarras(document.getElementById("c-total-gasto"), pts.map(p => ({...p, y:p.g})),
+      p => `<b>${dataBRano(p.x)}</b><br>Investimento total: ${fmtMoeda(p.g)}<br>Ingressos: ${fmtInt(p.n)}`, v => "R$" + fmtCompacto(v));
+    graficoCusto(document.getElementById("c-total-cpa"), pts);
+    return;
+  }
   const svg = document.getElementById("c-filtro");
   if (!svg) return;
   const porDia = agrupar(filtrar(D.diario_anuncios), l => l.data);
-  const pts = D.diario.map(d => { const m = somar(porDia.get(d.data) || []); return {x:d.data, y:m.compras, g:m.gasto}; });
+  const pts = D.diario.map(d => { const m = somar(porDia.get(d.data) || []);
+    return {x:d.data, y: temFiltro() ? m.compras : vendasDia(d), g:m.gasto}; });
   document.getElementById("tot-filtro").textContent =
     `Total: ${fmtInt(pts.reduce((s,p)=>s+p.y,0))} ingressos, ${fmtMoeda(pts.reduce((s,p)=>s+p.g,0))} investidos`;
   graficoBarras(svg, pts,
@@ -842,6 +1149,26 @@ function graficoBarras(svg, pts, tooltip, fmtEixo){
   const barras = [...svg.querySelectorAll("path[data-i]")];
   hover(svg, pts, geo, tooltip,
     i => barras.forEach(b => b.setAttribute("opacity", i < 0 || +b.dataset.i === i ? 1 : .35)));
+}
+
+function graficoLinha(svg, pts, tooltip, fmtEixo){
+  if (!svg) return;
+  const geo = base(svg, pts, fmtEixo);
+  const d = pts.map((p,i) => `${i?"L":"M"}${geo.x(i)},${geo.y(p.y)}`).join(" ");
+  const area = `${d} L${geo.x(pts.length-1)},${geo.y(0)} L${geo.x(0)},${geo.y(0)} Z`;
+  svg.insertAdjacentHTML("beforeend",
+    `<defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00D8F5" stop-opacity=".18"/><stop offset="1" stop-color="#00D8F5" stop-opacity="0"/></linearGradient></defs>
+     <path d="${area}" fill="url(#ga)"/>
+     <path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+     <line id="cross" y1="${geo.T}" y2="${geo.y(0)}" stroke="var(--b-def)" stroke-width="1" visibility="hidden"/>
+     <circle id="dot" r="5" fill="var(--acc)" stroke="#05070A" stroke-width="2" visibility="hidden"/>`);
+  const cross = svg.querySelector("#cross"), dot = svg.querySelector("#dot");
+  hover(svg, pts, geo, tooltip, i => {
+    const vis = i < 0 ? "hidden" : "visible";
+    cross.setAttribute("visibility", vis); dot.setAttribute("visibility", vis);
+    if (i >= 0) { cross.setAttribute("x1", geo.x(i)); cross.setAttribute("x2", geo.x(i));
+      dot.setAttribute("cx", geo.x(i)); dot.setAttribute("cy", geo.y(pts[i].y)); }
+  });
 }
 
 let tRes; window.addEventListener("resize", () => { clearTimeout(tRes); tRes = setTimeout(() => D && manter(desenhar), 150); });

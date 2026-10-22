@@ -5,5 +5,7 @@
   "lancamento": "LP05",
   "inicio": "2026-10-02",
   "criativos_gasto_minimo": 10,
-  "apelidos": {}
+  "apelidos": {},
+  "vendas_reais": {"arquivo": "vendas.json", "ticket_liquido": 102.93, "preco": 117},
+  "distribuicao": true
 }

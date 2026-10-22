@@ -106,19 +106,31 @@ https://carlos-primo.github.io/c2pro-dashboards/lancamento/<slug>/
 | Rafaela Evaldt | LP05 (desde 02/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/rafaela-lp05/ |
 | AgroFácil (Athila) | Imersão Consultor Pecuário, campanhas ICP (22/09 a 17/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/agrofacil-athila/ |
 
-- **Visão geral:** custo por ingresso, ingressos, investimento, faturamento, ROAS, ticket médio, o funil de vendas
+- **Captação:** custo por ingresso, ingressos, investimento, faturamento, ROAS, ticket médio, o funil de vendas
   (impressões > cliques > visitas > checkouts > ingressos), entrega, dia a dia desde o início (ingressos, checkouts e
   custo por ingresso de cada dia, com a média do lançamento), tabelas de campanhas
   e públicos (clicáveis) e ranking de criativos (cada criativo somado em todos os públicos)
 - **Funil filtrado:** escolhe campanha, público e/ou criativo (combináveis) e vê o funil, os números e os ingressos
   por dia só daquilo, com tabela pra comparar lado a lado. Link direto: `.../lancamento/<slug>/#filtro`
+- **Distribuição** (com `"distribuicao": true` no config): as métricas do dashboard de distribuição (só campanhas
+  `DISTRIBUICAO`) nos mesmos períodos do lançamento. Link direto: `.../#distribuicao`
+- **Geral** (com `vendas_reais` no config): tudo que a conta investiu no período, campanha por campanha (captação,
+  distribuição e outras), contra os ingressos vendidos da planilha. Link direto: `.../#geral`
+
+**Vendas reais** (`vendas_reais` no config): o total de ingressos do funil vem de `lancamento/<slug>/vendas.json`
+(contagem por dia tirada da planilha de vendas do cliente, sem e-mail nem telefone, porque o repositório é público), e o
+faturamento passa a ser ingressos × `ticket_liquido` (bruto = ingressos × `preco`). ROAS = faturamento líquido ÷
+investimento. Por campanha, público e criativo continua o pixel (só ele sabe de onde veio cada venda). Dias depois do
+`ate` do `vendas.json` usam o pixel até a planilha ser atualizada (o dashboard avisa). Pra atualizar: contar de novo os
+e-mails únicos da planilha, regravar o `vendas.json` e dar push.
 
 Períodos: ontem, últimos 3 e 7 dias e "lançamento todo" (do `inicio` até ontem). Só compara com o período anterior
 quando ele cabe dentro do lançamento. Cadastros (lead) aparecem à parte, fora do funil.
 
 config.json: `nome`, `subtitulo`, `conta_anuncio`, `lancamento` (código no nome das campanhas), `inicio` (AAAA-MM-DD),
 `criativos_gasto_minimo`, `fim` opcional (quando a captação acabar), `filtro_campanha` opcional e `apelidos` opcional
-(`{"NOME_NO_GERENCIADOR": "nome que o cliente entende"}` para públicos e campanhas).
+(`{"NOME_NO_GERENCIADOR": "nome que o cliente entende"}` para públicos e campanhas), `vendas_reais` opcional
+(`{"arquivo": "vendas.json", "ticket_liquido": 102.93, "preco": 117}`) e `distribuicao` opcional (`true`).
 Rodar no PC: `python gerar_lancamento.py [slug]` e abrir `site/lancamento/<slug>/index.html`.
 Senha opcional: secret `SENHA_LANCAMENTO_<SLUG>` no passo "Gerar dashboards de lançamento" do workflow.
 

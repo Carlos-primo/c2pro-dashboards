@@ -18,8 +18,15 @@ config.json:
   apelidos     opcional: {"NOME_NO_GERENCIADOR": "Nome que o cliente entende"} pra publicos/campanhas
   filtro_campanha  opcional: troca o termo CAPTACAO quando o cliente nomeia as campanhas de outro jeito
                    (ex: "ICP" no lancamento do Athila). Sem ele, vale CAPTACAO
+  vendas_reais     opcional: {"arquivo": "vendas.json", "ticket_liquido": 102.93, "preco": 117}
+                   ingressos vendidos de verdade (planilha do cliente) no lugar das compras do pixel no total
+                   do funil, e faturamento = ingressos x ticket liquido. O arquivo fica na pasta do lancamento,
+                   so com a contagem por dia (sem e-mail nem telefone: o repositorio e publico).
+                   Tambem liga a aba "Geral": todo o investimento da conta no lancamento contra as vendas reais
+  distribuicao     opcional: true liga a aba "Distribuicao" (campanhas com DISTRIBUICAO no nome, regras do gerar.py)
 
-Regra: so entram campanhas com CAPTACAO (ou o filtro_campanha do config) e o codigo do lancamento no nome.
+Regra: o funil, as tabelas e os criativos so usam campanhas com CAPTACAO (ou o filtro_campanha do config) e o
+codigo do lancamento no nome. A aba Distribuicao so usa DISTRIBUICAO. So a aba Geral soma a conta inteira.
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_LANCAMENTO_<SLUG> opcional).
 """
@@ -33,6 +40,7 @@ import unicodedata
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import gerar
 from gerar import api, criptografar, diario_seguro
 
 AQUI = Path(__file__).resolve().parent
@@ -145,6 +153,62 @@ def linhas_anuncio(inicio, fim, **extra):
 NOMES = {"publicos": {}, "campanhas": {}}
 
 
+def insights_conta(nivel, inicio, fim, campos, **extra):
+    """Insights da conta inteira, sem filtro de campanha. So para a aba Geral."""
+    return api(
+        f"{CFG['conta_anuncio']}/insights",
+        level=nivel,
+        fields=campos,
+        time_range=json.dumps({"since": inicio.isoformat(), "until": fim.isoformat()}),
+        limit=500,
+        **extra,
+    )
+
+
+def tipo_campanha(nome):
+    if eh_do_lancamento(nome):
+        return "captacao"
+    return "distribuicao" if gerar.FILTRO in sem_acento(nome) else "outras"
+
+
+def geral(inicio, fim):
+    """Tudo que a conta investiu no periodo, campanha por campanha, separado em captacao, distribuicao e outras."""
+    campanhas = []
+    for l in insights_conta("campaign", inicio, fim, "campaign_id,campaign_name,spend,impressions"):
+        gasto = round(float(l.get("spend", 0)), 2)
+        if gasto > 0:
+            campanhas.append({"id": l["campaign_id"], "nome": l["campaign_name"], "tipo": tipo_campanha(l["campaign_name"]),
+                              "gasto": gasto, "impressoes": int(l.get("impressions", 0))})
+    campanhas.sort(key=lambda c: -c["gasto"])
+    total = insights_conta("account", inicio, fim, "spend")
+    gasto = round(float(total[0].get("spend", 0)), 2) if total else 0.0
+    conferir(abs(sum(c["gasto"] for c in campanhas) - gasto) < 0.05 + 0.01 * len(campanhas),
+             f"geral {inicio}..{fim}: total da conta (R$ {gasto:.2f}) difere da soma das campanhas")
+    return {"gasto": gasto, "campanhas": campanhas}
+
+
+def distribuicao(inicio, fim, comparar):
+    """Metricas de distribuicao do periodo, pelas mesmas regras e funcoes do gerar.py (so DISTRIBUICAO)."""
+    gerar.CFG.clear()
+    gerar.CFG.update({"nome": CFG["nome"], "conta_anuncio": CFG["conta_anuncio"]})
+    p = gerar.periodo_entre(inicio, fim)
+    if not comparar:
+        p.update({"ant_inicio": None, "ant_fim": None, "anterior": None})
+    return p
+
+
+def vendas_reais(slug, fim_lanc):
+    """Ingressos vendidos da planilha do cliente, ja contados por dia (ver docstring do modulo)."""
+    vr = CFG.get("vendas_reais")
+    if not vr:
+        return None
+    arq = json.loads((AQUI / "lancamento" / slug / vr.get("arquivo", "vendas.json")).read_text(encoding="utf-8"))
+    por_dia = {d: int(n) for d, n in arq["por_dia"].items()}
+    conferir(all(dt.date.fromisoformat(d) <= fim_lanc for d in por_dia), "vendas.json tem dia depois de ontem")
+    return {"ticket_liquido": vr["ticket_liquido"], "preco": vr["preco"], "fonte": arq.get("fonte", ""),
+            "ate": arq["ate"], "por_dia": por_dia}
+
+
 def periodo(inicio, fim, comparar):
     """comparar=False quando o periodo anterior cairia antes do lancamento comecar."""
     dias = (fim - inicio).days + 1
@@ -162,6 +226,11 @@ def periodo(inicio, fim, comparar):
     if comparar:
         p.update({"ant_inicio": ant_inicio.isoformat(), "ant_fim": ant_fim.isoformat(),
                   "anterior": conta_total(ant_inicio, ant_fim), "linhas_ant": linhas_anuncio(ant_inicio, ant_fim)})
+    if CFG.get("vendas_reais"):
+        p["geral"] = geral(inicio, fim)
+        p["geral_ant"] = geral(ant_inicio, ant_fim) if comparar else None
+    if CFG.get("distribuicao"):
+        p["distribuicao"] = distribuicao(inicio, fim, comparar)
     return p
 
 
@@ -218,6 +287,20 @@ def gerar_cliente(slug):
     conferir(abs(sum(d["gasto"] for d in diario) - periodos["todo"]["atual"]["gasto"]) < 0.05,
              "serie diaria nao bate com o total do lancamento")
 
+    extras = {}
+    if CFG.get("vendas_reais"):
+        extras["vendas_reais"] = vendas_reais(slug, fim_lanc)
+        gasto_dia = {l["date_start"]: float(l.get("spend", 0)) for l in diario_seguro(
+            lambda c, i, f, **e: insights_conta("account", i, f, c, **e), "spend", inicio_lanc, fim_lanc)}
+        extras["diario_geral"] = [{"data": d["data"], "gasto": round(gasto_dia.get(d["data"], 0.0), 2)} for d in diario]
+        conferir(abs(sum(d["gasto"] for d in extras["diario_geral"]) - periodos["todo"]["geral"]["gasto"]) < 0.05,
+                 "serie diaria da conta nao bate com o total geral do lancamento")
+    if CFG.get("distribuicao"):
+        extras["diario_distribuicao"] = gerar.serie_diaria(inicio_lanc, fim_lanc)
+        conferir(abs(sum(d["gasto"] for d in extras["diario_distribuicao"])
+                     - periodos["todo"]["distribuicao"]["atual"]["gasto"]) < 0.05,
+                 "serie diaria da distribuicao nao bate com o total do lancamento")
+
     ids = sorted({l["ad"] for p in periodos.values() for l in (p["linhas"] + (p["linhas_ant"] or []))})
     status_camp = {c["id"]: c.get("effective_status", "") for c in api(
         f"{CFG['conta_anuncio']}/campaigns", fields="effective_status", limit=500)}
@@ -244,6 +327,7 @@ def gerar_cliente(slug):
         "periodos": periodos,
         "diario": diario,
         "diario_anuncios": diario_anuncios,
+        **extras,
     }
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
@@ -257,7 +341,8 @@ def gerar_cliente(slug):
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
     t = periodos["todo"]["atual"]
-    print(f"OK lancamento/{slug}: {inicio_lanc} a {fim_lanc} R$ {t['gasto']:.2f}, {t['compras']:.0f} compras, "
+    reais = f" (planilha: {sum(extras['vendas_reais']['por_dia'].values())})" if "vendas_reais" in extras else ""
+    print(f"OK lancamento/{slug}: {inicio_lanc} a {fim_lanc} R$ {t['gasto']:.2f}, {t['compras']:.0f} compras{reais}, "
           f"{len(NOMES['campanhas'])} campanhas, {len(NOMES['publicos'])} publicos, {len(ids)} anuncios | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")
 
