@@ -30,7 +30,13 @@ CFG = {}
 
 PERIODOS = [7, 30]
 
-CAMPOS_METRICAS = "spend,impressions,reach,inline_link_clicks,actions"
+CAMPOS_METRICAS = ("spend,impressions,reach,inline_link_clicks,actions,"
+                   "video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,"
+                   "video_p100_watched_actions,video_thruplay_watched_actions,video_avg_time_watched_actions")
+
+# Engajamento do post e do video. Somam por criativo; taxas (hook rate, retencao) saem da soma no navegador.
+CAMPOS_SOMA = ("views3s", "p25", "p50", "p75", "p100", "thruplay", "engajamento",
+               "reacoes", "comentarios", "compartilhamentos", "salvamentos")
 
 # A Meta devolve o mesmo evento com nomes diferentes conforme a origem; usa o primeiro que existir.
 # "lead" ja soma formulario instantaneo e pixel; os outros sao fallback.
@@ -66,12 +72,25 @@ def primeiro(dic, chaves):
 
 def metricas(linha):
     acoes = {a["action_type"]: float(a["value"]) for a in linha.get("actions", [])}
+    video = lambda campo: sum(float(a["value"]) for a in linha.get(campo, []))
     return {
         "impressoes": int(linha.get("impressions", 0)),
         "alcance": int(linha.get("reach", 0)),
         "cliques": float(linha.get("inline_link_clicks", 0)),
         "visitas": primeiro(acoes, EVENTOS["visitas"]),
         "leads": primeiro(acoes, EVENTOS["leads"]),
+        "views3s": acoes.get("video_view", 0),
+        "p25": video("video_p25_watched_actions"),
+        "p50": video("video_p50_watched_actions"),
+        "p75": video("video_p75_watched_actions"),
+        "p100": video("video_p100_watched_actions"),
+        "thruplay": video("video_thruplay_watched_actions"),
+        "tempo_medio": video("video_avg_time_watched_actions"),
+        "engajamento": acoes.get("post_engagement", 0),
+        "reacoes": acoes.get("post_reaction", 0),
+        "comentarios": acoes.get("comment", 0),
+        "compartilhamentos": acoes.get("post", 0),
+        "salvamentos": acoes.get("onsite_conversion.post_save", 0),
     }
 
 
@@ -115,6 +134,8 @@ def agrupar_criativos(anuncios):
             "leads": sum(a["leads"] for a in lista),
             "impressoes": sum(a["impressoes"] for a in lista),
             "cliques": sum(a["cliques"] for a in lista),
+            "alcance": sum(a["alcance"] for a in lista),
+            **{k: sum(a[k] for a in lista) for k in CAMPOS_SOMA},
             "conjuntos": len({a["conjunto"] for a in lista}),
             "ativo": any(a.get("status") == "ACTIVE" for a in lista),
             **{k: melhor.get(k, "") for k in ("thumb", "instagram", "previa")},

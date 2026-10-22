@@ -72,6 +72,9 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:20p
 .ad .cp{color:var(--t-faint);font:400 12px/1.4 var(--mono);margin-top:2px}
 .ad .bar{height:6px;border-radius:3px;background:var(--s2);margin-top:10px;overflow:hidden}
 .ad .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.ad .stats{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
+.ad .stats div{font:400 11px/1.3 var(--mono);color:var(--t-faint);text-transform:uppercase;letter-spacing:.04em}
+.ad .stats b{display:block;font:600 14px/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:0;text-transform:none}
 .ad .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .ad .qtd{text-align:right;min-width:72px}
 .ad .qtd b{display:block;font:600 32px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
@@ -159,7 +162,9 @@ const plural = (n, um, varios) => `${fmtInt(n)} ${n === 1 ? um : varios}`;
 function derivadas(m){
   return { ...m,
     ctr: div(m.cliques*100, m.impressoes), connect: div(m.visitas*100, m.cliques),
-    conv: div(m.leads*100, m.visitas || m.cliques) };
+    conv: div(m.leads*100, m.visitas || m.cliques),
+    hook: div(m.views3s*100, m.impressoes), ret: div(m.thruplay*100, m.views3s),
+    taxaEng: div(m.engajamento*100, m.impressoes) };
 }
 
 // ---------- tela de senha ----------
@@ -293,6 +298,18 @@ function desenhar(){
   </section>
 
   <section>
+    <div class="sec-head"><h2>Engajamento e vídeo</h2>
+      <p class="sub">Como o público reagiu aos criativos no período, somando todas as campanhas.</p></div>
+    <div class="tiles">
+      ${tile("Alcance", fmtInt(a.alcance), `${fmtInt(a.impressoes)} impressões`)}
+      ${tile("Engajamentos", fmtInt(a.engajamento), `${pctOu(a.taxaEng)} das impressões`)}
+      ${tile("Curtidas", fmtInt(a.reacoes), `${fmtInt(a.comentarios)} comentários · ${fmtInt(a.compartilhamentos)} compart. · ${fmtInt(a.salvamentos)} salvos`)}
+      ${tile("Hook rate", pctOu(a.hook), `${fmtInt(a.views3s)} views de 3s ÷ impressões`)}
+      ${tile("Retenção", pctOu(a.ret), `${fmtInt(a.thruplay)} ThruPlays ÷ views de 3s`)}
+    </div>
+  </section>
+
+  <section>
     <div class="sec-head"><h2>Criativos que mais geraram leads</h2>
       <p class="sub">Cada criativo somado em todos os públicos em que rodou.</p></div>
     ${criativos(P.criativos)}
@@ -306,6 +323,7 @@ function desenhar(){
 
   <footer>
     <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
+    <div style="margin-top:12px"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos. Só vídeos entram nessas duas taxas. <b>Engajamentos:</b> curtidas, comentários, compartilhamentos, salvamentos e cliques na publicação.</div>
     <div style="margin-top:12px">Dados puxados direto da API da Meta. Leads são os que a Meta registrou (formulário ou pixel) e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
@@ -314,6 +332,23 @@ function desenhar(){
     PER = bt.dataset.p; try { localStorage.setItem("c2pro-leads-periodo", PER); } catch(_){}
     desenhar();
   }));
+}
+
+// Engajamento do criativo. Hook rate e retenção só existem em vídeo; em imagem ficam de fora.
+function statsCriativo(c){
+  const d = derivadas(c);
+  const itens = [
+    ["Alcance", fmtInt(c.alcance), c.alcance > 0],
+    ["CTR", pctOu(d.ctr), c.impressoes > 0],
+    ["Hook rate", pctOu(d.hook), c.views3s > 0],
+    ["Retenção", pctOu(d.ret), c.views3s > 0 && c.thruplay > 0],
+    ["Engajamentos", fmtInt(c.engajamento), c.engajamento > 0],
+    ["Curtidas", fmtInt(c.reacoes), c.reacoes > 0],
+    ["Comentários", fmtInt(c.comentarios), c.comentarios > 0],
+    ["Compart.", fmtInt(c.compartilhamentos), c.compartilhamentos > 0],
+    ["Salvos", fmtInt(c.salvamentos), c.salvamentos > 0],
+  ].filter(i => i[2]);
+  return itens.length ? `<div class="stats">${itens.map(i => `<div>${i[0]}<b>${i[1]}</b></div>`).join("")}</div>` : "";
 }
 
 function cardCriativo(c, pos, max){
@@ -325,6 +360,7 @@ function cardCriativo(c, pos, max){
     <div class="nm">${esc(c.nome)}${c.ativo ? `<span class="badge on">no ar</span>` : ""}</div>
     <div class="cp">${c.conjuntos > 1 ? `rodou em ${c.conjuntos} públicos` : "rodou em 1 público"}</div>
     <div class="bar"><i style="width:${max ? c.leads/max*100 : 0}%"></i></div>
+    ${statsCriativo(c)}
     <div class="links">
       ${c.instagram ? `<a class="lnk" href="${esc(c.instagram)}" target="_blank" rel="noopener">${ICO_IG}Ver no Instagram</a>` : ""}
       ${c.previa ? `<a class="lnk" href="${esc(c.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia do anúncio</a>` : ""}
