@@ -84,6 +84,7 @@ https://carlos-primo.github.io/c2pro-dashboards/leads/<cliente>/
 | Krav Maga Ipiranga | https://carlos-primo.github.io/c2pro-dashboards/leads/krav-maga-ipiranga/ |
 | Krav Maga Tatuapé | https://carlos-primo.github.io/c2pro-dashboards/leads/krav-maga-tatuape/ |
 | Krav Maga ABC | https://carlos-primo.github.io/c2pro-dashboards/leads/krav-maga-abc/ |
+| Rocha Mazzo Advogados | https://carlos-primo.github.io/c2pro-dashboards/leads/rocha-mazzo/ |
 
 - **Resumo:** leads no período e quantos criativos geraram lead
 - **Criativos que mais geraram leads:** ranking por quantidade de leads, cada criativo somado em todos os públicos em que rodou, com link pro Instagram e prévia
