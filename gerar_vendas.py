@@ -184,33 +184,6 @@ def serie_diaria(ontem, ids=None):
             for n in range(30)]
 
 
-def checkout_pixel(ontem, hoje):
-    """Eventos do pixel da pagina de checkout, dia a dia, desde o inicio das campanhas.
-    So roda se o config tiver "checkout": {"pixel_id": ..., "desde": "AAAA-MM-DD"}.
-    O pixel do checkout nao sabe de qual anuncio a pessoa veio: o numero e de todas as origens."""
-    cfg = CFG.get("checkout")
-    if not cfg:
-        return None
-    desde = dt.date.fromisoformat(cfg["desde"])
-    linhas = api(f"{cfg['pixel_id']}/stats", aggregation="event",
-                 start_time=f"{desde.isoformat()}T00:00:00-0300", end_time=f"{hoje.isoformat()}T00:00:00-0300")
-    por_dia = {}
-    for bloco in linhas:
-        dia = bloco["start_time"][:10]
-        if dia > ontem.isoformat():
-            continue
-        acc = por_dia.setdefault(dia, {})
-        for item in bloco.get("data", []):
-            acc[item["value"]] = acc.get(item["value"], 0) + int(item["count"])
-    dias = []
-    for n in range((ontem - desde).days + 1):
-        dia = (desde + dt.timedelta(days=n)).isoformat()
-        e = por_dia.get(dia, {})
-        dias.append({"data": dia, "visitas": e.get("PageView", 0), "checkouts": e.get("InitiateCheckout", 0),
-                     "pagamentos": e.get("AddPaymentInfo", 0), "compras": e.get("Purchase", 0)})
-    return {"desde": desde.isoformat(), "dias": dias}
-
-
 def gerar_cliente(slug):
     CFG.clear()
     CFG.update(json.loads((AQUI / "vendas" / slug / "config.json").read_text(encoding="utf-8")))
@@ -249,9 +222,6 @@ def gerar_cliente(slug):
         "periodos": periodos,
         "diario": serie_diaria(ontem),
     }
-    checkout = checkout_pixel(ontem, agora.date())
-    if checkout:
-        dados["checkout"] = checkout
     if segmentos:
         dados["diario_segmentos"] = {n: serie_diaria(ontem, ids) for n, ids in segmentos.items()}
     soma_diaria = sum(d["gasto"] for d in dados["diario"])
