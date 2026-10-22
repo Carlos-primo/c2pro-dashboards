@@ -209,3 +209,13 @@ imagens em `img/`, e o workflow só copia a pasta pro site. Setas ou toque pra n
 | Pitch Dobre seus Lucros com IA (Universo Subido + Viver de IA) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/dobre-seus-lucros-com-ia/ |
 | Debriefing EARQ Mind, 1º lançamento (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/earq-debriefing-l01/ |
 | Resultados Atento, 13 a 22/10/2026 (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/atento-resultados-out26/ |
+
+## Dashboards do Google Ads
+
+Contatos (conversões do Google, como clique no WhatsApp), custo por contato, taxa de conversão, contatos por dia, campanhas e termos de pesquisa (que converteram, que gastaram sem converter e temas da Performance Max). Últimos 7 ou 30 dias, comparados com o período anterior.
+Cada cliente é uma pasta `google/<slug>/config.json` (`nome`, `subtitulo`, `customer_id`) e o link fica `https://carlos-primo.github.io/c2pro-dashboards/google/<slug>/`.
+Atualiza todo dia às 4h (Brasília). Precisa dos secrets `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_REFRESH_TOKEN` e `GOOGLE_ADS_LOGIN_CUSTOMER_ID`. Rodar no PC: `python gerar_google.py [slug]` com essas variáveis no ambiente.
+
+| Cliente | Link |
+|---|---|
+| Luke Garcia | https://carlos-primo.github.io/c2pro-dashboards/google/luke-garcia/ |

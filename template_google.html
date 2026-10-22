@@ -1,0 +1,238 @@
+<title>__NOME__ Google Ads</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabeçalho, 6 indicadores, gráfico diário, campanhas, termos de pesquisa (abas) e funil. Design system C2Pro (escuro, ciano). */
+:root{
+  --bg:#05070A; --solid:#0A0E14; --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E; --warn:#F5B94A;
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace; --sans:Inter,system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;color:var(--t-body);font:400 15px/1.55 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+.wrap{max-width:1000px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;text-wrap:balance;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:40px}
+.sec-head{margin-bottom:16px}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.tile{padding:20px;min-width:0}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.val{font:600 28px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.tile.hero .val{color:var(--acc-h)}
+.extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.var{display:inline-block;padding:1px 7px;border-radius:999px;font:500 11px/1.6 var(--mono);border:1px solid var(--b-def);color:var(--t-muted)}
+.var.up{color:var(--pos);border-color:rgba(35,209,139,.4)} .var.down{color:var(--neg);border-color:rgba(255,77,94,.4)}
+.chart{padding:20px 16px 12px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:400 10px var(--mono);fill:var(--t-faint)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;padding-left:4px;font:400 12px var(--mono);color:var(--t-muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:500 11px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--t-faint);text-align:right;padding:12px 14px;border-bottom:1px solid var(--b-def);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--b-sub);text-align:right;font:500 13px/1.4 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0}
+td:first-child{font:500 14px/1.4 var(--sans);color:var(--t-strong);white-space:normal;min-width:180px;background:var(--solid)}
+th:first-child{background:var(--solid)}
+tr:last-child td{border-bottom:0}
+td.k{color:var(--acc-h);font-weight:600}
+.tag{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px;white-space:nowrap}
+.tag.pm{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.tabs{display:inline-flex;max-width:100%;overflow-x:auto;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1);margin-bottom:16px}
+.tabs button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 var(--sans);color:var(--t-muted)}
+.tabs button:hover{color:var(--t-strong)}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.note{margin-top:12px;font-size:13px;color:var(--t-faint);line-height:1.6}
+.note b{color:var(--t-muted);font-weight:500}
+.funil{padding:24px;display:grid;gap:0}
+.fn{display:grid;grid-template-columns:minmax(110px,170px) minmax(0,1fr) auto;gap:16px;align-items:center;padding:6px 0}
+.fn .n{color:var(--t-strong);font-weight:600;font-size:14px}
+.fn .bar{height:34px;border-radius:8px;background:var(--s2);overflow:hidden}
+.fn .bar i{display:block;height:100%;min-width:6px;border-radius:8px;background:linear-gradient(90deg,rgba(0,216,245,.35),var(--acc))}
+.fn .q{font:600 18px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);text-align:right;min-width:70px}
+.fn.fim .q{color:var(--acc-h)}
+.cn{margin:2px 0 2px 186px;justify-self:start;display:inline-flex;gap:8px;padding:4px 12px;border-radius:999px;border:1px solid var(--b-def);background:var(--solid);font:400 12px var(--mono);color:var(--t-muted)}
+.cn b{color:var(--t-strong);font-weight:600}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.pills{display:inline-flex;max-width:100%;overflow-x:auto;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.pills button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 var(--sans);color:var(--t-muted)}
+.pills button:hover{color:var(--t-strong)}
+.pills button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.pills button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+footer b{color:var(--t-muted);font-weight:500}
+@media(max-width:560px){.fn{grid-template-columns:1fr auto}.fn .bar{grid-column:1/-1;order:3}.cn{margin-left:0}.funil{padding:16px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="hd">
+      <div>
+        <div class="eyebrow">Google Ads · Contatos</div>
+        <h1>__NOME__</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <div class="pills" role="group" aria-label="Período">
+        <button type="button" data-p="7" aria-pressed="false">Últimos 7 dias</button>
+        <button type="button" data-p="30" aria-pressed="true">Últimos 30 dias</button>
+      </div>
+    </div>
+    <div class="meta"><span id="m-per"></span><span id="m-ant"></span><span id="m-conta"></span></div>
+  </header>
+
+  <section>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Contatos por dia</h2><p class="sub">Cada barra é um dia. A linha mostra a média dos últimos 7 dias.</p></div>
+    <div class="card chart"><div id="chart-dia"></div>
+      <div class="legend"><span><i style="background:var(--acc)"></i>Contatos no dia</span><span><i style="background:var(--warn)"></i>Média de 7 dias</span></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Funil de conversão</h2><p class="sub">Do anúncio exibido ao contato no WhatsApp.</p></div>
+    <div class="card funil" id="funil"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Campanhas</h2><p class="sub">Contatos, custo por contato e taxa de conversão (contatos ÷ cliques), comparados ao período anterior.</p></div>
+    <div class="card tw"><table id="t-camp"></table></div>
+    <p class="note" id="n-tipos"></p>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Termos de pesquisa</h2><p class="sub">O que as pessoas digitaram antes de clicar, e o que virou contato.</p></div>
+    <div class="tabs" role="group" aria-label="Lista de termos">
+      <button type="button" data-tab="conv" aria-pressed="true">Converteram</button>
+      <button type="button" data-tab="sem" aria-pressed="false">Gastaram sem converter</button>
+      <button type="button" data-tab="cats" aria-pressed="false">Temas da Performance Max</button>
+    </div>
+    <div class="card tw"><table id="t-termos"></table></div>
+    <p class="note" id="n-termos"></p>
+  </section>
+
+  <footer>
+    <b>Como ler.</b> Contato é a conversão registrada pelo Google (clique no botão do WhatsApp e conversa iniciada). Custo por contato = investimento ÷ contatos.
+    O período termina ontem e é comparado com o anterior de mesmo tamanho. Atualiza todo dia às 4h. Dados da API do Google Ads, gerados em <span id="gerado"></span>.
+  </footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const num = v => Math.round(v).toLocaleString("pt-BR");
+const pct = v => (v*100).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+const dm = s => s.slice(8,10)+"/"+s.slice(5,7);
+const dmy = s => dm(s)+"/"+s.slice(0,4);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const div = (a,b) => b ? a/b : 0;
+const $ = id => document.getElementById(id);
+function vr(a,b,menorMelhor){ if(!b) return ""; const p=(a-b)/b; if(Math.abs(p)<.005) return '<span class="var">estável</span>';
+  const bom = menorMelhor ? p<0 : p>0; return '<span class="var '+(bom?"up":"down")+'">'+(p>0?"+":"")+(p*100).toLocaleString("pt-BR",{maximumFractionDigits:0})+'%</span>'; }
+
+$("sub").textContent = DATA.subtitulo;
+$("m-conta").textContent = "Conta " + DATA.conta;
+$("gerado").textContent = DATA.gerado;
+let periodo = "30", aba = "conv";
+try { const s = localStorage.getItem("google-periodo"); if (s === "7" || s === "30") periodo = s; } catch (e) {}
+
+function render(){
+  const D = DATA.periodos[periodo], n = +periodo;
+  const c = D.cur, a = D.ant;
+  $("m-per").textContent = "Período: "+dmy(D.per[0])+" a "+dmy(D.per[1]);
+  $("m-ant").textContent = "Comparado com "+dm(D.ant_per[0])+" a "+dm(D.ant_per[1]);
+  document.querySelectorAll(".pills button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===periodo));
+
+  const cpc = div(c.custo,c.conv), cpcA = div(a.custo,a.conv), taxa = div(c.conv,c.cli), taxaA = div(a.conv,a.cli);
+  const tiles = [
+   ["Contatos", num(c.conv), "antes: "+num(a.conv)+" "+vr(c.conv,a.conv,false), true],
+   ["Custo por contato", c.conv?brl(cpc):"-", "antes: "+(a.conv?brl(cpcA):"-")+" "+vr(cpc,cpcA,true)],
+   ["Taxa de conversão", pct(taxa), "antes: "+pct(taxaA)+" "+vr(taxa,taxaA,false)],
+   ["Investimento", brl(c.custo), "antes: "+brl(a.custo)+" "+vr(c.custo,a.custo,true)],
+   ["Cliques", num(c.cli), "CPC médio "+brl(div(c.custo,c.cli))+" "+vr(c.cli,a.cli,false)],
+   ["Impressões", num(c.imp), "CTR "+pct(div(c.cli,c.imp))+" "+vr(c.imp,a.imp,false)]
+  ];
+  $("tiles").innerHTML = tiles.map(t=>'<div class="card tile'+(t[3]?" hero":"")+'"><div class="lbl">'+t[0]+'</div><div class="val">'+t[1]+'</div><div class="extra">'+t[2]+'</div></div>').join("");
+
+  /* gráfico diário: os últimos n dias; a média de 7 dias usa os dias anteriores quando existem */
+  const todos = DATA.dias, dias = todos.slice(-n), off = todos.length - n, N = dias.length;
+  const W=920,H=260,L=34,R=8,T=14,B=28;
+  const top = Math.max(4, Math.ceil(Math.max(...dias.map(x=>x.conv),1)/4)*4);
+  const bw=(W-L-R)/N, y=v=>T+(H-T-B)*(1-v/top), passo = N>14 ? 5 : 1;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Contatos por dia">';
+  for(let t=0;t<=top;t+=top/4){ s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(t)+'" y2="'+y(t)+'" stroke="rgba(255,255,255,.07)"/><text x="'+(L-6)+'" y="'+(y(t)+3)+'" text-anchor="end">'+t+'</text>'; }
+  dias.forEach((x,i)=>{ const h=H-B-y(x.conv); s+='<rect x="'+(L+i*bw+bw*.15)+'" y="'+y(x.conv)+'" width="'+bw*.7+'" height="'+Math.max(h,0)+'" rx="3" fill="#00D8F5"><title>'+dm(x.d)+": "+num(x.conv)+" contatos, "+brl(x.custo)+'</title></rect>';
+    if(i%passo===0||i===N-1) s+='<text x="'+(L+i*bw+bw/2)+'" y="'+(H-8)+'" text-anchor="middle">'+dm(x.d)+'</text>'; });
+  const pts=dias.map((x,i)=>{ const j=i+off, w=todos.slice(Math.max(0,j-6),j+1); return [L+i*bw+bw/2, y(w.reduce((p,q)=>p+q.conv,0)/w.length)]; });
+  s+='<polyline fill="none" stroke="#F5B94A" stroke-width="2" stroke-linejoin="round" points="'+pts.map(p=>p.join(",")).join(" ")+'"/>';
+  const lp=pts[pts.length-1]; s+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="4" fill="#F5B94A"/></svg>';
+  $("chart-dia").innerHTML=s;
+
+  /* funil */
+  const itens=[["Impressões","anúncio exibido",c.imp],["Cliques","visitas ao anúncio",c.cli],["Contatos","WhatsApp",c.conv]];
+  const rel=[["CTR",div(c.cli,c.imp)],["Taxa de conversão",div(c.conv,c.cli)]];
+  let h="";
+  itens.forEach((it,i)=>{
+    const w=Math.max(1.5,it[2]/(itens[0][2]||1)*100);
+    h+='<div class="fn'+(i===2?" fim":"")+'"><div class="n">'+it[0]+'<div class="sub" style="font-size:12px;font-weight:400">'+it[1]+'</div></div><div class="bar"><i style="width:'+w+'%"></i></div><div class="q">'+num(it[2])+'</div></div>';
+    if(i<2) h+='<div class="cn">'+rel[i][0]+' <b>'+pct(rel[i][1])+'</b></div>';
+  });
+  $("funil").innerHTML=h;
+
+  /* campanhas */
+  let t='<tr><th>Campanha</th><th>Investimento</th><th>Cliques</th><th>Contatos</th><th>Custo/contato</th><th>Taxa conv.</th><th>Contatos antes</th></tr>';
+  D.camps.slice().sort((x,y)=>y.conv-x.conv).forEach(r=>{ const cp=div(r.custo,r.conv), cpa=div(r.custo_ant,r.conv_ant);
+    t+='<tr><td>'+esc(r.nome)+'<span class="tag'+(r.tipo==="Pesquisa"?"":" pm")+'">'+r.tipo+'</span></td><td>'+brl(r.custo)+'</td><td>'+num(r.cli)+'</td><td class="k">'+num(r.conv)+'</td><td>'+(r.conv?brl(cp):"-")+' '+vr(cp,cpa,true)+'</td><td>'+pct(div(r.conv,r.cli))+'</td><td>'+num(r.conv_ant)+'</td></tr>'; });
+  $("t-camp").innerHTML=t;
+  const tp=D.tipos, ta=D.tipos_ant, ks=Object.keys(tp);
+  $("n-tipos").innerHTML = ks.length ? '<b>Por tipo de conversão:</b> '+ks.map(k=>esc(k)+" "+num(tp[k])+" (antes "+num(ta[k]||0)+")").join(", ")+'.'
+    + (tp["Conversation started"] ? ' "Conversation started" aparece só na Performance Max e pode contar a mesma pessoa que já clicou no botão do WhatsApp; vale conferir no WhatsApp quantas conversas novas chegaram de fato.' : '') : "";
+
+  /* termos */
+  const tb=$("t-termos"), nt=$("n-termos"), base='<th>Termo</th>';
+  const tag = r => '<span class="tag'+(r.camp==="Pesquisa"?"":" pm")+'">'+r.camp+'</span>';
+  const vazio = (cols,msg) => '<tr>'+base+cols+'</tr><tr><td colspan="9" style="text-align:left;color:var(--t-muted)">'+msg+'</td></tr>';
+  if(aba==="conv"){
+    let x='<tr>'+base+'<th>Contatos</th><th>Cliques</th><th>Impressões</th><th>Custo</th><th>Custo/contato</th><th>Taxa conv.</th></tr>';
+    D.conv.forEach(r=>{ x+='<tr><td>'+esc(r.t)+tag(r)+'</td><td class="k">'+num(r.conv)+'</td><td>'+num(r.cli)+'</td><td>'+num(r.imp)+'</td><td>'+brl(r.custo)+'</td><td>'+brl(r.custo/r.conv)+'</td><td>'+pct(div(r.conv,r.cli))+'</td></tr>'; });
+    tb.innerHTML = D.conv.length ? x : vazio('<th>Contatos</th>',"Nenhum termo identificado gerou contato neste período.");
+    nt.innerHTML='<b>'+D.conv.length+' termos</b> geraram '+num(D.term_conv_total)+' dos '+num(c.conv)+' contatos do período. O Google não abre o termo de parte dos contatos da Performance Max (termos agrupados ou com pouco volume), por isso a lista pode não fechar com o total. Ordenado por contatos.';
+  } else if(aba==="sem"){
+    let x='<tr>'+base+'<th>Custo</th><th>Cliques</th><th>Impressões</th><th>CTR</th><th>CPC</th></tr>';
+    D.sem.forEach(r=>{ x+='<tr><td>'+esc(r.t)+tag(r)+'</td><td class="k">'+brl(r.custo)+'</td><td>'+num(r.cli)+'</td><td>'+num(r.imp)+'</td><td>'+pct(div(r.cli,r.imp))+'</td><td>'+(r.cli?brl(r.custo/r.cli):"-")+'</td></tr>'; });
+    tb.innerHTML = D.sem.length ? x : vazio('<th>Custo</th>',"Nenhum termo gastou sem converter neste período.");
+    const sm=D.sem.reduce((p,q)=>p+q.custo,0);
+    nt.innerHTML='Os '+D.sem.length+' termos que mais gastaram sem gerar contato somam <b>'+brl(sm)+'</b> ('+pct(div(sm,c.custo))+' do investimento). Candidatos a negativar na campanha de Pesquisa; na Performance Max o ajuste é por sinal de público e exclusão de marca.';
+  } else {
+    let x='<tr>'+base+'<th>Contatos</th><th>Cliques</th><th>Impressões</th><th>Taxa conv.</th></tr>';
+    D.cats.forEach(r=>{ x+='<tr><td>'+esc(r.t)+'</td><td class="k">'+num(r.conv)+'</td><td>'+num(r.cli)+'</td><td>'+num(r.imp)+'</td><td>'+pct(div(r.conv,r.cli))+'</td></tr>'; });
+    tb.innerHTML = D.cats.length ? x : vazio('<th>Contatos</th>',"Sem temas da Performance Max neste período.");
+    nt.innerHTML='Temas que o Google agrupa dentro da Performance Max. Outros '+num(D.cat_total_conv)+' contatos ficam sem tema identificado.';
+  }
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===aba));
+}
+document.querySelectorAll(".pills button").forEach(b=>b.addEventListener("click",()=>{ periodo=b.dataset.p; try{localStorage.setItem("google-periodo",periodo)}catch(e){} render(); }));
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{ aba=b.dataset.tab; render(); }));
+render();
+</script>
