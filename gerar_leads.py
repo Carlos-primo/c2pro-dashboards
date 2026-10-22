@@ -35,7 +35,7 @@ CAMPOS_METRICAS = ("spend,impressions,reach,inline_link_clicks,actions,"
                    "video_p100_watched_actions,video_thruplay_watched_actions,video_avg_time_watched_actions")
 
 # Engajamento do post e do video. Somam por criativo; taxas (hook rate, retencao) saem da soma no navegador.
-CAMPOS_SOMA = ("views3s", "p25", "p50", "p75", "p100", "thruplay", "engajamento",
+CAMPOS_SOMA = ("leads", "contatos", "views3s", "p25", "p50", "p75", "p100", "thruplay", "engajamento",
                "reacoes", "comentarios", "compartilhamentos", "salvamentos")
 
 # A Meta devolve o mesmo evento com nomes diferentes conforme a origem; usa o primeiro que existir.
@@ -43,6 +43,8 @@ CAMPOS_SOMA = ("views3s", "p25", "p50", "p75", "p100", "thruplay", "engajamento"
 EVENTOS = {
     "visitas": ["landing_page_view", "omni_landing_page_view"],
     "leads": ["lead", "onsite_conversion.lead_grouped", "offsite_conversion.fb_pixel_lead"],
+    # Contatos = conversas iniciadas por mensagem (WhatsApp, Direct, Messenger), o resultado das campanhas de mensagem.
+    "contatos": ["onsite_conversion.messaging_conversation_started_7d"],
 }
 
 
@@ -63,6 +65,11 @@ def insights(nivel, inicio, fim, campos, **extra):
     )
 
 
+def PRINCIPAL():
+    """Metrica que ranqueia os criativos: 'leads' (padrao) ou 'contatos', definida no config.json."""
+    return CFG.get("metrica_principal", "leads")
+
+
 def primeiro(dic, chaves):
     for k in chaves:
         if k in dic:
@@ -79,6 +86,7 @@ def metricas(linha):
         "cliques": float(linha.get("inline_link_clicks", 0)),
         "visitas": primeiro(acoes, EVENTOS["visitas"]),
         "leads": primeiro(acoes, EVENTOS["leads"]),
+        "contatos": primeiro(acoes, EVENTOS["contatos"]),
         "views3s": acoes.get("video_view", 0),
         "p25": video("video_p25_watched_actions"),
         "p50": video("video_p50_watched_actions"),
@@ -128,10 +136,9 @@ def agrupar_criativos(anuncios):
         grupos.setdefault(a["nome"], []).append(a)
     criativos = []
     for nome, lista in grupos.items():
-        melhor = max(lista, key=lambda a: (a["leads"], a["impressoes"]))
+        melhor = max(lista, key=lambda a: (a[PRINCIPAL()], a["impressoes"]))
         criativos.append({
             "nome": nome,
-            "leads": sum(a["leads"] for a in lista),
             "impressoes": sum(a["impressoes"] for a in lista),
             "cliques": sum(a["cliques"] for a in lista),
             "alcance": sum(a["alcance"] for a in lista),
@@ -140,7 +147,7 @@ def agrupar_criativos(anuncios):
             "ativo": any(a.get("status") == "ACTIVE" for a in lista),
             **{k: melhor.get(k, "") for k in ("thumb", "instagram", "previa")},
         })
-    criativos.sort(key=lambda c: (-c["leads"], -c["impressoes"]))
+    criativos.sort(key=lambda c: (-c[PRINCIPAL()], -c["impressoes"]))
     return criativos
 
 
@@ -153,8 +160,9 @@ def periodo(dias, ontem):
         gasto = float(l.get("spend", 0))
         if gasto > 0:
             gasto_campanhas += gasto
-            campanhas.append({"nome": l["campaign_name"], "leads": metricas(l)["leads"]})
-    campanhas.sort(key=lambda c: -c["leads"])
+            campanhas.append({"nome": l["campaign_name"], "leads": metricas(l)["leads"],
+                              "contatos": metricas(l)["contatos"]})
+    campanhas.sort(key=lambda c: -c[PRINCIPAL()])
 
     anuncios = []
     for l in insights("ad", inicio, fim, "ad_id,ad_name,adset_id," + CAMPOS_METRICAS):
@@ -164,9 +172,10 @@ def periodo(dias, ontem):
     atual, gasto_conta = conta_total(inicio, fim)
     conferir(abs(gasto_campanhas - gasto_conta) < 0.05,
              f"total {dias}d da conta difere da soma das campanhas")
-    soma_leads = sum(a["leads"] for a in anuncios)
-    conferir(abs(soma_leads - atual["leads"]) < 0.5,
-             f"leads {dias}d da conta ({atual['leads']:.0f}) diferem da soma dos anuncios ({soma_leads:.0f})")
+    for k in ("leads", "contatos"):
+        soma = sum(a[k] for a in anuncios)
+        conferir(abs(soma - atual[k]) < 0.5,
+                 f"{k} {dias}d da conta ({atual[k]:.0f}) diferem da soma dos anuncios ({soma:.0f})")
 
     return {
         "inicio": inicio.isoformat(), "fim": fim.isoformat(),
@@ -199,6 +208,7 @@ def gerar_cliente(slug):
     dados = {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
+        "principal": PRINCIPAL(),
         "gerado_em": agora.isoformat(timespec="minutes"),
         "periodos": periodos,
     }
@@ -214,8 +224,8 @@ def gerar_cliente(slug):
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
     p30 = periodos["30"]
-    com_lead = sum(1 for c in p30["criativos"] if c["leads"] > 0)
-    print(f"OK leads/{slug}: 30d {p30['atual']['leads']:.0f} leads, {len(p30['campanhas'])} campanhas, "
+    com_lead = sum(1 for c in p30["criativos"] if c[PRINCIPAL()] > 0)
+    print(f"OK leads/{slug}: 30d {p30['atual'][PRINCIPAL()]:.0f} {PRINCIPAL()}, {len(p30['campanhas'])} campanhas, "
           f"{com_lead} de {len(p30['criativos'])} criativos com lead | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")
 

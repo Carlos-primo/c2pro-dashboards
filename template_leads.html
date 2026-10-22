@@ -158,11 +158,17 @@ const div = (a,b) => b ? a/b : null;
 const pctOu = v => v == null ? "-" : fmtPct(v);
 const plural = (n, um, varios) => `${fmtInt(n)} ${n === 1 ? um : varios}`;
 
+// Métrica principal: "leads" (formulário/pixel) ou "contatos" (conversas iniciadas), definida no config do cliente.
+const ROTULOS = {leads:{pl:"Leads", um:"lead", varios:"leads", desc:"Contatos recebidos"},
+                 contatos:{pl:"Contatos", um:"contato", varios:"contatos", desc:"Conversas iniciadas no WhatsApp"}};
+const K = () => (D && D.principal) || "leads";
+const R = () => ROTULOS[K()];
+
 // Taxas do funil, em %.
 function derivadas(m){
   return { ...m,
     ctr: div(m.cliques*100, m.impressoes), connect: div(m.visitas*100, m.cliques),
-    conv: div(m.leads*100, m.visitas || m.cliques),
+    conv: div(m[K()]*100, (K() === "leads" && m.visitas) || m.cliques),
     hook: div(m.views3s*100, m.impressoes), ret: div(m.thruplay*100, m.views3s),
     taxaEng: div(m.engajamento*100, m.impressoes) };
 }
@@ -221,7 +227,7 @@ const ICO_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 
 // Visitas à página só entram no funil quando a conta registra o evento (formulário instantâneo não registra).
 function etapas(a){
-  const comVisitas = a.visitas > 0;
+  const comVisitas = a.visitas > 0 && K() === "leads";
   const lista = [
     {k:"impressoes", nome:"Impressões",       desc:"Vezes que o anúncio apareceu"},
     {k:"cliques",    nome:"Cliques no link",  desc:comVisitas ? "Quem clicou pra ir à página" : "Quem clicou pra abrir o formulário"},
@@ -231,8 +237,8 @@ function etapas(a){
     lista.push({k:"visitas", nome:"Visitas à página", desc:"Quem esperou a página carregar"});
     taxas.push({k:"connect", nome:"Connect rate", formula:"visitas ÷ cliques"});
   }
-  lista.push({k:"leads", nome:"Leads", desc:"Contatos recebidos"});
-  taxas.push({k:"conv", nome:"Conversão em lead", formula:comVisitas ? "leads ÷ visitas" : "leads ÷ cliques"});
+  lista.push({k:K(), nome:R().pl, desc:R().desc});
+  taxas.push({k:"conv", nome:`Conversão em ${R().um}`, formula:comVisitas ? `${R().varios} ÷ visitas` : `${R().varios} ÷ cliques`});
   return {lista, taxas};
 }
 
@@ -275,7 +281,7 @@ function desenhar(){
   const a = derivadas(P.atual);
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
-  const comLead = P.criativos.filter(c => c.leads > 0);
+  const comLead = P.criativos.filter(c => c[K()] > 0);
 
   app.innerHTML = `<div class="wrap">
   <header>
@@ -292,8 +298,8 @@ function desenhar(){
 
   <section>
     <div class="tiles">
-      ${tile("Leads", fmtInt(a.leads), null, true)}
-      ${tile("Criativos que geraram lead", fmtInt(comLead.length), `de ${plural(P.criativos.length, "criativo que rodou", "criativos que rodaram")}`)}
+      ${tile(R().pl, fmtInt(a[K()]), K() === "contatos" && a.leads > 0 ? `${plural(a.leads, "lead de formulário", "leads de formulário")}` : null, true)}
+      ${tile(`Criativos que geraram ${R().um}`, fmtInt(comLead.length), `de ${plural(P.criativos.length, "criativo que rodou", "criativos que rodaram")}`)}
     </div>
   </section>
 
@@ -310,21 +316,21 @@ function desenhar(){
   </section>
 
   <section>
-    <div class="sec-head"><h2>Criativos que mais geraram leads</h2>
+    <div class="sec-head"><h2>Criativos que mais geraram ${R().varios}</h2>
       <p class="sub">Cada criativo somado em todos os públicos em que rodou.</p></div>
     ${criativos(P.criativos)}
   </section>
 
   <section>
     <div class="sec-head"><h2>Funil geral</h2>
-      <p class="sub">Todas as campanhas juntas: quantas pessoas passam em cada etapa até virar lead.</p></div>
+      <p class="sub">Todas as campanhas juntas: quantas pessoas passam em cada etapa até virar ${R().um}.</p></div>
     ${funil(a)}
   </section>
 
   <footer>
     <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
     <div style="margin-top:12px"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos. Só vídeos entram nessas duas taxas. <b>Engajamentos:</b> curtidas, comentários, compartilhamentos, salvamentos e cliques na publicação.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta. Leads são os que a Meta registrou (formulário ou pixel) e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta. ${K() === "contatos" ? "Contatos são as conversas iniciadas que a Meta registrou (janela de 7 dias)" : "Leads são os que a Meta registrou (formulário ou pixel)"} e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
@@ -359,21 +365,21 @@ function cardCriativo(c, pos, max){
   return `<div class="card ad${pos === 1 ? " top" : ""}">${thumb}<div>
     <div class="nm">${esc(c.nome)}${c.ativo ? `<span class="badge on">no ar</span>` : ""}</div>
     <div class="cp">${c.conjuntos > 1 ? `rodou em ${c.conjuntos} públicos` : "rodou em 1 público"}</div>
-    <div class="bar"><i style="width:${max ? c.leads/max*100 : 0}%"></i></div>
+    <div class="bar"><i style="width:${max ? c[K()]/max*100 : 0}%"></i></div>
     ${statsCriativo(c)}
     <div class="links">
       ${c.instagram ? `<a class="lnk" href="${esc(c.instagram)}" target="_blank" rel="noopener">${ICO_IG}Ver no Instagram</a>` : ""}
       ${c.previa ? `<a class="lnk" href="${esc(c.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia do anúncio</a>` : ""}
     </div></div>
-    <div class="qtd"><b>${fmtInt(c.leads)}</b><span>${c.leads === 1 ? "lead" : "leads"}</span></div></div>`;
+    <div class="qtd"><b>${fmtInt(c[K()])}</b><span>${c[K()] === 1 ? R().um : R().varios}</span></div></div>`;
 }
 
 function criativos(lista){
-  const com = lista.filter(c => c.leads > 0), sem = lista.filter(c => !c.leads);
-  if (!com.length) return `<div class="card empty">Nenhum criativo gerou lead no período.</div>`;
-  const max = com[0].leads;
+  const com = lista.filter(c => c[K()] > 0), sem = lista.filter(c => !c[K()]);
+  if (!com.length) return `<div class="card empty">Nenhum criativo gerou ${R().um} no período.</div>`;
+  const max = com[0][K()];
   return `<div class="ads">${com.map((c,i) => cardCriativo(c, i+1, max)).join("")}</div>
-    ${sem.length ? `<div class="sem"><b>Sem lead no período:</b> ${sem.map(c => esc(c.nome)).join(", ")}.</div>` : ""}`;
+    ${sem.length ? `<div class="sem"><b>Sem ${R().um} no período:</b> ${sem.map(c => esc(c.nome)).join(", ")}.</div>` : ""}`;
 }
 
 iniciar();
