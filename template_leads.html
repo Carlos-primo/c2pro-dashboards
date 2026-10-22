@@ -282,6 +282,7 @@ function desenhar(){
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
   const comLead = P.criativos.filter(c => c[K()] > 0);
+  const G = P.google || null;
 
   app.innerHTML = `<div class="wrap">
   <header>
@@ -298,13 +299,15 @@ function desenhar(){
 
   <section>
     <div class="tiles">
-      ${tile(R().pl, fmtInt(a[K()]), null, true)}
+      ${G ? tile(`${R().pl} no total`, fmtInt(a[K()] + G.atual.contatos), `${fmtInt(a[K()])} Meta Ads · ${fmtInt(G.atual.contatos)} Google Ads`, true)
+          : tile(R().pl, fmtInt(a[K()]), null, true)}
+      ${G ? tile("Meta Ads", fmtInt(a[K()]), "Instagram, Facebook e WhatsApp") + tile("Google Ads", fmtInt(G.atual.contatos), "Pesquisa e Performance Max") : ""}
       ${tile(`Criativos que geraram ${R().um}`, fmtInt(comLead.length), `de ${plural(P.criativos.length, "criativo que rodou", "criativos que rodaram")}`)}
     </div>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Engajamento e vídeo</h2>
+    <div class="sec-head"><h2>Engajamento e vídeo${G ? " (Meta Ads)" : ""}</h2>
       <p class="sub">Como o público reagiu aos criativos no período, somando todas as campanhas.</p></div>
     <div class="tiles">
       ${tile("Alcance", fmtInt(a.alcance), `${fmtInt(a.impressoes)} impressões`)}
@@ -316,21 +319,24 @@ function desenhar(){
   </section>
 
   <section>
-    <div class="sec-head"><h2>Criativos que mais geraram ${R().varios}</h2>
+    <div class="sec-head"><h2>Criativos que mais geraram ${R().varios}${G ? " (Meta Ads)" : ""}</h2>
       <p class="sub">Cada criativo somado em todos os públicos em que rodou.</p></div>
     ${criativos(P.criativos)}
   </section>
 
   <section>
-    <div class="sec-head"><h2>Funil geral</h2>
+    <div class="sec-head"><h2>Funil geral${G ? " (Meta Ads)" : ""}</h2>
       <p class="sub">Todas as campanhas juntas: quantas pessoas passam em cada etapa até virar ${R().um}.</p></div>
     ${funil(a)}
   </section>
 
+  ${G ? googleSecao(G) : ""}
+
   <footer>
     <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
     <div style="margin-top:12px"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos. Só vídeos entram nessas duas taxas. <b>Engajamentos:</b> curtidas, comentários, compartilhamentos, salvamentos e cliques na publicação.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta. ${K() === "contatos" ? "Contatos são as conversas iniciadas que a Meta registrou (janela de 7 dias)" : "Leads são os que a Meta registrou (formulário ou pixel)"} e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    ${G ? `<div style="margin-top:12px"><b>Google Ads:</b> contatos são as conversões registradas pelo Google (clique no WhatsApp e ligações). Os temas da Performance Max são agrupamentos do próprio Google.</div>` : ""}
+    <div style="margin-top:12px">Dados puxados direto da API da Meta${G ? " e do Google Ads" : ""}. ${K() === "contatos" ? "Contatos são as conversas iniciadas que a Meta registrou (janela de 7 dias)" : "Leads são os que a Meta registrou (formulário ou pixel)"} e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
@@ -338,6 +344,27 @@ function desenhar(){
     PER = bt.dataset.p; try { localStorage.setItem("c2pro-leads-periodo", PER); } catch(_){}
     desenhar();
   }));
+}
+
+function linhaGoogle(nome, sub, qtd, max){
+  return `<div class="card ad" style="grid-template-columns:minmax(0,1fr) auto;padding:14px 18px">
+    <div><div class="nm">${esc(nome)}</div>${sub ? `<div class="cp">${esc(sub)}</div>` : ""}
+    <div class="bar"><i style="width:${max ? qtd/max*100 : 0}%"></i></div></div>
+    <div class="qtd"><b>${fmtInt(qtd)}</b><span>${qtd === 1 ? "contato" : "contatos"}</span></div></div>`;
+}
+
+function googleSecao(G){
+  const camps = G.campanhas.filter(c => c.contatos > 0);
+  const bloco = (titulo, desc, linhas) => `<section>
+    <div class="sec-head"><h2>${titulo}</h2><p class="sub">${desc}</p></div>
+    ${linhas.length ? `<div class="ads">${linhas.join("")}</div>` : `<div class="card empty">Nada para mostrar no período.</div>`}</section>`;
+  const mx = l => l.length ? l[0].contatos : 0;
+  return bloco("Google Ads: campanhas", "Contatos gerados por cada campanha do Google no período.",
+      camps.map(c => linhaGoogle(c.nome, `${c.tipo} · ${fmtInt(c.cliques)} cliques`, c.contatos, mx(camps))))
+    + bloco("Google Ads: pesquisas que geraram contato", "Termos que as pessoas digitaram no Google antes de entrar em contato.",
+      G.termos.map(t => linhaGoogle(t.t, t.origem, t.contatos, mx(G.termos))))
+    + (G.temas.length ? bloco("Google Ads: temas da Performance Max", "Assuntos que o Google agrupou dentro da Performance Max.",
+      G.temas.map(t => linhaGoogle(t.t, `${fmtInt(t.cliques)} cliques`, t.contatos, mx(G.temas)))) : "");
 }
 
 // Engajamento do criativo. Hook rate e retenção só existem em vídeo; em imagem ficam de fora.

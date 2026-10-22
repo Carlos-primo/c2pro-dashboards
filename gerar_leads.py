@@ -23,6 +23,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from gerar import api, criptografar
+import gerar_google
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "leads"
@@ -185,6 +186,25 @@ def periodo(dias, ontem):
     }
 
 
+def bloco_google(cid, ontem):
+    """Contatos do Google Ads (config "google_customer_id") pra juntar ao dashboard da Meta.
+    Mesma regra da pagina: sem investimento, custo ou comparacao. Reaproveita as consultas do gerar_google.py."""
+    g = gerar_google.Google(cid)
+    saida = {}
+    for d in PERIODOS:
+        p = gerar_google.periodo(g, d, ontem)
+        saida[str(d)] = {
+            "atual": {"contatos": p["cur"]["conv"], "impressoes": p["cur"]["imp"], "cliques": p["cur"]["cli"]},
+            "campanhas": [{"nome": c["nome"], "tipo": c["tipo"], "contatos": c["conv"], "impressoes": c["imp"],
+                           "cliques": c["cli"]} for c in sorted(p["camps"], key=lambda c: -c["conv"])],
+            "termos": [{"t": v["t"], "contatos": v["conv"], "cliques": v["cli"], "origem": v["camp"]}
+                       for v in p["conv"][:15]],
+            "temas": [{"t": v["t"], "contatos": v["conv"], "cliques": v["cli"]}
+                      for v in p["cats"] if v["conv"] > 0][:10],
+        }
+    return saida
+
+
 def gerar_cliente(slug):
     CFG.clear()
     CFG.update(json.loads((AQUI / "leads" / slug / "config.json").read_text(encoding="utf-8")))
@@ -205,6 +225,10 @@ def gerar_cliente(slug):
             a.update({k: todos[a["id"]][k] for k in ("status", "thumb", "instagram", "previa")})
         p["criativos"] = agrupar_criativos(p.pop("anuncios"))
 
+    if CFG.get("google_customer_id"):
+        for k, g in bloco_google(CFG["google_customer_id"], ontem).items():
+            periodos[k]["google"] = g
+
     dados = {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
@@ -224,6 +248,8 @@ def gerar_cliente(slug):
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
     p30 = periodos["30"]
+    if "google" in p30:
+        print(f"   + Google Ads: 30d {p30['google']['atual']['contatos']:.0f} contatos")
     com_lead = sum(1 for c in p30["criativos"] if c[PRINCIPAL()] > 0)
     print(f"OK leads/{slug}: 30d {p30['atual'][PRINCIPAL()]:.0f} {PRINCIPAL()}, {len(p30['campanhas'])} campanhas, "
           f"{com_lead} de {len(p30['criativos'])} criativos com lead | "
