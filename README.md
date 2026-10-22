@@ -80,6 +80,7 @@ https://carlos-primo.github.io/c2pro-dashboards/leads/<cliente>/
 | Cliente | Link |
 |---|---|
 | Atento Corretora | https://carlos-primo.github.io/c2pro-dashboards/leads/atento/ |
+| Paty Clar | https://carlos-primo.github.io/c2pro-dashboards/leads/paty-clar/ |
 
 - **Resumo:** leads no período e quantos criativos geraram lead
 - **Criativos que mais geraram leads:** ranking por quantidade de leads, cada criativo somado em todos os públicos em que rodou, com link pro Instagram e prévia
