@@ -28,7 +28,7 @@ AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "leads"
 CFG = {}
 
-PERIODOS = [30]
+PERIODOS = [7, 30]
 
 CAMPOS_METRICAS = "spend,impressions,reach,inline_link_clicks,actions"
 
