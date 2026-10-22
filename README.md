@@ -223,3 +223,4 @@ Atualiza todo dia às 4h (Brasília). Precisa dos secrets `GOOGLE_ADS_CLIENT_ID`
 | Cliente | Link |
 |---|---|
 | Luke Garcia | https://carlos-primo.github.io/c2pro-dashboards/google/luke-garcia/ |
+| Krav Maga ABC | https://carlos-primo.github.io/c2pro-dashboards/google/krav-maga-abc/ |
