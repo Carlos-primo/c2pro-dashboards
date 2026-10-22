@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Distribuição C2Pro</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --bg-deep:#030507; --solid:#0A0E14;
+  --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E;
+  --grid:rgba(255,255,255,.07);
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-body);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 16px 64px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:40px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.brand{display:flex;gap:16px;align-items:center}
+.brand img{width:52px;height:52px;object-fit:contain}
+.pills{display:inline-flex;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.pills button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.pills button:hover{color:var(--t-strong)}
+.pills button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.pills button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.tile{padding:20px}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.tile .val{font:600 24px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.tile.hero .val{color:var(--acc-h)}
+.tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.delta{display:inline-block;margin-top:10px;font:500 12px/1 var(--mono);color:var(--t-faint)}
+.delta.pos{color:var(--pos)} .delta.neg{color:var(--neg)}
+.delta span{color:var(--t-faint);font-weight:400}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.chart{padding:20px 20px 12px;position:relative}
+.chart h3{margin:0;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.chart .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:4px 0 12px}
+.chart svg{display:block;width:100%;height:200px;overflow:visible}
+.axis{font:400 10px var(--mono);fill:var(--t-faint)}
+.tip{position:absolute;pointer-events:none;background:var(--solid);border:1px solid var(--b-def);border-radius:10px;
+  padding:8px 10px;font:400 12px/1.45 var(--mono);color:var(--t-body);white-space:nowrap;box-shadow:0 4px 16px -4px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .1s;z-index:5}
+.tip b{color:var(--t-strong);font-weight:600}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--t-muted);font-size:13px}
+summary:hover{color:var(--acc-h)}
+
+.tbl-wrap{overflow-x:auto;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-faint);text-align:right;padding:14px 16px;border-bottom:1px solid var(--b-def);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--b-sub);text-align:right;white-space:nowrap;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body)}
+th:first-child,td:first-child{text-align:left}
+td:first-child{font-family:Inter,sans-serif;color:var(--t-strong);white-space:normal;min-width:220px}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--s1)}
+.badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);letter-spacing:.06em;border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px}
+.badge.on{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+
+.ads-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
+.ads-col h3{margin:0 0 12px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.ads{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.ad{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:16px;align-items:start}
+.ad .thumb{position:relative;display:block;width:96px;height:128px;border-radius:12px;overflow:hidden;background:var(--s2);border:1px solid var(--b-sub)}
+.ad .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ad .rank{position:absolute;top:6px;left:6px;min-width:24px;padding:2px 6px;border-radius:999px;background:rgba(5,7,10,.8);
+  border:1px solid var(--b-def);font:600 11px/1.4 var(--mono);color:var(--t-strong);text-align:center}
+.ad .nm{color:var(--t-strong);font-weight:600;font-size:14px;line-height:1.3;word-break:break-word}
+.ad .cp{color:var(--t-faint);font-size:12px;margin:2px 0 10px;word-break:break-word}
+.ad .kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font:400 12px/1.35 var(--mono);color:var(--t-muted)}
+.ad .kpis b{display:block;color:var(--t-strong);font-weight:500;font-size:13px}
+.ad .kpis .sel b{color:var(--acc-h)}
+.ad .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lnk{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--b-def);
+  color:var(--t-body);font:500 12px/1.2 Inter,sans-serif;text-decoration:none;transition:.15s}
+.lnk:hover{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.lnk svg{width:14px;height:14px}
+.lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.empty{padding:24px;color:var(--t-muted);font-size:14px}
+
+.ret{padding:20px}
+.ret h3{margin:0 0 4px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.ret .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:0 0 16px}
+.ret-row{display:grid;grid-template-columns:92px 1fr 150px;gap:12px;align-items:center;margin-bottom:10px;font:400 12px/1.3 var(--mono)}
+.ret-row .k{color:var(--t-muted)}
+.ret-row .bar{height:14px;border-radius:0 4px 4px 0;background:var(--acc);min-width:2px}
+.ret-row .track{background:var(--s1);border-radius:0 4px 4px 0}
+.ret-row .v{color:var(--t-strong);text-align:right}
+.ret-row .v span{color:var(--t-faint)}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
+.defs b{color:var(--t-muted);font-weight:500}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+
+.lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lock form{width:100%;max-width:380px;padding:32px;text-align:center}
+.lock img{width:64px;margin-bottom:16px}
+.lock input[type=password]{width:100%;margin:20px 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--b-def);
+  background:rgba(0,0,0,.35);color:var(--t-strong);font:400 15px Inter,sans-serif}
+.lock input:focus{outline:2px solid var(--acc);outline-offset:1px;border-color:transparent}
+.lock .row{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--t-muted);margin-bottom:16px}
+.btn{all:unset;cursor:pointer;display:block;width:100%;padding:12px 0;border-radius:12px;background:var(--acc);color:var(--on-acc);
+  font:600 15px Inter,sans-serif;box-shadow:0 0 12px -2px rgba(0,216,245,.45);transition:.15s;text-align:center}
+.btn:hover{background:var(--acc-h);transform:translateY(-2px);box-shadow:var(--glow)}
+.btn:active{transform:scale(.975)}
+.err{color:var(--neg);font-size:13px;min-height:20px;margin-top:12px}
+
+.tabs{display:flex;gap:4px;margin-top:24px;border-bottom:1px solid var(--b-sub)}
+.tabs button{all:unset;cursor:pointer;padding:12px 20px;font:600 14px/1 Inter,sans-serif;color:var(--t-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+.tabs button:hover{color:var(--t-strong)}
+.tabs button[aria-selected="true"]{color:var(--acc-h);border-bottom-color:var(--acc)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.h3{margin:0;font:600 17px/1.3 Inter,sans-serif;color:var(--t-strong)}
+tr.total td{font-weight:600;color:var(--t-strong);background:var(--s1)}
+.split .tiles{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.split{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr)}
+@media(max-width:820px){.split{grid-template-columns:1fr}}
+.ret-row{grid-template-columns:110px 1fr 130px}
+details>.card{margin-top:12px}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="tip" id="tip"></div>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(() => {
+const app = document.getElementById("app");
+const payload = JSON.parse(document.getElementById("payload").textContent);
+const CHAVE_SENHA = "c2pro-dash-senha";
+
+// ---------- formatação pt-BR ----------
+let MOEDA = "BRL";
+const fmtMoeda = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:MOEDA}).format(v||0);
+const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
+const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
+const fmtX = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"x";
+const fmtCompacto = v => new Intl.NumberFormat("pt-BR",{notation:"compact",maximumFractionDigits:1}).format(v||0);
+const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
+const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const div = (a,b) => b ? a/b : null;
+
+// ---------- tela de senha ----------
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decifrar(senha){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha), "PBKDF2", false, ["deriveKey"]);
+  const chave = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(payload.sal), iterations:payload.iter, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const txt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(payload.iv)}, chave, b64(payload.ct));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
+
+function telaSenha(){
+  app.innerHTML = `<div class="lock"><form class="card" id="f">
+    <img src="logo.png" alt="C2Pro">
+    <div class="eyebrow" style="justify-content:center">Dashboard protegido</div>
+    <input type="password" id="s" placeholder="Senha" autocomplete="current-password" aria-label="Senha" autofocus>
+    <label class="row"><input type="checkbox" id="lembrar" checked> Lembrar neste navegador</label>
+    <button class="btn" type="submit">Abrir dashboard</button>
+    <div class="err" id="err"></div></form></div>`;
+  document.getElementById("f").addEventListener("submit", async e => {
+    e.preventDefault();
+    const senha = document.getElementById("s").value;
+    try {
+      const dados = await decifrar(senha);
+      try { if (document.getElementById("lembrar").checked) localStorage.setItem(CHAVE_SENHA, senha); } catch(_){}
+      render(dados);
+    } catch(_) { document.getElementById("err").textContent = "Senha incorreta."; }
+  });
+}
+
+async function iniciar(){
+  if (!payload.enc) return render(payload.dados);
+  let salva = null;
+  try { salva = localStorage.getItem(CHAVE_SENHA); } catch(_){}
+  if (salva) { try { return render(await decifrar(salva)); } catch(_){ try{localStorage.removeItem(CHAVE_SENHA);}catch(_){} } }
+  telaSenha();
+}
+// ---------- dashboard por funil ----------
+let D, PER = "7", ABA = "meta";
+try { PER = localStorage.getItem("c2pro-dash-periodo") || "7"; ABA = localStorage.getItem("c2pro-dash-aba") || "meta"; } catch(_){}
+
+const ETAPAS = {
+  topo:  {nome:"Topo de funil",  desc:"Reels para atrair gente nova e ganhar seguidores."},
+  meio:  {nome:"Meio de funil",  desc:"Reels e carrosséis para quem já conhece o perfil engajar."},
+  fundo: {nome:"Fundo de funil", desc:"Conteúdo para quem está perto de falar com o escritório."},
+  geral: {nome:"Outras campanhas de distribuição", desc:""},
+};
+
+function render(dados){
+  D = dados; MOEDA = D.moeda || "BRL";
+  if (!D.meta.periodos[PER]) PER = "7";
+  if (ABA === "google" && !D.google) ABA = "meta";
+  desenhar();
+}
+
+function delta(atual, anterior, melhorQuando){
+  if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
+  if (!anterior) return atual ? `<div class="delta"><span>sem base no período anterior</span></div>` : `<div class="delta"><span>sem dados</span></div>`;
+  const p = (atual - anterior) / anterior * 100;
+  const txt = (p > 0 ? "+" : "") + new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(p) + "%";
+  let cls = "";
+  if (melhorQuando && Math.abs(p) >= 0.5) cls = (p > 0) === (melhorQuando === "sobe") ? "pos" : "neg";
+  return `<div class="delta ${cls}">${txt} <span>vs anterior</span></div>`;
+}
+function tile(lbl, val, deltaHtml, extra, hero){
+  return `<div class="card tile${hero?" hero":""}"><div class="lbl">${esc(lbl)}</div>
+    <div class="val">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}${deltaHtml}</div>`;
+}
+const moedaOu = v => v == null ? "-" : fmtMoeda(v);
+const pctOu = v => v == null ? "-" : fmtPct(v);
+const intOu = v => v == null ? "-" : fmtInt(v);
+
+// Métricas derivadas do Meta. Hook = views 3s ÷ impressões. Retenção = ThruPlay ÷ views 3s.
+// Taxa de engajamento = interações ÷ impressões.
+function dm(m){
+  return { ...m,
+    cpm: div(m.gasto*1000, m.impressoes), freq: div(m.impressoes, m.alcance),
+    cpv: div(m.gasto, m.views3s), cthru: div(m.gasto, m.thruplay),
+    hook: div(m.views3s*100, m.impressoes), ret: div(m.thruplay*100, m.views3s),
+    cint: div(m.gasto, m.interacoes), txeng: div(m.interacoes*100, m.impressoes),
+    csalv: div(m.gasto, m.salvos), cclique: div(m.gasto, m.cliques), ctr: div(m.cliques*100, m.impressoes) };
+}
+
+const ORDENS = {
+  cint: {label:"Menor custo por interação", val:m => m.cint, melhor:"menor"},
+  inte: {label:"Mais interações",           val:m => m.interacoes, melhor:"maior"},
+  hook: {label:"Hook rate",                 val:m => m.hook, melhor:"maior"},
+  ret:  {label:"Retenção",                  val:m => m.ret,  melhor:"maior"},
+  cpv:  {label:"Menor custo por view",      val:m => m.cpv,  melhor:"menor"},
+};
+let ORDEM = "cint";
+try { ORDEM = localStorage.getItem("c2pro-dash-ordem-funil") || "cint"; if (!ORDENS[ORDEM]) ORDEM = "cint"; } catch(_){}
+
+const ICO_IG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`;
+const ICO_EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
+function statusBadge(s){
+  if (!s) return "";
+  const map = {ACTIVE:"ativa",ENABLED:"ativa",PAUSED:"pausada",CAMPAIGN_PAUSED:"campanha pausada",ADSET_PAUSED:"conjunto pausado",ARCHIVED:"arquivada",DELETED:"excluída",REMOVED:"removida",WITH_ISSUES:"com problema",IN_PROCESS:"em análise",PENDING_REVIEW:"em revisão",DISAPPROVED:"reprovada"};
+  return `<span class="badge${s==="ACTIVE"||s==="ENABLED"?" on":""}">${esc(map[s]||s.toLowerCase())}</span>`;
+}
+
+function desenhar(){
+  const per = D.meta.periodos[PER];
+  const g = D.google ? D.google.periodos[PER] : null;
+  const P = ABA === "google" ? g : per;
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+  const rot = k => k === "7" ? "Últimos 7 dias" : "Últimos 30 dias";
+
+  app.innerHTML = `<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.png" alt="C2Pro">
+      <div><div class="eyebrow">${esc(D.subtitulo || "Distribuição")}</div><h1>${esc(D.nome)}</h1></div></div>
+    <div class="pills" role="group" aria-label="Período">
+      ${["7","30"].map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${rot(k)}</button>`).join("")}
+    </div>
+  </header>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-a="meta" aria-selected="${ABA==="meta"}">Meta Ads</button>
+    ${D.google ? `<button role="tab" data-a="google" aria-selected="${ABA==="google"}">Google Ads</button>` : ""}
+  </div>
+  <div class="meta">
+    <span>Período: ${dataBR(P.inicio)} a ${dataBR(P.fim)}</span>
+    <span>Comparado com: ${dataBR(P.ant_inicio)} a ${dataBR(P.ant_fim)}</span>
+    <span>Atualizado em ${quando}</span>
+  </div>
+  ${ABA === "google" ? telaGoogle(g) : telaMeta(per)}
+  <footer>${ABA === "google" ? rodapeGoogle() : rodapeMeta()}
+    <div style="margin-top:12px">Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div></footer>
+  </div>`;
+
+  app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
+    PER = bt.dataset.p; try { localStorage.setItem("c2pro-dash-periodo", PER); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+  app.querySelectorAll("[data-a]").forEach(bt => bt.addEventListener("click", () => {
+    ABA = bt.dataset.a; try { localStorage.setItem("c2pro-dash-aba", ABA); } catch(_){}
+    desenhar(); window.scrollTo(0, 0);
+  }));
+  app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
+    ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-dash-ordem-funil", ORDEM); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+  graficos();
+}
+
+// ---------- aba Meta ----------
+function telaMeta(per){
+  const nomes = Object.keys(per.etapas);
+  if (!nomes.length) return `<section><div class="card empty">Nenhuma campanha de distribuição com investimento no período.</div></section>`;
+  return `${comparativo(per)}
+    ${nomes.map(e => secaoEtapa(e, per.etapas[e], per.ig)).join("")}
+    <section>
+      <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Últimos 30 dias, independente do período selecionado.</p></div></div>
+      <div class="charts">
+        ${D.meta.tem_ig ? `<div class="card chart"><h3>Seguidores novos por dia</h3>
+          <div class="tot">Perfil inteiro, todas as origens. Total: ${fmtInt(D.meta.diario.reduce((s,d)=>s+(d.seguidores||0),0))}</div><svg id="c-seg"></svg></div>` : ""}
+        <div class="card chart"><h3>Interações por dia</h3>
+          <div class="tot">Curtidas, comentários, compartilhamentos e salvos. Total: ${fmtInt(D.meta.diario.reduce((s,d)=>s+d.interacoes,0))}</div><svg id="c-int"></svg></div>
+        <div class="card chart"><h3>Views de 3s por dia</h3>
+          <div class="tot">Total: ${fmtInt(D.meta.diario.reduce((s,d)=>s+d.views3s,0))}</div><svg id="c-views"></svg></div>
+      </div>
+    </section>`;
+}
+
+function comparativo(per){
+  const linhas = Object.entries(per.etapas).map(([e, E]) => ({e, a: dm(E.atual), b: dm(E.anterior)}));
+  const soma = ["gasto","impressoes","alcance","views3s","thruplay","interacoes","reacoes","comentarios","compartilhamentos","salvos","cliques","contatos","p25","p50","p75","p100"];
+  const T = {}; soma.forEach(k => T[k] = linhas.reduce((s,l) => s + l.a[k], 0));
+  const t = dm(T);
+  return `<section>
+    <div class="sec-head"><div><h2>Funil de distribuição</h2><p class="sub">Comparativo entre as etapas. Interações = curtidas, comentários, compartilhamentos e salvos.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Etapa</th><th>Investimento</th><th>Impressões</th><th>Alcance</th><th>Views 3s</th><th>Hook rate</th><th>Retenção</th>
+        <th>Interações</th><th>Taxa de engaj.</th><th>Custo por interação</th></tr></thead>
+      <tbody>${linhas.map(({e,a}) => `<tr><td>${esc(ETAPAS[e].nome)}</td><td>${fmtMoeda(a.gasto)}</td><td>${fmtInt(a.impressoes)}</td>
+        <td>${fmtInt(a.alcance)}</td><td>${fmtInt(a.views3s)}</td><td>${pctOu(a.hook)}</td><td>${pctOu(a.ret)}</td>
+        <td>${fmtInt(a.interacoes)}</td><td>${pctOu(a.txeng)}</td><td>${moedaOu(a.cint)}</td></tr>`).join("")}
+        <tr class="total"><td>Total</td><td>${fmtMoeda(t.gasto)}</td><td>${fmtInt(t.impressoes)}</td><td>${fmtInt(t.alcance)}</td>
+        <td>${fmtInt(t.views3s)}</td><td>${pctOu(t.hook)}</td><td>${pctOu(t.ret)}</td><td>${fmtInt(t.interacoes)}</td>
+        <td>${pctOu(t.txeng)}</td><td>${moedaOu(t.cint)}</td></tr></tbody>
+    </table></div></section>`;
+}
+
+function secaoEtapa(e, E, ig){
+  const a = dm(E.atual), b = dm(E.anterior);
+  let tiles;
+  if (e === "topo") {
+    const seg = ig.seguidores, segA = ig.seguidores_ant;
+    const cseg = seg ? a.gasto / seg : null, csegA = segA ? b.gasto / segA : null;
+    tiles = [
+      tile("Seguidores novos", intOu(seg), delta(seg, segA, "sobe"), "perfil inteiro, todas as origens", true),
+      tile("Custo por seguidor", moedaOu(cseg), delta(cseg, csegA, "desce"), "investimento do topo ÷ seguidores novos", true),
+      tile("Visitas ao perfil", intOu(ig.visitas), delta(ig.visitas, ig.visitas_ant, "sobe"), ig.visitas ? `${moedaOu(a.gasto/ig.visitas)} por visita` : ""),
+      tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto, b.gasto, null)),
+      tile("Alcance", fmtInt(a.alcance), delta(a.alcance, b.alcance, "sobe")),
+      tile("Custo por view (3s)", moedaOu(a.cpv), delta(a.cpv, b.cpv, "desce"), `${fmtInt(a.views3s)} views`),
+      tile("Hook rate", pctOu(a.hook), delta(a.hook, b.hook, "sobe"), "views 3s ÷ impressões"),
+      tile("Retenção", pctOu(a.ret), delta(a.ret, b.ret, "sobe"), "ThruPlay ÷ views 3s"),
+      tile("Cliques no link", fmtInt(a.cliques), delta(a.cliques, b.cliques, "sobe"), a.cliques ? `${moedaOu(a.cclique)} por clique · CTR ${pctOu(a.ctr)}` : ""),
+      tile("Interações", fmtInt(a.interacoes), delta(a.interacoes, b.interacoes, "sobe"), `${moedaOu(a.cint)} por interação`),
+      tile("CPM", moedaOu(a.cpm), delta(a.cpm, b.cpm, "desce"), `frequência ${a.freq==null?"-":fmtX(a.freq).replace("x","")}`),
+    ];
+  } else {
+    tiles = [
+      tile("Interações", fmtInt(a.interacoes), delta(a.interacoes, b.interacoes, "sobe"), "curtidas, comentários, compart. e salvos", true),
+      tile("Custo por interação", moedaOu(a.cint), delta(a.cint, b.cint, "desce"), "", true),
+      tile("Taxa de engajamento", pctOu(a.txeng), delta(a.txeng, b.txeng, "sobe"), "interações ÷ impressões"),
+      tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto, b.gasto, null)),
+      tile("Curtidas", fmtInt(a.reacoes), delta(a.reacoes, b.reacoes, "sobe")),
+      tile("Comentários", fmtInt(a.comentarios), delta(a.comentarios, b.comentarios, "sobe")),
+      tile("Compartilhamentos", fmtInt(a.compartilhamentos), delta(a.compartilhamentos, b.compartilhamentos, "sobe")),
+      tile("Salvos", fmtInt(a.salvos), delta(a.salvos, b.salvos, "sobe"), a.salvos ? `${moedaOu(a.csalv)} por salvo` : ""),
+      tile("Alcance", fmtInt(a.alcance), delta(a.alcance, b.alcance, "sobe")),
+      tile("Hook rate", pctOu(a.hook), delta(a.hook, b.hook, "sobe"), "views 3s ÷ impressões"),
+      tile("Retenção", pctOu(a.ret), delta(a.ret, b.ret, "sobe"), "ThruPlay ÷ views 3s"),
+      tile("Custo por ThruPlay", moedaOu(a.cthru), delta(a.cthru, b.cthru, "desce"), `${fmtInt(a.thruplay)} ThruPlays`),
+      tile("CPM", moedaOu(a.cpm), delta(a.cpm, b.cpm, "desce"), `frequência ${a.freq==null?"-":fmtX(a.freq).replace("x","")}`),
+    ];
+    if (a.contatos) tiles.push(tile("Contatos (conversas)", fmtInt(a.contatos), delta(a.contatos, b.contatos, "sobe")));
+  }
+  const passos = [["Impressões", a.impressoes], ["Views de 3s", a.views3s], ["ThruPlay", a.thruplay], ["Interações", a.interacoes]];
+  if (e === "topo") passos.splice(3, 0, ["Cliques no link", a.cliques]);
+  return `<section>
+    <div class="sec-head"><div><h2>${esc(ETAPAS[e].nome)}</h2>${ETAPAS[e].desc?`<p class="sub">${esc(ETAPAS[e].desc)}</p>`:""}</div></div>
+    <div class="split">
+      <div class="tiles">${tiles.join("")}</div>
+      ${funil(passos)}
+    </div>
+    <div class="sec-head" style="margin-top:28px">
+      <div><h3 class="h3">Criativos</h3><p class="sub">Anúncios com pelo menos ${fmtMoeda(D.gasto_minimo_criativo)} investidos no período.</p></div>
+      <div class="pills" role="group" aria-label="Ordenar criativos por">
+        ${Object.entries(ORDENS).map(([k,o]) => `<button data-o="${k}" aria-pressed="${ORDEM===k}">${o.label}</button>`).join("")}
+      </div>
+    </div>
+    ${criativos(E.anuncios)}
+    <details><summary>Campanhas desta etapa</summary>${tabelaCampanhas(E.campanhas)}</details>
+  </section>`;
+}
+
+function funil(passos){
+  const topo = passos[0][1];
+  return `<div class="card ret"><h3>Funil da etapa</h3>
+    <div class="tot">Quantas ações aconteceram em cada passo e quanto isso é do passo anterior.</div>
+    ${passos.map(([k,v],i) => { const prev = i ? passos[i-1][1] : null;
+      return `<div class="ret-row"><div class="k">${esc(k)}</div>
+        <div class="track"><div class="bar" style="width:${topo ? Math.max(1.5, Math.min(100, v/topo*100)) : 0}%"></div></div>
+        <div class="v">${fmtInt(v)} <span>${prev ? "· " + (prev ? fmtPct(v/prev*100) : "-") : ""}</span></div></div>`; }).join("")}
+    <div class="defs">A porcentagem ao lado é a parte do passo anterior que chegou até aqui.</div>
+  </div>`;
+}
+
+function tabelaCampanhas(lista){
+  if (!lista.length) return `<div class="card empty">Nenhuma campanha com investimento no período.</div>`;
+  return `<div class="card tbl-wrap" style="margin-top:12px"><table>
+    <thead><tr><th>Campanha</th><th>Investimento</th><th>Impressões</th><th>Alcance</th><th>Views 3s</th><th>Hook rate</th><th>Retenção</th>
+      <th>Interações</th><th>Custo por interação</th></tr></thead>
+    <tbody>${lista.map(c => { const m = dm(c);
+      return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.alcance)}</td>
+        <td>${fmtInt(m.views3s)}</td><td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td>${fmtInt(m.interacoes)}</td><td>${moedaOu(m.cint)}</td></tr>`; }).join("")}</tbody></table></div>`;
+}
+
+function cardAnuncio(ad, pos){
+  const m = dm(ad);
+  const link = ad.instagram || ad.previa;
+  const img = ad.thumb ? `<img src="${esc(ad.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+  const thumb = link ? `<a class="thumb" href="${esc(link)}" target="_blank" rel="noopener" aria-label="Abrir criativo">${img}<span class="rank">${pos}</span></a>`
+                     : `<div class="thumb">${img}<span class="rank">${pos}</span></div>`;
+  const kpi = (k, lbl, v) => `<div class="${ORDEM===k?"sel":""}">${lbl}<b>${v}</b></div>`;
+  return `<div class="card ad">${thumb}<div>
+    <div class="nm">${esc(ad.nome)}${statusBadge(ad.status)}</div><div class="cp">${esc(ad.campanha)}</div>
+    <div class="kpis">
+      ${kpi("inte","Interações",fmtInt(m.interacoes))}${kpi("cint","Custo por interação",moedaOu(m.cint))}
+      ${kpi("hook","Hook rate",pctOu(m.hook))}${kpi("ret","Retenção",pctOu(m.ret))}
+      ${kpi("cpv","Custo por view",moedaOu(m.cpv))}${kpi("","Investido",fmtMoeda(m.gasto))}
+      ${kpi("","Curtidas / coment. / salvos",`${fmtInt(m.reacoes)} / ${fmtInt(m.comentarios)} / ${fmtInt(m.salvos)}`).replace('<div class="">','<div style="grid-column:1/-1">')}
+    </div>
+    <div class="links">
+      ${ad.instagram ? `<a class="lnk" href="${esc(ad.instagram)}" target="_blank" rel="noopener">${ICO_IG}Ver no Instagram</a>` : ""}
+      ${ad.previa ? `<a class="lnk" href="${esc(ad.previa)}" target="_blank" rel="noopener">${ICO_EYE}Prévia do anúncio</a>` : ""}
+    </div></div></div>`;
+}
+
+function criativos(lista){
+  const elegiveis = lista.filter(a => a.gasto >= D.gasto_minimo_criativo);
+  if (!elegiveis.length) return `<div class="card empty">Nenhum anúncio atingiu o investimento mínimo no período.</div>`;
+  const o = ORDENS[ORDEM];
+  const chave = a => { const v = o.val(dm(a)); return v == null ? (o.melhor === "menor" ? Infinity : -Infinity) : v; };
+  const ord = elegiveis.slice().sort((x,y) => o.melhor === "menor" ? chave(x) - chave(y) : chave(y) - chave(x));
+  return `<div class="ads">${ord.map((a,i) => cardAnuncio(a, i+1)).join("")}</div>`;
+}
+
+function rodapeMeta(){
+  return `<div class="defs"><b>Interações:</b> curtidas, comentários, compartilhamentos e salvos nas publicações. <b>Taxa de engajamento:</b> interações ÷ impressões.
+    <b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos.
+    <b>Seguidores novos e visitas ao perfil:</b> vêm do Instagram e contam o perfil inteiro, não só quem veio do anúncio.
+    <b>Custo por seguidor:</b> investimento do topo ÷ seguidores novos do período, uma estimativa.
+    O alcance de uma etapa com mais de uma campanha é a soma delas.</div>
+    <div style="margin-top:12px">Dados da API da Meta e do Instagram, só campanhas com "DISTRIBUICAO" no nome.</div>`;
+}
+
+// ---------- aba Google ----------
+function telaGoogle(P){
+  const a = P.atual, b = P.anterior;
+  const d = x => ({ ...x, cpm: div(x.custo*1000, x.imp), cpv: div(x.custo, x.views), vr: div(x.views*100, x.imp),
+    ctr: div(x.cli*100, x.imp), cpc: div(x.custo, x.cli), ceng: div(x.custo, x.eng), cconv: div(x.custo, x.conv) });
+  const A = d(a), B = d(b);
+  const nomesAcao = Object.keys(P.acoes);
+  const soInscricao = nomesAcao.length && nomesAcao.every(n => /subscri/i.test(n));
+  const rotConv = soInscricao ? "Inscrições no canal" : "Conversões";
+  const q = a.q.map(v => v * 100);
+  return `<section>
+    <div class="sec-head"><div><h2>Google Ads</h2><p class="sub">Campanhas de distribuição no YouTube.</p></div></div>
+    <div class="split">
+      <div class="tiles">
+        ${tile(rotConv, fmtInt(A.conv), delta(A.conv, B.conv, "sobe"), A.conv ? `${moedaOu(A.cconv)} por ${soInscricao ? "inscrição" : "conversão"}` : "", true)}
+        ${tile("Views", fmtInt(A.views), delta(A.views, B.views, "sobe"), `taxa de view ${pctOu(A.vr)}`, true)}
+        ${tile("Custo por view", moedaOu(A.cpv), delta(A.cpv, B.cpv, "desce"))}
+        ${tile("Investimento", fmtMoeda(A.custo), delta(A.custo, B.custo, null))}
+        ${tile("Impressões", fmtInt(A.imp), delta(A.imp, B.imp, "sobe"), `CPM ${moedaOu(A.cpm)}`)}
+        ${tile("Cliques", fmtInt(A.cli), delta(A.cli, B.cli, "sobe"), `CTR ${pctOu(A.ctr)} · ${moedaOu(A.cpc)} por clique`)}
+        ${tile("Engajamentos", fmtInt(A.eng), delta(A.eng, B.eng, "sobe"), A.eng ? `${moedaOu(A.ceng)} por engajamento` : "")}
+      </div>
+      <div class="card ret"><h3>Quanto do vídeo as pessoas assistem</h3>
+        <div class="tot">Das impressões, quantas chegaram a cada ponto do vídeo.</div>
+        ${[["25%",q[0]],["50%",q[1]],["75%",q[2]],["100%",q[3]]].map(([k,v]) => `<div class="ret-row"><div class="k">${k}</div>
+          <div class="track"><div class="bar" style="width:${Math.min(100, v * 8)}%"></div></div><div class="v">${fmtPct(v)}</div></div>`).join("")}
+        <div class="defs">A barra é ampliada para facilitar a leitura.</div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Campanhas com impressões no período.</p></div></div>
+    ${P.campanhas.length ? `<div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Investimento</th><th>Impressões</th><th>Views</th><th>Taxa de view</th><th>Custo por view</th>
+        <th>Cliques</th><th>CTR</th><th>${rotConv}</th><th>Custo por ${soInscricao ? "inscrição" : "conversão"}</th></tr></thead>
+      <tbody>${P.campanhas.map(c => { const x = d(c);
+        return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${fmtMoeda(x.custo)}</td><td>${fmtInt(x.imp)}</td><td>${fmtInt(x.views)}</td>
+          <td>${pctOu(x.vr)}</td><td>${moedaOu(x.cpv)}</td><td>${fmtInt(x.cli)}</td><td>${pctOu(x.ctr)}</td><td>${fmtInt(x.conv)}</td><td>${moedaOu(x.cconv)}</td></tr>`; }).join("")}</tbody>
+    </table></div>` : `<div class="card empty">Nenhuma campanha com impressões no período.</div>`}
+  </section>
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Últimos 30 dias, independente do período selecionado.</p></div></div>
+    <div class="charts">
+      <div class="card chart"><h3>Views por dia</h3><div class="tot">Total: ${fmtInt(D.google.diario.reduce((s,x)=>s+x.views,0))}</div><svg id="g-views"></svg></div>
+      <div class="card chart"><h3>${rotConv} por dia</h3><div class="tot">Total: ${fmtInt(D.google.diario.reduce((s,x)=>s+x.conv,0))}</div><svg id="g-conv"></svg></div>
+    </div>
+  </section>`;
+}
+
+function rodapeGoogle(){
+  return `<div class="defs"><b>Views:</b> visualizações do anúncio em vídeo contadas pelo Google (30 segundos ou o vídeo inteiro, o que for menor).
+    <b>Taxa de view:</b> views ÷ impressões. <b>Engajamentos:</b> interações com o anúncio, como expandir ou clicar. <b>Inscrições:</b> pessoas que se inscreveram no canal depois do anúncio.</div>
+    <div style="margin-top:12px">Dados da API do Google Ads, só campanhas com "DISTRIBUICAO" no nome.</div>`;
+}
+
+function graficos(){
+  const el = id => document.getElementById(id);
+  if (ABA === "google") {
+    const G = D.google.diario;
+    graficoBarras(el("g-views"), G.map(x => ({x:x.data, y:x.views, g:x.custo})),
+      p => `<b>${dataBRano(p.x)}</b><br>Views: ${fmtInt(p.y)}<br>Custo por view: ${moedaOu(div(p.g,p.y))}`);
+    graficoBarras(el("g-conv"), G.map(x => ({x:x.data, y:x.conv, g:x.custo})),
+      p => `<b>${dataBRano(p.x)}</b><br>Total: ${fmtInt(p.y)}<br>Custo: ${moedaOu(div(p.g,p.y))}`);
+    return;
+  }
+  const M = D.meta.diario;
+  if (el("c-seg")) graficoBarras(el("c-seg"), M.map(x => ({x:x.data, y:x.seguidores||0})),
+    p => `<b>${dataBRano(p.x)}</b><br>Seguidores novos: ${fmtInt(p.y)}`);
+  graficoBarras(el("c-int"), M.map(x => ({x:x.data, y:x.interacoes, g:x.gasto})),
+    p => `<b>${dataBRano(p.x)}</b><br>Interações: ${fmtInt(p.y)}`);
+  graficoBarras(el("c-views"), M.map(x => ({x:x.data, y:x.views3s, g:x.gasto})),
+    p => `<b>${dataBRano(p.x)}</b><br>Views 3s: ${fmtInt(p.y)}<br>Custo por view: ${moedaOu(div(p.g,p.y))}`);
+}
+
+// ---------- gráficos (SVG puro) ----------
+const NS = "http://www.w3.org/2000/svg";
+const tipEl = document.getElementById("tip");
+
+function escala(max){
+  if (max <= 0) return {top:1, ticks:[0,1]};
+  const passo0 = max / 3, mag = Math.pow(10, Math.floor(Math.log10(passo0)));
+  const passo = [1,2,2.5,5,10].map(k => k*mag).find(p => p >= passo0);
+  const top = Math.ceil(max / passo) * passo;
+  const ticks = []; for (let v = 0; v <= top + 1e-9; v += passo) ticks.push(v);
+  return {top, ticks};
+}
+
+function base(svg, pts, fmtEixo){
+  const W = svg.clientWidth || 500, H = 200, L = 52, Rr = 8, T = 8, B = 24;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const {top, ticks} = escala(Math.max(...pts.map(p => p.y)));
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const pw = (W - L - Rr) / pts.length;
+  const x = i => L + pw * i + pw / 2;
+  let g = "";
+  ticks.forEach(t => {
+    g += `<line x1="${L}" x2="${W-Rr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text class="axis" x="${L-8}" y="${y(t)+3}" text-anchor="end">${(fmtEixo||fmtCompacto)(t)}</text>`;
+  });
+  const ult = pts.length - 1;
+  pts.forEach((p,i) => { if ((i % 7 === 0 && ult - i >= 4) || i === ult)
+    g += `<text class="axis" x="${x(i)}" y="${H-6}" text-anchor="middle">${dataBR(p.x)}</text>`; });
+  svg.insertAdjacentHTML("beforeend", g);
+  return {W, H, L, Rr, T, B, y, x, pw};
+}
+
+function hover(svg, pts, geo, conteudo, destacar){
+  const card = svg.closest(".chart");
+  const alvo = document.createElementNS(NS, "rect");
+  alvo.setAttribute("x", geo.L); alvo.setAttribute("y", 0);
+  alvo.setAttribute("width", geo.W - geo.L - geo.Rr); alvo.setAttribute("height", geo.H - geo.B);
+  alvo.setAttribute("fill", "transparent");
+  svg.appendChild(alvo);
+  const mover = ev => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (geo.W / r.width);
+    const i = Math.max(0, Math.min(pts.length - 1, Math.floor((px - geo.L) / geo.pw)));
+    destacar(i);
+    tipEl.innerHTML = conteudo(pts[i]);
+    tipEl.style.opacity = 1;
+    const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+    let left = ev.clientX + 14; if (left + tw > window.innerWidth - 8) left = ev.clientX - tw - 14;
+    tipEl.style.left = left + window.scrollX + "px";
+    tipEl.style.top = ev.clientY - th - 10 + window.scrollY + "px";
+  };
+  alvo.addEventListener("pointermove", mover);
+  alvo.addEventListener("pointerdown", mover);
+  alvo.addEventListener("pointerleave", () => { tipEl.style.opacity = 0; destacar(-1); });
+}
+
+function graficoBarras(svg, pts, tooltip, fmtEixo){
+  const geo = base(svg, pts, fmtEixo);
+  const bw = Math.max(2, geo.pw - 2), r = Math.min(4, bw / 2), y0 = geo.y(0);
+  let g = "";
+  pts.forEach((p,i) => {
+    const x0 = geo.x(i) - bw/2, yt = geo.y(p.y), h = y0 - yt;
+    if (h <= 0) return;
+    const rr = Math.min(r, h);
+    g += `<path data-i="${i}" fill="var(--acc)" d="M${x0},${y0} V${yt+rr} Q${x0},${yt} ${x0+rr},${yt} H${x0+bw-rr} Q${x0+bw},${yt} ${x0+bw},${yt+rr} V${y0} Z"/>`;
+  });
+  svg.insertAdjacentHTML("beforeend", g);
+  const barras = [...svg.querySelectorAll("path[data-i]")];
+  hover(svg, pts, geo, tooltip,
+    i => barras.forEach(b => b.setAttribute("opacity", i < 0 || +b.dataset.i === i ? 1 : .35)));
+}
+
+function graficoLinha(svg, pts, tooltip, fmtEixo){
+  const geo = base(svg, pts, fmtEixo);
+  const d = pts.map((p,i) => `${i?"L":"M"}${geo.x(i)},${geo.y(p.y)}`).join(" ");
+  const area = `${d} L${geo.x(pts.length-1)},${geo.y(0)} L${geo.x(0)},${geo.y(0)} Z`;
+  svg.insertAdjacentHTML("beforeend",
+    `<defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00D8F5" stop-opacity=".18"/><stop offset="1" stop-color="#00D8F5" stop-opacity="0"/></linearGradient></defs>
+     <path d="${area}" fill="url(#ga)"/>
+     <path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+     <line id="cross" y1="${geo.T}" y2="${geo.y(0)}" stroke="var(--b-def)" stroke-width="1" visibility="hidden"/>
+     <circle id="dot" r="5" fill="var(--acc)" stroke="#05070A" stroke-width="2" visibility="hidden"/>`);
+  const cross = svg.querySelector("#cross"), dot = svg.querySelector("#dot");
+  hover(svg, pts, geo,
+    tooltip,
+    i => {
+      const vis = i < 0 ? "hidden" : "visible";
+      cross.setAttribute("visibility", vis); dot.setAttribute("visibility", vis);
+      if (i >= 0) { cross.setAttribute("x1", geo.x(i)); cross.setAttribute("x2", geo.x(i));
+        dot.setAttribute("cx", geo.x(i)); dot.setAttribute("cy", geo.y(pts[i].y)); }
+    });
+}
+
+let tRes; window.addEventListener("resize", () => { clearTimeout(tRes); tRes = setTimeout(() => D && desenhar(), 150); });
+iniciar();
+})();
+</script>
+</body>
+</html>

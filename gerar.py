@@ -273,6 +273,9 @@ def criptografar(texto, senha):
 def gerar_cliente(slug):
     CFG.clear()
     CFG.update(json.loads((AQUI / "clientes" / slug / "config.json").read_text(encoding="utf-8")))
+    if CFG.get("modelo") == "funil":
+        import gerar_funil  # topo/meio/fundo com abas Meta e Google, so para quem pede no config
+        return gerar_funil.gerar(slug)
     saida = SITE / slug
 
     conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
