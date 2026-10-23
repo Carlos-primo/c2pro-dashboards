@@ -1,0 +1,12 @@
+{
+  "nome": "Acesso Contábil Empresarial",
+  "subtitulo": "Acompanhamento de leads",
+  "conta_anuncio": "act_7043174842371471",
+  "planilha": {
+    "id": "1fbjuUud6RWkvBCMw45sa2llUFd9YrD6ySjILSfhjznc",
+    "gid": "899447267",
+    "segmento": "segmento",
+    "interesse": "interesse",
+    "qualificados": ["prestação_de_serviços", "mercado_digital"]
+  }
+}
