@@ -12,7 +12,7 @@ Regra: investimento, custo e comparacao com periodo anterior NAO entram na pagin
 dentro pra conferir a consistencia dos totais.
 
 Respostas do formulario (opcional): com o campo "planilha" no config.json, le a planilha publica do Google
-Sheets que recebe os leads do formulario e soma por segmento e por interesse. So numeros agregados entram
+Sheets que recebe os leads do formulario e soma os qualificados, por segmento e por anuncio. So numeros agregados entram
 no payload; nome e telefone nunca saem daqui.
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_LEADS_<SLUG> opcional).
@@ -214,7 +214,8 @@ def bloco_google(cid, ontem):
 
 
 def ler_planilha(cfg):
-    """Linhas da aba indicada no config ("planilha": {"id", "gid", "segmento", "interesse", "qualificados"}).
+    """Linhas da aba indicada no config ("planilha": {"id", "gid", "segmento", "qualificacao", "qualificado"}).
+    "segmento" e "qualificacao" sao trechos do nome da coluna; "qualificado" e a resposta que qualifica o lead.
     A planilha precisa estar como "qualquer pessoa com o link pode ver"."""
     url = f"https://docs.google.com/spreadsheets/d/{cfg['id']}/export?format=csv&gid={cfg['gid']}"
     resp = requests.get(url, timeout=60)
@@ -225,31 +226,23 @@ def ler_planilha(cfg):
     if not linhas:
         return []
     coluna = lambda trecho: next((c for c in linhas[0] if trecho in c.lower()), None)
-    col_seg, col_int = coluna(cfg["segmento"]), coluna(cfg["interesse"])
-    conferir(col_seg and col_int, "colunas de segmento e interesse nao encontradas na planilha")
+    col_seg, col_qual = coluna(cfg["segmento"]), coluna(cfg["qualificacao"])
+    conferir(col_seg and col_qual, "colunas de segmento e qualificacao nao encontradas na planilha")
     return [{"criado": dt.datetime.fromisoformat(l["created_time"]), "anuncio": l.get("ad_name", ""),
-             "segmento": l[col_seg].strip().lower(), "interesse": l[col_int].strip().lower()} for l in linhas]
+             "segmento": l[col_seg].strip().lower(),
+             "qualificado": l[col_qual].strip().lower() == cfg["qualificado"]} for l in linhas]
 
 
-def resumo_formulario(linhas, inicio, fim, fuso, qualificados):
+def resumo_formulario(linhas, inicio, fim, fuso):
     """Respostas do periodo, somadas por segmento e por anuncio. Datas no fuso da conta, como a Meta."""
     doper = [l for l in linhas if inicio <= l["criado"].astimezone(fuso).date() <= fim]
-    sim = lambda lista: sum(1 for l in lista if l["interesse"] == "sim")
-    qual = [l for l in doper if l["segmento"] in qualificados]
-    segmentos = {}
-    for l in doper:
-        segmentos.setdefault(l["segmento"], []).append(l)
-    anuncios = {}
-    for l in doper:
-        anuncios.setdefault(l["anuncio"], []).append(l)
+    qual = lambda lista: sum(1 for l in lista if l["qualificado"])
+    agrupar = lambda chave: {k: [l for l in doper if l[chave] == k] for k in {l[chave] for l in doper}}
     return {
-        "total": len(doper), "sim": sim(doper),
-        "qualificados": len(qual), "qualificados_sim": sim(qual),
-        "segmentos": sorted(({"nome": k.replace("_", " ").capitalize(), "leads": len(v), "sim": sim(v),
-                              "qualificado": k in qualificados} for k, v in segmentos.items()),
-                            key=lambda s: -s["leads"]),
-        "anuncios": {k: {"leads": len(v), "qualificados": sum(1 for l in v if l["segmento"] in qualificados),
-                         "sim": sim(v)} for k, v in anuncios.items()},
+        "total": len(doper), "qualificados": qual(doper),
+        "segmentos": sorted(({"nome": k.replace("_", " ").capitalize(), "leads": len(v), "qualificados": qual(v)}
+                             for k, v in agrupar("segmento").items()), key=lambda s: -s["leads"]),
+        "anuncios": {k: {"leads": len(v), "qualificados": qual(v)} for k, v in agrupar("anuncio").items()},
     }
 
 
@@ -275,10 +268,9 @@ def gerar_cliente(slug):
 
     if CFG.get("planilha"):
         linhas = ler_planilha(CFG["planilha"])
-        qualificados = set(CFG["planilha"].get("qualificados", []))
         for p in periodos.values():
             p["formulario"] = resumo_formulario(linhas, dt.date.fromisoformat(p["inicio"]),
-                                                dt.date.fromisoformat(p["fim"]), fuso, qualificados)
+                                                dt.date.fromisoformat(p["fim"]), fuso)
 
     if CFG.get("google_customer_id"):
         for k, g in bloco_google(CFG["google_customer_id"], ontem).items():
@@ -305,7 +297,7 @@ def gerar_cliente(slug):
     p30 = periodos["30"]
     if "formulario" in p30:
         f = p30["formulario"]
-        print(f"   + Planilha: 30d {f['total']} respostas, {f['qualificados']} qualificados, {f['sim']} com interesse")
+        print(f"   + Planilha: 30d {f['total']} respostas, {f['qualificados']} qualificados")
     if "google" in p30:
         print(f"   + Google Ads: 30d {p30['google']['atual']['contatos']:.0f} contatos")
     com_lead = sum(1 for c in p30["criativos"] if c[PRINCIPAL()] > 0)

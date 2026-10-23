@@ -99,7 +99,6 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:20p
 .seg .cp{color:var(--t-faint);font:400 12px/1.4 var(--mono);margin-top:2px}
 .seg .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--s2);overflow:hidden}
 .seg .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
-.seg.fora .bar i{background:var(--b-strong)}
 .seg .qtd{text-align:right;font:600 22px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong)}
 .seg .qtd span{display:block;margin-top:4px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
 
@@ -229,7 +228,7 @@ try { PER = localStorage.getItem("c2pro-leads-periodo") || "30"; } catch(_){}
 function render(dados){ D = dados;
   Object.values(D.periodos).forEach(P => P.formulario && P.criativos.forEach(c => {
     const f = P.formulario.anuncios[c.nome];
-    c.qualificados = f ? f.qualificados : 0; c.interesse = f ? f.sim : 0;
+    c.qualificados = f ? f.qualificados : 0;
   })); if (!D.periodos[PER]) PER = "30"; desenhar(); }
 
 function tile(lbl, val, extra, hero){
@@ -353,7 +352,7 @@ function desenhar(){
   <footer>
     <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
     <div style="margin-top:12px"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos. Só vídeos entram nessas duas taxas. <b>Engajamentos:</b> curtidas, comentários, compartilhamentos, salvamentos e cliques na publicação.</div>
-    ${P.formulario ? `<div style="margin-top:12px"><b>Respostas do formulário:</b> contadas pela data de envio, direto da planilha que recebe os leads. Qualificado é quem respondeu prestação de serviços ou mercado digital. O total pode diferir um pouco do número de leads da Meta, que conta pela data do anúncio.</div>` : ""}
+    ${P.formulario ? `<div style="margin-top:12px"><b>Respostas do formulário:</b> contadas pela data de envio, direto da planilha que recebe os leads. Qualificado é quem respondeu que tem interesse em contratar o serviço. O total pode diferir um pouco do número de leads da Meta, que conta pela data do anúncio.</div>` : ""}
     ${G ? `<div style="margin-top:12px"><b>Google Ads:</b> contatos são as conversões registradas pelo Google (clique no WhatsApp e ligações). Os temas da Performance Max são agrupamentos do próprio Google.</div>` : ""}
     <div style="margin-top:12px">Dados puxados direto da API da Meta${G ? " e do Google Ads" : ""}. ${K() === "contatos" ? "Contatos são as conversas iniciadas que a Meta registrou (janela de 7 dias)" : "Leads são os que a Meta registrou (formulário ou pixel)"} e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
@@ -371,17 +370,17 @@ function formularioSecao(F){
   const max = F.segmentos.length ? F.segmentos[0].leads : 0;
   return `<section>
     <div class="sec-head"><h2>Qualidade dos leads</h2>
-      <p class="sub">O que as pessoas responderam no formulário: tipo de empresa e interesse em contratar contabilidade.</p></div>
+      <p class="sub">Lead qualificado é quem respondeu no formulário que tem interesse em contratar o serviço.</p></div>
     <div class="tiles">
       ${tile("Respostas no formulário", fmtInt(F.total), "leads que enviaram o formulário")}
-      ${tile("Qualificados", fmtInt(F.qualificados), `${pct(F.qualificados, F.total)} dos leads · serviço ou digital`, true)}
-      ${tile("Têm interesse", pct(F.sim, F.total), `${fmtInt(F.sim)} de ${fmtInt(F.total)} disseram sim`)}
-      ${tile("Prioridade", fmtInt(F.qualificados_sim), `qualificados com interesse · ${pct(F.qualificados_sim, F.qualificados)} dos qualificados`)}
+      ${tile("Qualificados", fmtInt(F.qualificados), `${pct(F.qualificados, F.total)} dos leads · disseram sim`, true)}
+      ${tile("Não qualificados", fmtInt(F.total - F.qualificados), `${pct(F.total - F.qualificados, F.total)} dos leads · disseram não`)}
     </div>
-    ${F.segmentos.length ? `<div class="card segs" style="margin-top:16px">${F.segmentos.map(sg => `
-      <div class="seg${sg.qualificado ? "" : " fora"}">
-        <div><div class="nm">${esc(sg.nome)}${sg.qualificado ? `<span class="badge on">qualificado</span>` : ""}</div>
-          <div class="cp">${pct(sg.leads, F.total)} dos leads · ${pct(sg.sim, sg.leads)} têm interesse</div></div>
+    ${F.segmentos.length ? `<div class="sec-head" style="margin:24px 0 12px"><h2 style="font-size:16px">Por tipo de empresa</h2></div>
+    <div class="card segs">${F.segmentos.map(sg => `
+      <div class="seg">
+        <div><div class="nm">${esc(sg.nome)}</div>
+          <div class="cp">${pct(sg.leads, F.total)} dos leads · ${plural(sg.qualificados, "qualificado", "qualificados")} (${pct(sg.qualificados, sg.leads)})</div></div>
         <div class="qtd">${fmtInt(sg.leads)}<span>${sg.leads === 1 ? "lead" : "leads"}</span></div>
         <div class="bar"><i style="width:${max ? sg.leads/max*100 : 0}%"></i></div>
       </div>`).join("")}</div>` : ""}
@@ -414,7 +413,6 @@ function statsCriativo(c){
   const d = derivadas(c);
   const itens = [
     ["Qualificados", fmtInt(c.qualificados), c.qualificados != null],
-    ["Têm interesse", fmtInt(c.interesse), c.interesse != null],
     ["Alcance", fmtInt(c.alcance), c.alcance > 0],
     ["CTR", pctOu(d.ctr), c.impressoes > 0],
     ["Hook rate", pctOu(d.hook), c.views3s > 0],
