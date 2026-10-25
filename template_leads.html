@@ -161,6 +161,7 @@ const CHAVE_SENHA = "c2pro-leads-senha";
 
 // ---------- formatação pt-BR ----------
 const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
+const fmtBRL = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v||0);
 const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
 const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
 const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
@@ -321,6 +322,8 @@ function desenhar(){
     </div>
   </section>
 
+  ${D.hotmart ? hotmartSecao(D.hotmart, P) : ""}
+
   ${P.formulario ? formularioSecao(P.formulario) : ""}
 
   <section>
@@ -353,6 +356,7 @@ function desenhar(){
     <div><b>Campanhas incluídas:</b> ${P.campanhas.map(c => esc(c.nome)).join(", ") || "nenhuma no período"}.</div>
     <div style="margin-top:12px"><b>Hook rate:</b> views de 3 segundos ÷ impressões. <b>Retenção:</b> ThruPlays (15s ou vídeo completo) ÷ views de 3 segundos. Só vídeos entram nessas duas taxas. <b>Engajamentos:</b> curtidas, comentários, compartilhamentos, salvamentos e cliques na publicação.</div>
     ${P.formulario ? `<div style="margin-top:12px"><b>Respostas do formulário:</b> contadas pela data de envio, direto da planilha que recebe os leads. Qualificado é quem respondeu que tem interesse em contratar o serviço. O total pode diferir um pouco do número de leads da Meta, que conta pela data do anúncio.</div>` : ""}
+    ${D.hotmart ? `<div style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto). Reembolsos e chargebacks ficam fora das vendas e aparecem à parte. <b>Compras no pixel:</b> as que a Meta atribuiu aos anúncios de todas as campanhas da conta (7 dias após o clique ou 1 dia após a visualização).</div>` : ""}
     ${G ? `<div style="margin-top:12px"><b>Google Ads:</b> contatos são as conversões registradas pelo Google (clique no WhatsApp e ligações). Os temas da Performance Max são agrupamentos do próprio Google.</div>` : ""}
     <div style="margin-top:12px">Dados puxados direto da API da Meta${G ? " e do Google Ads" : ""}. ${K() === "contatos" ? "Contatos são as conversas iniciadas que a Meta registrou (janela de 7 dias)" : "Leads são os que a Meta registrou (formulário ou pixel)"} e podem diferir do CRM. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
@@ -387,11 +391,43 @@ function formularioSecao(F){
   </section>`;
 }
 
-function linhaGoogle(nome, sub, qtd, max){
+function linhaQtd(nome, sub, qtd, max, um, varios){
   return `<div class="card ad" style="grid-template-columns:minmax(0,1fr) auto;padding:14px 18px">
     <div><div class="nm">${esc(nome)}</div>${sub ? `<div class="cp">${esc(sub)}</div>` : ""}
     <div class="bar"><i style="width:${max ? qtd/max*100 : 0}%"></i></div></div>
-    <div class="qtd"><b>${fmtInt(qtd)}</b><span>${qtd === 1 ? "contato" : "contatos"}</span></div></div>`;
+    <div class="qtd"><b>${fmtInt(qtd)}</b><span>${qtd === 1 ? um : varios}</span></div></div>`;
+}
+const linhaGoogle = (nome, sub, qtd, max) => linhaQtd(nome, sub, qtd, max, "contato", "contatos");
+
+// Vendas reais na Hotmart x compras que o pixel da Meta registrou: no período escolhido e no acumulado.
+function comparacao(h, pixel){
+  const dif = h.vendas - pixel;
+  const leitura = !h.vendas && !pixel ? "nenhuma venda no período"
+    : !pixel ? "o pixel não registrou nenhuma"
+    : dif > 0 ? `${plural(dif, "venda", "vendas")} a mais que o pixel`
+    : dif < 0 ? `o pixel registrou ${fmtInt(-dif)} a mais` : "batem com o pixel";
+  return `<div class="tiles">
+    ${tile("Vendas na Hotmart", fmtInt(h.vendas), leitura, true)}
+    ${tile("Compras no pixel do Meta", fmtInt(pixel), h.vendas ? `${fmtInt(pixel*100/h.vendas)}% das vendas da Hotmart` : "atribuídas aos anúncios")}
+    ${tile("Faturamento na Hotmart", fmtBRL(h.faturamento), h.devolvidas ? `${plural(h.devolvidas, "reembolso ou chargeback", "reembolsos ou chargebacks")} fora da conta` : "sem reembolso no período")}
+  </div>`;
+}
+
+function hotmartSecao(H, P){
+  const desde = `${dataBRano(H.inicio)} a ${dataBRano(H.fim)}`;
+  return `<section>
+    <div class="sec-head"><h2>Vendas: Hotmart x pixel do Meta</h2>
+      <p class="sub">${esc(H.produtos.join(", "))}. O que vendeu de verdade na Hotmart contra o que o pixel contou, ${NOMES_PER[PER] ? NOMES_PER[PER].toLowerCase() : `nos últimos ${PER} dias`}.</p></div>
+    ${comparacao(P.hotmart, P.atual.compras)}
+    <div class="sec-head" style="margin:28px 0 12px"><h2 style="font-size:16px">Desde o início das vendas</h2>
+      <p class="sub">${desde}</p></div>
+    ${comparacao(H, H.pixel.compras)}
+    ${H.pixel.campanhas.length ? `<div class="sec-head" style="margin:24px 0 12px"><h2 style="font-size:16px">Compras no pixel por campanha</h2></div>
+      <div class="ads">${H.pixel.campanhas.map(c => linhaQtd(c.nome, `${fmtBRL(c.valor_compras)} no pixel`, c.compras, H.pixel.campanhas[0].compras, "compra", "compras")).join("")}</div>` : ""}
+    ${H.origens.length ? `<div class="sec-head" style="margin:24px 0 12px"><h2 style="font-size:16px">Vendas da Hotmart por origem</h2>
+      <p class="sub">UTMs que a página repassou ao checkout. "Sem origem" é venda que chegou ao checkout sem UTM.</p></div>
+      <div class="ads">${H.origens.map(o => linhaQtd(o.nome, "", o.vendas, H.origens[0].vendas, "venda", "vendas")).join("")}</div>` : ""}
+  </section>`;
 }
 
 function googleSecao(G){

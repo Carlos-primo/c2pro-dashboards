@@ -15,7 +15,11 @@ Respostas do formulario (opcional): com o campo "planilha" no config.json, le a 
 Sheets que recebe os leads do formulario e soma os qualificados, por segmento e por anuncio. So numeros agregados entram
 no payload; nome e telefone nunca saem daqui.
 
-Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_LEADS_<SLUG> opcional).
+Vendas da Hotmart (opcional): com o campo "hotmart" no config.json, compara as vendas reais do produto com as compras
+que o pixel da Meta registrou, por periodo e acumulado desde o inicio das vendas. Ver gerar_hotmart.py.
+
+Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_LEADS_<SLUG> opcional) e, com Hotmart,
+HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET.
 """
 
 import csv
@@ -32,6 +36,7 @@ import requests
 
 from gerar import api, criptografar
 import gerar_google
+import gerar_hotmart
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "leads"
@@ -39,7 +44,7 @@ CFG = {}
 
 PERIODOS = [7, 30]
 
-CAMPOS_METRICAS = ("spend,impressions,reach,inline_link_clicks,actions,"
+CAMPOS_METRICAS = ("spend,impressions,reach,inline_link_clicks,actions,action_values,"
                    "video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,"
                    "video_p100_watched_actions,video_thruplay_watched_actions,video_avg_time_watched_actions")
 
@@ -54,6 +59,8 @@ EVENTOS = {
     "leads": ["lead", "onsite_conversion.lead_grouped", "offsite_conversion.fb_pixel_lead"],
     # Contatos = conversas iniciadas por mensagem (WhatsApp, Direct, Messenger), o resultado das campanhas de mensagem.
     "contatos": ["onsite_conversion.messaging_conversation_started_7d"],
+    # Compras do pixel, pra comparar com a Hotmart.
+    "compras": ["purchase", "omni_purchase", "offsite_conversion.fb_pixel_purchase"],
 }
 
 
@@ -88,6 +95,7 @@ def primeiro(dic, chaves):
 
 def metricas(linha):
     acoes = {a["action_type"]: float(a["value"]) for a in linha.get("actions", [])}
+    valores = {a["action_type"]: float(a["value"]) for a in linha.get("action_values", [])}
     video = lambda campo: sum(float(a["value"]) for a in linha.get(campo, []))
     return {
         "impressoes": int(linha.get("impressions", 0)),
@@ -96,6 +104,8 @@ def metricas(linha):
         "visitas": primeiro(acoes, EVENTOS["visitas"]),
         "leads": primeiro(acoes, EVENTOS["leads"]),
         "contatos": primeiro(acoes, EVENTOS["contatos"]),
+        "compras": primeiro(acoes, EVENTOS["compras"]),
+        "valor_compras": primeiro(valores, EVENTOS["compras"]),
         "views3s": acoes.get("video_view", 0),
         "p25": video("video_p25_watched_actions"),
         "p50": video("video_p50_watched_actions"),
@@ -169,8 +179,9 @@ def periodo(dias, ontem):
         gasto = float(l.get("spend", 0))
         if gasto > 0:
             gasto_campanhas += gasto
-            campanhas.append({"nome": l["campaign_name"], "leads": metricas(l)["leads"],
-                              "contatos": metricas(l)["contatos"]})
+            m = metricas(l)
+            campanhas.append({"nome": l["campaign_name"], "leads": m["leads"], "contatos": m["contatos"],
+                              "compras": m["compras"]})
     campanhas.sort(key=lambda c: -c[PRINCIPAL()])
 
     anuncios = []
@@ -211,6 +222,32 @@ def bloco_google(cid, ontem):
                       for v in p["cats"] if v["conv"] > 0][:10],
         }
     return saida
+
+
+def bloco_hotmart(slug, periodos, ontem, fuso):
+    """Vendas da Hotmart x compras do pixel, em cada periodo e no acumulado desde cfg["desde"].
+    O pixel conta compras de todas as campanhas da conta; a Hotmart conta todas as vendas do produto, de qualquer origem."""
+    # Sem credencial o dashboard sai sem o bloco, em vez de ficar fora do ar. Credencial errada e erro.
+    if not gerar_hotmart.credencial(slug):
+        print(f"::warning::leads/{slug} saiu sem a Hotmart: faltam os secrets HOTMART_{slug.upper().replace('-', '_')}_*")
+        return None
+    cfg = CFG["hotmart"]
+    desde = dt.date.fromisoformat(cfg["desde"])
+    inicio = min([desde] + [dt.date.fromisoformat(p["inicio"]) for p in periodos.values()])
+    hm = gerar_hotmart.Hotmart(slug)
+    linhas = gerar_hotmart.vendas(hm, list(cfg["produtos"]), inicio, ontem, fuso)
+    for p in periodos.values():
+        p["hotmart"] = gerar_hotmart.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
+
+    camps = [{"nome": l["campaign_name"], **{k: metricas(l)[k] for k in ("compras", "valor_compras")}}
+             for l in insights("campaign", desde, ontem, "campaign_name,actions,action_values")]
+    camps = sorted((c for c in camps if c["compras"] > 0), key=lambda c: -c["compras"])
+    total, _ = conta_total(desde, ontem)
+    conferir(abs(sum(c["compras"] for c in camps) - total["compras"]) < 0.5,
+             "compras do pixel no acumulado diferem da soma das campanhas")
+    return {"produtos": list(cfg["produtos"].values()), "inicio": desde.isoformat(), "fim": ontem.isoformat(),
+            **gerar_hotmart.resumo(linhas, desde, ontem),
+            "pixel": {"compras": total["compras"], "valor": round(total["valor_compras"], 2), "campanhas": camps}}
 
 
 def ler_planilha(cfg):
@@ -276,12 +313,15 @@ def gerar_cliente(slug):
         for k, g in bloco_google(CFG["google_customer_id"], ontem).items():
             periodos[k]["google"] = g
 
+    hotmart = bloco_hotmart(slug, periodos, ontem, fuso) if CFG.get("hotmart") else None
+
     dados = {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
         "principal": PRINCIPAL(),
         "gerado_em": agora.isoformat(timespec="minutes"),
         "periodos": periodos,
+        "hotmart": hotmart,
     }
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
@@ -298,6 +338,9 @@ def gerar_cliente(slug):
     if "formulario" in p30:
         f = p30["formulario"]
         print(f"   + Planilha: 30d {f['total']} respostas, {f['qualificados']} qualificados")
+    if hotmart:
+        print(f"   + Hotmart: desde {hotmart['inicio']} {hotmart['vendas']} vendas "
+              f"x {hotmart['pixel']['compras']:.0f} compras no pixel; 30d {p30['hotmart']['vendas']} vendas")
     if "google" in p30:
         print(f"   + Google Ads: 30d {p30['google']['atual']['contatos']:.0f} contatos")
     com_lead = sum(1 for c in p30["criativos"] if c[PRINCIPAL()] > 0)
