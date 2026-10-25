@@ -54,10 +54,10 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:20p
 
 .card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
-.tile{padding:20px}
+.tile{padding:20px;container-type:inline-size;min-width:0}
 .tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
 .tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
-.tile .val{font:600 24px/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.tile .val{font:600 clamp(14px,calc(100cqi / (var(--n,8) * .62)),24px)/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em;white-space:nowrap}
 .tile.hero .val{color:var(--acc-h)}
 .tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
 .delta{display:inline-block;margin-top:10px;font:500 12px/1 var(--mono);color:var(--t-faint)}
@@ -150,6 +150,15 @@ td.hl{color:var(--acc-h)}
 .lnk svg{width:14px;height:14px}
 .lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .empty{padding:24px;color:var(--t-muted);font-size:14px}
+
+/* ---------- Hotmart ---------- */
+.origens{padding:8px 20px}
+.origem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--b-sub)}
+.origem:last-child{border-bottom:0}
+.origem .nm{color:var(--t-strong);font-weight:500;font-size:14px;word-break:break-word}
+.origem .q{font:600 16px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong)}
+.origem .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--s2);overflow:hidden}
+.origem .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
 .defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
 .defs b{color:var(--t-muted);font-weight:500}
 
@@ -253,11 +262,15 @@ async function iniciar(){
 }
 
 // ---------- dashboard ----------
-let D, PER = "7";
+let D, PER = "7", PER_SALVO = null;
 let SEG = "todos";
-try { PER = localStorage.getItem("c2pro-vendas-periodo") || "7"; SEG = localStorage.getItem("c2pro-vendas-publico") || "todos"; } catch(_){}
+try { PER_SALVO = localStorage.getItem("c2pro-vendas-periodo"); PER = PER_SALVO || "7"; SEG = localStorage.getItem("c2pro-vendas-publico") || "todos"; } catch(_){}
 
-function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7"; desenhar(); }
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL";
+  if (D.periodos.desde) NOMES_PER.desde = `Desde ${dataBR(D.periodos.desde.inicio)}`;
+  // Com o periodo "desde" (campanhas que pararam), quem nunca escolheu um periodo abre nele.
+  if (D.periodos.desde && !PER_SALVO) PER = "desde";
+  if (!D.periodos[PER]) PER = "7"; desenhar(); }
 
 // Variação relativa (custos, volumes).
 function delta(atual, anterior, melhorQuando){
@@ -281,7 +294,7 @@ function deltaPP(atual, anterior){
 
 function tile(lbl, val, deltaHtml, extra, hero){
   return `<div class="card tile${hero?" hero":""}"><div class="lbl">${esc(lbl)}</div>
-    <div class="val">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}${deltaHtml}</div>`;
+    <div class="val" style="--n:${String(val).length}">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}${deltaHtml}</div>`;
 }
 
 const ICO_IG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`;
@@ -407,6 +420,8 @@ function desenhar(){
     </div>
   </section>
 
+  ${P0.hotmart ? hotmartSecao(P0.hotmart, a) : ""}
+
   <section>
     <div class="sec-head"><div><h2>Funil de vendas</h2><p class="sub">Do anúncio até a compra: quantas pessoas passam em cada etapa e quanto custa cada uma.</p></div></div>
     ${funil(a, b)}
@@ -460,7 +475,8 @@ function desenhar(){
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    ${D.hotmart ? `<div style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
@@ -480,6 +496,31 @@ function desenhar(){
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
     p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+}
+
+// Vendas reais na Hotmart x compras que o pixel registrou, no período escolhido.
+function hotmartSecao(h, a){
+  const dif = h.vendas - a.compras;
+  const leitura = !h.vendas && !a.compras ? "nenhuma venda no período"
+    : !a.compras ? "o pixel não registrou nenhuma"
+    : dif > 0 ? `${fmtInt(dif)} ${dif === 1 ? "venda" : "vendas"} a mais que o pixel`
+    : dif < 0 ? `o pixel registrou ${fmtInt(-dif)} a mais` : "batem com o pixel";
+  const max = h.origens.length ? h.origens[0].vendas : 0;
+  return `<section>
+    <div class="sec-head"><div><h2>Vendas reais na Hotmart</h2>
+      <p class="sub">O que vendeu de verdade contra o que o pixel da Meta contou no mesmo período.</p></div></div>
+    <div class="tiles">
+      ${tile("Vendas na Hotmart", fmtInt(h.vendas), "", leitura, true)}
+      ${tile("Compras no pixel", fmtInt(a.compras), "", h.vendas ? `${fmtInt(a.compras*100/h.vendas)}% das vendas da Hotmart` : "registradas pela Meta")}
+      ${tile("Faturamento na Hotmart", fmtMoeda(h.faturamento), "", h.devolvidas ? `${fmtInt(h.devolvidas)} reembolso(s) fora da conta` : "sem reembolso no período")}
+      ${tile("Custo por venda real", moedaOu(div(a.gasto, h.vendas)), "", "investimento ÷ vendas da Hotmart")}
+      ${tile("ROAS real", a.gasto ? fmtX(h.faturamento / a.gasto) : "-", "", "faturamento Hotmart ÷ investimento")}
+    </div>
+    ${h.origens.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas por origem</h2>
+      <p class="sub">UTMs que a página repassou ao checkout. "Sem origem" é venda que chegou sem UTM.</p></div></div>
+      <div class="card origens">${h.origens.map(o => `<div class="origem"><div class="nm">${esc(o.nome)}</div>
+        <div class="q">${fmtInt(o.vendas)}</div><div class="bar"><i style="width:${max ? o.vendas/max*100 : 0}%"></i></div></div>`).join("")}</div>` : ""}
+  </section>`;
 }
 
 function statusBadge(s){

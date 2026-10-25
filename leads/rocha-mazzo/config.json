@@ -2,11 +2,5 @@
   "nome": "Rocha Mazzo Advogados",
   "subtitulo": "Acompanhamento de contatos",
   "conta_anuncio": "act_1179308227096608",
-  "metrica_principal": "contatos",
-  "hotmart": {
-    "produtos": {
-      "8514445": "Raio-X da MP 1.376"
-    },
-    "desde": "2026-09-18"
-  }
+  "metrica_principal": "contatos"
 }

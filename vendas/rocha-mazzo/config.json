@@ -1,0 +1,13 @@
+{
+  "nome": "Rocha Mazzo Advogados",
+  "subtitulo": "Vendas do Raio-X da MP 1.376",
+  "conta_anuncio": "act_1179308227096608",
+  "criativos_gasto_minimo": 10,
+  "filtros_extra": ["LOWTICKET"],
+  "desde": "2026-09-18",
+  "hotmart": {
+    "produtos": {
+      "8514445": "Raio-X da MP 1.376"
+    }
+  }
+}

@@ -43,6 +43,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 |---|---|
 | Ordus System | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
 | Vita Hair | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
+| Rocha Mazzo Advogados (Raio-X da MP 1.376) | https://carlos-primo.github.io/c2pro-dashboards/vendas/rocha-mazzo/ |
 
 - **Resumo:** custo por compra, compras, investimento, faturamento, ROAS e ticket médio
 - **Funil visual:** impressões (CPM) > cliques no link (CTR, CPC) > visitas à página (connect rate, custo por visita) > checkouts (página para checkout, custo por checkout) > compras (checkout para compra, custo por compra), com variação em pontos percentuais e alerta na etapa que mais caiu
@@ -51,6 +52,11 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 Ontem, últimos 3, 7 ou 30 dias, comparados com o período anterior. Compras e faturamento são os registrados pelo pixel.
 Pelo Claude Code: skill `c2pro-dashboard-vendas`. Rodar no PC: `python gerar_vendas.py [slug]` e abrir `site/vendas/<slug>/index.html`.
 Senha opcional: secret `SENHA_VENDAS_<SLUG>` no passo "Gerar dashboards de vendas" do workflow.
+
+Exceções por cliente no `config.json`, só com pedido do Carlos (hoje só a Rocha Mazzo): `filtros_extra` (aceita outro
+trecho no nome além de VENDAS, ex. `LOWTICKET`), `desde` (período a mais, de uma data até ontem) e `hotmart` (vendas
+reais da Hotmart comparadas com as compras do pixel, com custo por venda e ROAS reais; credencial nos secrets
+`HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET`).
 
 ## Dashboards da Black Friday
 

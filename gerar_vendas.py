@@ -9,7 +9,13 @@ Uso local:   python gerar_vendas.py            (todos os clientes de vendas)
 Funil: impressoes (CPM) > cliques no link (CTR) > visitas a pagina (connect rate)
        > checkouts (pagina > checkout) > compras (checkout > compra)
 
-Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional).
+Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
+  "filtros_extra": ["LOWTICKET"]  aceita tambem campanhas com esse trecho no nome (excecao a regra do VENDAS)
+  "desde": "2026-09-18"           periodo a mais, do dia indicado ate ontem
+  "hotmart": {"produtos": {"<id>": "<nome>"}}  vendas reais da Hotmart x compras do pixel (ver gerar_hotmart.py)
+
+Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional) e, com Hotmart,
+HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET.
 """
 
 import datetime as dt
@@ -23,13 +29,15 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from gerar import api, criptografar, diario_seguro
+import gerar_hotmart
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "vendas"
 CFG = {}
 
 # Regra da agencia: dashboard de vendas so mostra campanhas com VENDAS no nome.
-# Fixo no codigo de proposito, nao e configuravel por cliente.
+# Fixo no codigo de proposito. Excecao so por pedido do Carlos, no config do cliente ("filtros_extra"):
+# Rocha Mazzo (25/10/2026), cujas campanhas de venda do low ticket se chamam LOWTICKET.
 FILTRO = "VENDAS"
 
 PERIODOS = [1, 3, 7, 30]
@@ -48,8 +56,12 @@ def sem_acento(txt):
     return unicodedata.normalize("NFKD", txt or "").encode("ascii", "ignore").decode().upper()
 
 
+def filtros():
+    return [FILTRO] + [sem_acento(f) for f in CFG.get("filtros_extra", [])]
+
+
 def eh_vendas(nome_campanha):
-    return FILTRO in sem_acento(nome_campanha)
+    return any(f in sem_acento(nome_campanha) for f in filtros())
 
 
 def temperatura(nome_campanha):
@@ -67,8 +79,13 @@ def conferir(condicao, mensagem):
 
 
 def insights(nivel, inicio, fim, campos, ids=None, **extra):
-    """ids: restringe a essas campanhas (segmento quente/frio), sempre dentro do filtro VENDAS."""
-    filtro = [{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]
+    """ids: restringe a essas campanhas (segmento quente/frio), sempre dentro do filtro VENDAS.
+    Com filtros_extra a Meta nao aceita "contem A ou B" no nome: filtra pelos IDs das campanhas que passam no filtro."""
+    if CFG.get("filtros_extra"):
+        ids = [i for i in CFG["_ids_filtro"] if ids is None or i in ids] or ["0"]
+        filtro = []
+    else:
+        filtro = [{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]
     if ids is not None:
         filtro.append({"field": "campaign.id", "operator": "IN", "value": ids})
     return api(
@@ -128,8 +145,10 @@ def detalhes_anuncios(anuncios):
             a["previa"] = info.get("preview_shareable_link", "")
 
 
-def periodo(dias, ontem, status_camp, segmentos):
+def periodo(dias, ontem, status_camp, segmentos, inicio=None):
     fim = ontem
+    if inicio:
+        dias = (fim - inicio).days + 1
     inicio = fim - dt.timedelta(days=dias - 1)
     ant_fim = inicio - dt.timedelta(days=1)
     ant_inicio = ant_fim - dt.timedelta(days=dias - 1)
@@ -175,6 +194,21 @@ def periodo(dias, ontem, status_camp, segmentos):
     }
 
 
+def bloco_hotmart(slug, periodos, fuso):
+    """Vendas reais da Hotmart em cada periodo, pra comparar com as compras do pixel das campanhas do dashboard.
+    A Hotmart conta vendas de qualquer origem (anuncio, organico, link direto)."""
+    if not gerar_hotmart.credencial(slug):
+        print(f"::warning::vendas/{slug} saiu sem a Hotmart: faltam os secrets HOTMART_{slug.upper().replace('-', '_')}_*")
+        return None
+    produtos = CFG["hotmart"]["produtos"]
+    inicio = min(dt.date.fromisoformat(p["inicio"]) for p in periodos.values())
+    fim = max(dt.date.fromisoformat(p["fim"]) for p in periodos.values())
+    linhas = gerar_hotmart.vendas(gerar_hotmart.Hotmart(slug), list(produtos), inicio, fim, fuso)
+    for p in periodos.values():
+        p["hotmart"] = gerar_hotmart.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
+    return {"produtos": list(produtos.values())}
+
+
 def serie_diaria(ontem, ids=None):
     inicio = ontem - dt.timedelta(days=29)
     por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
@@ -196,6 +230,7 @@ def gerar_cliente(slug):
 
     todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name,effective_status", limit=500)
     status_camp = {c["id"]: c["effective_status"] for c in todas}
+    CFG["_ids_filtro"] = [c["id"] for c in todas if eh_vendas(c["name"])]
     # Filtro quente/frio: so aparece quando o nome das campanhas VENDAS traz Q (quente) ou ASP/F (frio).
     segmentos = {}
     for nome in ("quente", "frio"):
@@ -203,6 +238,8 @@ def gerar_cliente(slug):
         if ids:
             segmentos[nome] = ids
     periodos = {str(d): periodo(d, ontem, status_camp, segmentos) for d in PERIODOS}
+    if CFG.get("desde"):
+        periodos["desde"] = periodo(0, ontem, status_camp, segmentos, dt.date.fromisoformat(CFG["desde"]))
 
     # Detalhes dos criativos uma vez so, pra todos os anuncios de todos os periodos.
     todos = {a["id"]: a for p in periodos.values() for a in p["anuncios"]}
@@ -211,12 +248,16 @@ def gerar_cliente(slug):
         for a in p["anuncios"]:
             a.update({k: todos[a["id"]][k] for k in ("status", "thumb", "instagram", "previa")})
 
+    hotmart = bloco_hotmart(slug, periodos, fuso) if CFG.get("hotmart") else None
+
     dados = {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
         "conta": conta.get("name", ""),
         "moeda": conta.get("currency", "BRL"),
         "filtro": FILTRO,
+        "filtros": filtros(),
+        "hotmart": hotmart,
         "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],
         "periodos": periodos,
@@ -239,6 +280,10 @@ def gerar_cliente(slug):
     shutil.copy(AQUI / "logo.png", saida / "logo.png")
 
     p30 = periodos["30"]["atual"]
+    if hotmart:
+        ref = periodos.get("desde", periodos["30"])
+        print(f"   + Hotmart: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "
+              f"x {ref['atual']['compras']:.0f} compras no pixel")
     print(f"OK vendas/{slug}: 30d R$ {p30['gasto']:.2f}, {p30['compras']:.0f} compras, "
           f"{len(periodos['30']['campanhas'])} campanhas, {len(periodos['30']['anuncios'])} anuncios | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")

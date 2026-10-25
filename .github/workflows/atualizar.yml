@@ -14,8 +14,8 @@
 # Dashboards da Black: SENHA_BLACK_<SLUG>, no bloco env do passo "Gerar dashboards da Black".
 # Dashboards de leads: SENHA_LEADS_<SLUG>, no bloco env do passo "Gerar dashboards de leads".
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
-# Hotmart nos dashboards de leads (campo "hotmart" no config.json): HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET,
-# no bloco env do passo "Gerar dashboards de leads".
+# Hotmart (campo "hotmart" no config.json): HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET,
+# no bloco env do passo que gera aquele dashboard (hoje: vendas/rocha-mazzo).
 # Dashboards do Google Ads: secrets GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, GOOGLE_ADS_REFRESH_TOKEN e GOOGLE_ADS_LOGIN_CUSTOMER_ID.
 
 name: Atualizar dashboards
@@ -119,6 +119,9 @@ jobs:
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          HOTMART_ROCHA_MAZZO_CLIENT_ID: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_ID }}
+          HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
+          SENHA_VENDAS_ROCHA_MAZZO: ${{ secrets.SENHA_LEADS_ROCHA_MAZZO }}   # mesma senha do dashboard de leads
           ALVO: ${{ steps.alvo.outputs.vendas }}
         run: if [ "$ALVO" = todos ]; then python gerar_vendas.py; else python gerar_vendas.py "$ALVO"; fi
 
@@ -141,8 +144,6 @@ jobs:
           GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
           GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
           GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
-          HOTMART_ROCHA_MAZZO_CLIENT_ID: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_ID }}
-          HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
           SENHA_LEADS_ROCHA_MAZZO: ${{ secrets.SENHA_LEADS_ROCHA_MAZZO }}
           ALVO: ${{ steps.alvo.outputs.leads }}
         run: if [ "$ALVO" = todos ]; then python gerar_leads.py; else python gerar_leads.py "$ALVO"; fi
