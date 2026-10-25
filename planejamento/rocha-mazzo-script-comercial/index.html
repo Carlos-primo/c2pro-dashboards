@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Script comercial do Rocha Mazzo Advogados: mensagens prontas para o WhatsApp do escritório.">
+<link rel="icon" href="../../logo.png">
+<title>Script Comercial Rocha Mazzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#05070a;--surface-card:linear-gradient(180deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.018) 100%);--surface-1:rgba(255,255,255,.028);--surface-2:rgba(255,255,255,.048);--surface-inset:rgba(0,0,0,.35);--border-subtle:rgba(255,255,255,.07);--border-default:rgba(255,255,255,.12);--border-strong:rgba(255,255,255,.2);--border-accent:rgba(0,216,245,.45);--text-strong:#f2f6fa;--text-body:#c9d2dd;--text-muted:#9aa6b6;--text-faint:#6b788a;--text-accent:#37e6ff;--accent:#00d8f5;--accent-hover:#37e6ff;--accent-soft:rgba(0,216,245,.12);--accent-soft-hover:rgba(0,216,245,.2);--on-accent:#00171c;--green:#23d18b;--amber:#ffb020;--red:#ff4d5e;--red-soft:rgba(255,77,94,.1);--grad-ink:linear-gradient(180deg,#f2f6fa 0%,#9aa6b6 100%);--grad-signal:linear-gradient(135deg,#37e6ff 0%,#004aad 100%);--elev-card:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);--glow-sm:0 0 12px -2px rgba(0,216,245,.45),0 0 2px rgba(0,216,245,.5);--glow-md:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);--r-control:12px;--r-card:18px;--r-pill:999px;--sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;--ease-out:cubic-bezier(.22,1,.36,1)}
+*{box-sizing:border-box}html,body{background:var(--bg)}
+body{margin:0;color:var(--text-body);font-family:var(--sans);font-size:15px;line-height:1.55;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+.halo{position:absolute;inset:0 0 auto 0;height:520px;pointer-events:none;z-index:0;background:radial-gradient(60% 60% at 50% 0%,rgba(0,216,245,.18) 0%,rgba(0,74,173,.10) 45%,rgba(0,0,0,0) 100%)}
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding-inline:16px}@media (min-width:640px){.wrap{padding-inline:24px}}
+.top{padding-block:28px 20px;display:grid;gap:18px}.brand{display:flex;align-items:center;gap:10px}
+.ring{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);box-shadow:var(--glow-sm);display:grid;place-items:center;font:700 10px/1 var(--mono);color:var(--text-accent)}
+.wordmark{font:800 17px/1 var(--sans);letter-spacing:-.03em;background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{font:600 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-accent);display:inline-flex;align-items:center;gap:8px}.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+h1{margin:0;font:800 clamp(30px,7vw,48px)/1.04 var(--sans);letter-spacing:-.035em;text-wrap:balance;background:var(--grad-ink);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:0;max-width:60ch;color:var(--text-muted);font-size:16px}.who{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 12px/1 var(--mono);color:var(--text-body);padding:8px 12px;border-radius:var(--r-pill);border:1px solid var(--border-default);background:var(--surface-1)}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:linear-gradient(180deg,rgba(5,7,10,.94) 0%,rgba(5,7,10,.86) 100%);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--border-subtle)}
+.tabs{max-width:880px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;scroll-padding-inline:16px}.tabs::-webkit-scrollbar{display:none}@media (min-width:640px){.tabs{padding-inline:24px;flex-wrap:wrap}}
+.tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--border-default);background:var(--surface-1);color:var(--text-muted);font:500 13.5px/1 var(--sans);cursor:pointer;transition:border-color .18s var(--ease-out),background .18s var(--ease-out),color .18s var(--ease-out)}
+.tab .n{font:600 11px/1 var(--mono);color:var(--text-faint)}.tab:hover{color:var(--text-strong);border-color:var(--border-strong)}
+.tab[aria-selected="true"]{border-color:var(--border-accent);background:var(--accent-soft-hover);color:#b3f7ff;box-shadow:var(--glow-sm)}.tab[aria-selected="true"] .n{color:var(--text-accent)}
+.tab:focus-visible,button:focus-visible,input:focus-visible+.box{outline:2px solid var(--accent);outline-offset:2px}
+main{padding-block:28px 40px}.panel{display:grid;gap:22px;animation:fade .32s var(--ease-out)}@keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.panel{animation:none}*{transition:none!important}}
+.phead{display:grid;gap:10px}
+h2{margin:0;font:700 clamp(24px,5.4vw,34px)/1.16 var(--sans);letter-spacing:-.022em;color:var(--text-strong);text-wrap:balance}
+h3{margin:0;font:700 18px/1.3 var(--sans);letter-spacing:-.015em;color:var(--text-strong);text-wrap:balance}
+h4{margin:0;font:600 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+p{margin:0;max-width:64ch}.intro{color:var(--text-muted);font-size:16px}strong{color:var(--text-strong);font-weight:600}.accent{color:var(--text-accent)}
+.card{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--r-card);box-shadow:var(--elev-card);padding:20px;display:grid;gap:14px}@media (min-width:640px){.card{padding:24px}}
+.card.hl{border-color:var(--border-accent);box-shadow:var(--elev-card),var(--glow-md)}.card.flat{background:var(--surface-1);box-shadow:none}
+.card-title{display:flex;align-items:center;gap:10px}.ic{width:34px;height:34px;flex:0 0 34px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--text-accent);border:1px solid rgba(0,216,245,.25)}.ic svg{width:18px;height:18px}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.metrics{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.metric{padding:16px;border-radius:14px;background:var(--surface-1);border:1px solid var(--border-subtle);display:grid;gap:6px;align-content:start}
+.metric .v{font:600 28px/1.1 var(--mono);color:var(--text-strong);letter-spacing:-.01em;font-variant-numeric:tabular-nums}.metric .v.acc{color:var(--text-accent);text-shadow:0 0 18px rgba(0,216,245,.35)}.metric .l{font-size:13px;color:var(--text-muted);line-height:1.4}
+ol.list,ul.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}ul.list li{position:relative;padding-left:20px}ul.list li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:.8}
+ol.list{counter-reset:s}ol.list li{counter-increment:s;position:relative;padding-left:40px;min-height:28px}ol.list li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;font:600 12px/1 var(--mono);color:var(--text-accent);padding:6px 0;width:28px;text-align:center;border-radius:8px;background:var(--accent-soft)}
+.tag{display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:var(--r-pill);width:max-content;max-width:100%}
+.tag.rec{color:#b3f7ff;background:var(--accent-soft);border:1px solid var(--border-accent)}.tag.warn{color:var(--amber);background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.35)}.tag.neg{color:var(--red);background:var(--red-soft);border:1px solid rgba(255,77,94,.35)}.tag.ok{color:var(--green);background:rgba(35,209,139,.1);border:1px solid rgba(35,209,139,.35)}
+.quote{padding:18px 20px;border-radius:var(--r-card);background:var(--surface-inset);border:1px solid var(--border-subtle);display:grid;gap:8px}.quote p{font-size:17px;line-height:1.5;color:var(--text-strong);font-weight:500;letter-spacing:-.012em}.quote .src{font:500 12px/1 var(--mono);color:var(--text-muted)}
+.pyr{display:grid;gap:8px;justify-items:center;padding:8px 0 4px}.tier{width:var(--w);min-width:0;max-width:100%;border-radius:12px;padding:14px 12px;text-align:center;display:grid;gap:4px;border:1px solid var(--border-accent)}.tier b{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase}.tier span{font-size:13px;line-height:1.35}
+.tier.t1{--w:46%;background:rgba(0,216,245,.28);color:#e6feff}.tier.t2{--w:73%;background:rgba(0,216,245,.16);color:#b3f7ff}.tier.t3{--w:100%;background:rgba(0,216,245,.07);color:var(--text-body)}.tier.t4{--w:100%;background:transparent;border:1px dashed rgba(255,77,94,.5);color:var(--red);margin-top:10px}.tier.t4 span{color:var(--text-muted)}
+.axis{display:flex;justify-content:space-between;width:100%;font:500 11px/1.3 var(--mono);color:var(--text-muted);gap:12px}
+.typecard{display:grid;gap:12px}.kv{display:grid;gap:10px}.kv div{display:grid;gap:2px}.kv dt{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}.kv dd{margin:0}dl{margin:0}
+.month{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}@media (min-width:560px){.month{grid-template-columns:repeat(15,1fr)}}
+.day{aspect-ratio:1;max-width:100%;border-radius:7px;display:grid;place-items:center;font:600 11px/1 var(--mono);color:var(--text-faint);background:var(--surface-1);border:1px solid var(--border-subtle);font-variant-numeric:tabular-nums}
+.day.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow-sm)}.day.mid{background:var(--accent-soft);color:var(--text-accent);border-color:rgba(0,216,245,.2)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--text-muted)}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tl{display:grid;position:relative}.step{display:grid;grid-template-columns:64px 1fr;gap:14px;position:relative;padding-bottom:22px}.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:31px;top:34px;bottom:0;width:1px;background:linear-gradient(180deg,rgba(0,216,245,.5),rgba(0,216,245,.08))}.step:last-child::before{display:none}
+.dayb{height:34px;border-radius:var(--r-pill);display:grid;place-items:center;font:600 12px/1 var(--mono);color:var(--text-accent);background:var(--bg);border:1px solid var(--border-accent);position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.step.opt .dayb{color:var(--text-muted);border:1px dashed var(--border-strong)}.step .body{display:grid;gap:6px;padding-top:6px}
+.script{border-radius:14px;background:var(--surface-inset);border:1px solid var(--border-default);overflow:hidden}
+.script-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--border-subtle)}.script-h span{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.script-b{padding:14px 16px;display:grid;gap:10px;color:var(--text-strong);font-size:15px}.script-b p{max-width:none}.script-b .ph{color:var(--text-accent);font-family:var(--mono);font-size:13.5px}.script-note{padding:0 16px 14px;font-size:13px;color:var(--text-muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--r-control);font:600 13px/1 var(--sans);cursor:pointer;border:1px solid var(--border-accent);background:var(--accent-soft);color:#b3f7ff;transition:background .18s var(--ease-out),box-shadow .18s var(--ease-out),transform .12s var(--ease-out)}
+.btn:hover{background:var(--accent-soft-hover);box-shadow:var(--glow-sm)}.btn:active{transform:scale(.975)}.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}.btn.primary:hover{background:var(--accent-hover)}.btn.ghost{background:transparent;border-color:var(--border-default);color:var(--text-body)}.btn svg{width:15px;height:15px}
+.vs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.progress{display:grid;gap:10px}.bar{height:8px;border-radius:var(--r-pill);background:var(--surface-2);overflow:hidden;border:1px solid var(--border-subtle)}.bar i{display:block;height:100%;width:0;background:var(--grad-signal);box-shadow:0 0 12px rgba(0,216,245,.5);transition:width .3s var(--ease-out)}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.prog-row .v{font:600 22px/1 var(--mono);color:var(--text-strong);font-variant-numeric:tabular-nums}
+.checks{display:grid;gap:4px}.check{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;padding:10px 8px;border-radius:10px;cursor:pointer}.check:hover{background:var(--surface-1)}.check input{position:absolute;opacity:0;width:1px;height:1px}
+.box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border-strong);display:grid;place-items:center;margin-top:1px;transition:all .15s var(--ease-out)}
+.box::after{content:"";width:10px;height:6px;border-left:2px solid var(--on-accent);border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+.check input:checked+.box{background:var(--accent);border-color:var(--accent);box-shadow:var(--glow-sm)}.check input:checked+.box::after{opacity:1}
+.check input:checked~.t{color:var(--text-muted);text-decoration:line-through;text-decoration-color:rgba(154,166,182,.5)}.check .t{color:var(--text-body)}.check .t small{display:block;color:var(--text-muted);font-size:13px;margin-top:2px}
+.tr-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;background:rgba(10,14,20,.92);border:1px solid var(--border-default)}.tr-tools .meta{font:500 12px/1.3 var(--mono);color:var(--text-muted)}
+.transcript{display:grid;gap:14px;font-size:15px;line-height:1.7;color:var(--text-body)}.transcript p{max-width:68ch}#rawTranscript{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.pager{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border-subtle);margin-top:6px;padding-block:20px 0}.pager .btn{min-height:44px;flex:1 1 0;max-width:260px}.pager .btn.next{margin-left:auto}.pager .btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+footer{padding-block:28px 40px;border-top:1px solid var(--border-subtle);color:var(--text-faint);font:500 12px/1.5 var(--mono)}.note{font-size:13px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+
+<div class="halo" aria-hidden="true"></div>
+<div class="wrap" data-slug="rocha-mazzo-script" id="root">
+  <header class="top">
+    <div class="brand"><div class="ring">C2</div><div class="wordmark">C2Pro</div></div>
+    <span class="eyebrow">Material pós-call · 22/10</span>
+    <h1>Script comercial do Rocha Mazzo</h1>
+    <p class="lede">Pedro, este é o material que eu fiquei de mandar na call. É o treinamento de comercial que a gente fez, transformado em mensagens prontas para quem atende o WhatsApp do escritório. Use como complemento do documento que a secretária já tem.</p>
+    <div class="who"><span class="chip">Rocha Mazzo Advogados</span><span class="chip">Carlos Primo · C2Pro</span><span class="chip">8 abas · copie e cole</span></div>
+  </header>
+</div>
+
+<nav class="tabbar" aria-label="Seções do material">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-diagnostico" data-tab="diagnostico" aria-controls="diagnostico" aria-selected="true"><span class="n">01</span>Onde estamos</button>
+    <button class="tab" role="tab" id="t-tipos" data-tab="tipos" aria-controls="tipos" aria-selected="false"><span class="n">02</span>Os 4 tipos</button>
+    <button class="tab" role="tab" id="t-qualificar" data-tab="qualificar" aria-controls="qualificar" aria-selected="false"><span class="n">03</span>Qualificar</button>
+    <button class="tab" role="tab" id="t-scripts" data-tab="scripts" aria-controls="scripts" aria-selected="false"><span class="n">04</span>Scripts</button>
+    <button class="tab" role="tab" id="t-objecoes" data-tab="objecoes" aria-controls="objecoes" aria-selected="false"><span class="n">05</span>Objeções</button>
+    <button class="tab" role="tab" id="t-funil" data-tab="funil" aria-controls="funil" aria-selected="false"><span class="n">06</span>Frases do funil</button>
+    <button class="tab" role="tab" id="t-followup" data-tab="followup" aria-controls="followup" aria-selected="false"><span class="n">07</span>Follow-up e time</button>
+    <button class="tab" role="tab" id="t-combinados" data-tab="combinados" aria-controls="combinados" aria-selected="false"><span class="n">08</span>Combinados</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- 01 -->
+  <section class="panel" id="diagnostico" role="tabpanel" aria-labelledby="t-diagnostico">
+    <div class="phead"><span class="eyebrow">01 · O que você me contou</span><h2>A campanha traz gente. O atendimento decide se vira cliente.</h2><p class="intro">Na call de hoje você contou que chegaram bastante conversas, mas a secretária ainda não tinha o briefing e respondeu alguns contatos de um jeito muito simples. Vários não voltaram. Vocês já corrigiram isso. Este material é para deixar o atendimento igual todo dia, com qualquer pessoa no WhatsApp.</p></div>
+    <div class="metrics">
+      <div class="metric"><span class="v acc">23</span><span class="l">conversas no WhatsApp nos últimos dias</span></div>
+      <div class="metric"><span class="v">R$31 → R$41</span><span class="l">custo por conversa subindo. Os criativos da captação estão velhos</span></div>
+      <div class="metric"><span class="v">~2 meses</span><span class="l">do primeiro contato até a entrega do parecer (o que você me contou em abril)</span></div>
+      <div class="metric"><span class="v">50 / 50</span><span class="l">metade chega endividada, metade com sucessão e herança (Rocha, em abril)</span></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><div class="ic"><i data-lucide="check"></i></div><h3>O que está funcionando</h3></div>
+        <ul class="list">
+          <li>A captação de WhatsApp está gerando conversa todo dia.</li>
+          <li>A secretária agora tem o documento de resposta que o Rocha montou com o João.</li>
+          <li>Os contatos atendidos do jeito errado já receberam um novo follow-up.</li>
+          <li>O Tintim está ligado e lendo as conversas.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="ic"><i data-lucide="alert-triangle"></i></div><h3>O que está travando</h3></div>
+        <ul class="list">
+          <li>Ninguém sabe ainda quantas conversas viraram consulta.</li>
+          <li>O Tintim não sabe em que etapa cada lead está, porque as frases do funil ainda não foram combinadas.</li>
+          <li>Não existe uma pessoa dedicada a vendas e follow-up.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card hl">
+      <div class="card-title"><div class="ic"><i data-lucide="target"></i></div><h3>O objetivo agora</h3></div>
+      <p>Toda conversa que chega recebe a mesma resposta boa, é qualificada em duas perguntas e termina em uma consulta marcada ou num destino que não consome o tempo de vocês. E a gente passa a saber, pelo Tintim, quantas viraram consulta e contrato.</p>
+    </div>
+    <div class="pager"><span></span><button class="btn primary next" data-go="tipos"><span>Próximo: Os 4 tipos</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 02 -->
+  <section class="panel" id="tipos" role="tabpanel" aria-labelledby="t-tipos" hidden>
+    <div class="phead"><span class="eyebrow">02 · O treinamento</span><h2>Quem chega no WhatsApp não é tudo igual</h2><p class="intro">Eu sempre separo quem vem da internet em quatro grupos. Para cada um, a primeira resposta é diferente. Errar o tipo é o motivo mais comum de uma conversa boa morrer.</p></div>
+    <div class="card">
+      <div class="pyr">
+        <div class="tier t1"><b>1 · Já confia</b><span>Assiste o Bruno, sabe o que quer, quer marcar</span></div>
+        <div class="tier t2"><b>2 · Está comparando</b><span>Sabe que precisa de advogado, ainda não sabe se é vocês</span></div>
+        <div class="tier t3"><b>3 · Não sabe de nada</b><span>Viu um vídeo, está curioso, nem sabe se tem um problema</span></div>
+        <div class="tier t4"><b>4 · O cliente que vocês não querem</b><span>Não tem o perfil. Precisa sair bem atendido, sem gastar a hora do escritório</span></div>
+        <div class="axis"><span>Poucos e fáceis de fechar</span><span>Muitos e precisam de mais conversa</span></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card typecard">
+        <span class="tag ok">Tipo 1</span><h3>Já confia</h3>
+        <dl class="kv"><div><dt>Como aparece</dt><dd>"Vi o vídeo do Bruno, quero marcar uma consulta."</dd></div><div><dt>O que fazer</dt><dd>Só aparecer. Oferecer dois horários e pronto. Não precisa explicar nada.</dd></div></dl>
+      </div>
+      <div class="card typecard">
+        <span class="tag rec">Tipo 2</span><h3>Está comparando</h3>
+        <dl class="kv"><div><dt>Como aparece</dt><dd>"Quanto custa?", "Vou ver com outro advogado", "Vou negociar com o banco".</dd></div><div><dt>O que fazer</dt><dd>Mostrar a diferença entre vocês e os outros antes de falar de preço.</dd></div></dl>
+      </div>
+      <div class="card typecard">
+        <span class="tag warn">Tipo 3</span><h3>Não sabe de nada</h3>
+        <dl class="kv"><div><dt>Como aparece</dt><dd>"Vi um vídeo de vocês, queria entender melhor."</dd></div><div><dt>O que fazer</dt><dd>Primeiro explicar o problema, depois a diferença de vocês, só então a consulta.</dd></div></dl>
+      </div>
+      <div class="card typecard">
+        <span class="tag neg">Tipo 4</span><h3>Não é para vocês</h3>
+        <dl class="kv"><div><dt>Como aparece</dt><dd>Não tem propriedade, dívida pequena, ou acha que a assessoria é de graça.</dd></div><div><dt>O que fazer</dt><dd>Tratar bem e mandar para um destino que não usa o tempo de vocês (vídeo, curso barato, banco).</dd></div></dl>
+      </div>
+    </div>
+    <div class="quote"><p>"Pra essa pessoa que não sabe de nada, se você mostrar um panfleto, é a pior opção que você pode ter na vida. Primeiro você fala qual é o problema, depois a diferença entre você e os outros, e aí leva pro produto."</p><span class="src">Carlos, no treinamento de comercial</span></div>
+    <div class="card flat">
+      <div class="card-title"><div class="ic"><i data-lucide="users"></i></div><h3>Quem manda mensagem nem sempre é quem decide</h3></div>
+      <p>O Rocha contou que, muitas vezes, quem assiste os vídeos é a filha advogada, a esposa contadora ou o primo agrônomo, e quem decide é o produtor. Esse contato é ouro: ele já confia. O trabalho é trazer o produtor para a consulta junto. Tem script para isso na aba 04.</p>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="diagnostico"><i data-lucide="arrow-left"></i><span>Onde estamos</span></button><button class="btn primary next" data-go="qualificar"><span>Próximo: Qualificar</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 03 -->
+  <section class="panel" id="qualificar" role="tabpanel" aria-labelledby="t-qualificar" hidden>
+    <div class="phead"><span class="eyebrow">03 · O filtro</span><h2>Duas perguntas antes de oferecer a consulta</h2><p class="intro">É o que a gente desenhou em abril. Quanto menos perguntas, melhor. Pergunta fechada, que a pessoa responde em uma linha. Se ela fizer o pedido de cara ("quero marcar"), é tipo 1: marca primeiro e pergunta depois.</p></div>
+    <div class="card hl">
+      <div class="card-title"><div class="ic"><i data-lucide="sliders-horizontal"></i></div><h3>As perguntas</h3></div>
+      <ol class="list">
+        <li><strong>Você é produtor rural ou tem propriedade rural na família?</strong> Própria ou arrendada.</li>
+        <li><strong>Hoje o assunto é dívida com banco, sucessão e organização da família, ou os dois?</strong> Se for dívida, perguntar o tamanho aproximado.</li>
+      </ol>
+      <p class="note">O corte de valor da dívida é decisão de vocês. Em abril eu usei R$100 mil só como exemplo. Me passem o número certo que eu coloco aqui e no formulário das campanhas.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><div class="ic"><i data-lucide="trending-up"></i></div><h3>Perfil endividado</h3></div>
+        <ul class="list"><li>Tem dívida de custeio ou investimento vencendo.</li><li>Medo de perder a terra.</li><li>Caminho: consulta, análise dos contratos, plano de alongamento.</li></ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="ic"><i data-lucide="git-branch"></i></div><h3>Perfil sucessão</h3></div>
+        <ul class="list"><li>O pai que tocava tudo faleceu ou está se afastando.</li><li>Família grande, patrimônio grande, pouca organização.</li><li>Caminho: consulta, diagnóstico, holding e gestão da sucessão.</li></ul>
+      </div>
+    </div>
+    <div class="card flat">
+      <div class="card-title"><div class="ic"><i data-lucide="shield-check"></i></div><h3>Quando não qualificar</h3></div>
+      <ul class="list">
+        <li>Não tem propriedade nem é da família de quem tem.</li>
+        <li>Dívida abaixo do corte de vocês: o melhor caminho é ele negociar direto com o gerente ou começar pelo curso de entrada.</li>
+        <li>Quer uma orientação gratuita e não aceita consulta paga.</li>
+      </ul>
+      <p class="note">Desqualificar não é dispensar. A pessoa sai com uma resposta boa e um caminho. Script pronto na aba 04.</p>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="tipos"><i data-lucide="arrow-left"></i><span>Os 4 tipos</span></button><button class="btn primary next" data-go="scripts"><span>Próximo: Scripts</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 04 -->
+  <section class="panel" id="scripts" role="tabpanel" aria-labelledby="t-scripts" hidden>
+    <div class="phead"><span class="eyebrow">04 · Mensagens prontas</span><h2>Copie, troque o que está entre colchetes e envie</h2><p class="intro">Os valores e prazos ficaram entre colchetes de propósito. Em abril você me falou de consulta de R$600 e parecer de R$3.000 com o valor da consulta abatido. Confira se ainda é isso antes de usar.</p></div>
+
+    <div class="script"><div class="script-h"><span>1 · Primeira resposta (todo contato)</span><button class="btn" data-copy="s1"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s1">
+        <p>Olá, [nome], tudo bem? Aqui é a [seu nome], do Rocha Mazzo Advogados. Obrigada pelo contato!</p>
+        <p>Para eu te direcionar ao advogado certo, me conta rapidinho:</p>
+        <p>1. Você é produtor rural ou tem propriedade rural na família?</p>
+        <p>2. Hoje o assunto é mais dívida com banco, sucessão e organização da família, ou os dois?</p>
+      </div>
+      <p class="script-note">Responder em minutos faz diferença. Fora do horário, uma mensagem automática com essas mesmas perguntas segura o lead até a manhã.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>2 · Tipo 1: já confia e quer marcar</span><button class="btn" data-copy="s2"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s2">
+        <p>Que bom que os vídeos do Dr. Bruno te ajudaram, [nome]!</p>
+        <p>O primeiro passo é uma consulta inicial com ele. Ele entende o seu caso e já te mostra o caminho. A consulta custa [valor da consulta].</p>
+        <p>Tenho [dia] às [hora] ou [dia] às [hora]. Qual fica melhor para você?</p>
+      </div>
+      <p class="script-note">Duas opções de horário, nunca "quando você pode?". Quem já confia só precisa de um caminho fácil.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>3 · Tipo 2: está comparando</span><button class="btn" data-copy="s3"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s3">
+        <p>Faz todo sentido comparar, [nome]. É uma decisão que mexe com o patrimônio da família.</p>
+        <p>O que muda aqui é que o escritório é focado no produtor rural. O Dr. Bruno e o Dr. Rocha atendem casos de [dívida rural / sucessão] toda semana, e é sobre isso que eles falam nos vídeos.</p>
+        <p>Por isso a gente começa por uma consulta: você sai dela sabendo exatamente o que fazer no seu caso, mesmo que decida seguir com outro escritório.</p>
+        <p>Posso te mandar os horários desta semana?</p>
+      </div>
+      <p class="script-note">Diferença antes do preço. Se ele pedir o preço direto, responda e emende o "você sai sabendo o que fazer".</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>4 · Tipo 3: não sabe de nada</span><button class="btn" data-copy="s4"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s4">
+        <p>Oi, [nome]! Muita gente chega aqui sem saber ainda se precisa de advogado, e tudo bem.</p>
+        <p>Separei um vídeo do Dr. Bruno que explica [tema: alongamento da dívida rural / sucessão da propriedade]: [link do vídeo]</p>
+        <p>Depois que você assistir, me conta se a sua situação parece com a do vídeo. Se parecer, eu marco uma conversa com ele.</p>
+      </div>
+      <p class="script-note">Primeiro o problema, depois a consulta. Se ele voltar dizendo "é o meu caso", vira tipo 1.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>5 · Quem escreve é da família (filha, esposa, contador)</span><button class="btn" data-copy="s5"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s5">
+        <p>Que bom falar com você, [nome]! É muito comum quem acompanha os vídeos ser alguém da família, e quem toca a propriedade ser outra pessoa.</p>
+        <p>O ideal é a consulta ter os dois: você e o [produtor]. Assim o Dr. Bruno entende o caso inteiro de uma vez e ninguém precisa repetir a história.</p>
+        <p>Qual dia funciona para vocês dois?</p>
+      </div>
+    </div>
+
+    <div class="script"><div class="script-h"><span>6 · Depois da consulta: o parecer</span><button class="btn" data-copy="s6"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s6">
+        <p>[nome], obrigado pela consulta hoje!</p>
+        <p>Como o Dr. Bruno explicou, é como no médico: a consulta mostra o caminho, e para fechar o diagnóstico a gente precisa do exame. Aqui, o exame é a análise dos seus contratos.</p>
+        <p>O parecer custa [valor do parecer], e o valor da consulta já é abatido. Em [prazo] você recebe o relatório por escrito com o que fazer.</p>
+        <p>Posso te mandar a pasta para você enviar os contratos?</p>
+      </div>
+      <p class="script-note">A comparação com exame médico é a que o Rocha usa. Funciona porque explica por que existe um segundo pagamento.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>7 · Tipo 4: não é o perfil</span><button class="btn" data-copy="s7"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s7">
+        <p>[nome], obrigada por me explicar o seu caso.</p>
+        <p>Pelo que você me contou, hoje a sua situação não precisa de uma assessoria jurídica completa, e eu não quero que você gaste com algo que não vai te dar retorno.</p>
+        <p>O melhor caminho agora é [conversar direto com o gerente do banco / o nosso curso, que mostra o passo a passo: link do curso].</p>
+        <p>Se a situação mudar, é só me chamar aqui.</p>
+      </div>
+      <p class="script-note">A pessoa sai bem tratada e pode virar cliente depois. O tempo do escritório fica para quem tem o perfil.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>8 · Retomar quem foi mal atendido</span><button class="btn" data-copy="s8"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="s8">
+        <p>Oi, [nome], tudo bem? Aqui é a [seu nome], do Rocha Mazzo Advogados.</p>
+        <p>Você falou com a gente há alguns dias sobre [assunto] e eu não te dei um retorno completo. Desculpa por isso.</p>
+        <p>Ainda faz sentido conversar sobre o seu caso? Se fizer, consigo um horário com o Dr. Bruno ainda esta semana.</p>
+      </div>
+    </div>
+
+    <div class="pager"><button class="btn ghost" data-go="qualificar"><i data-lucide="arrow-left"></i><span>Qualificar</span></button><button class="btn primary next" data-go="objecoes"><span>Próximo: Objeções</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 05 -->
+  <section class="panel" id="objecoes" role="tabpanel" aria-labelledby="t-objecoes" hidden>
+    <div class="phead"><span class="eyebrow">05 · Quando a pessoa trava</span><h2>Empatia, lógica, prova e chamada para ação</h2><p class="intro">Objeção é sempre "eu quero, mas...". E o que vem depois do "mas" anula o "eu quero". A resposta segue sempre os mesmos quatro passos.</p></div>
+    <div class="card hl">
+      <ol class="list">
+        <li><strong>Empatia:</strong> "Eu entendo." Repita a preocupação. A pessoa precisa sentir que foi ouvida.</li>
+        <li><strong>Lógica:</strong> a conta, o argumento racional.</li>
+        <li><strong>Prova:</strong> um caso real do escritório, sem o nome do cliente. Nunca inventar.</li>
+        <li><strong>Chamada para ação:</strong> a pergunta que leva ao próximo passo.</li>
+      </ol>
+    </div>
+    <div class="quote"><p>"Um bom vendedor tem essas objeções mapeadas e com as respostas que ele sabe que funcionam."</p><span class="src">Carlos, no treinamento de comercial</span></div>
+
+    <div class="script"><div class="script-h"><span>"A consulta é paga? Achei que era de graça"</span><button class="btn" data-copy="o1"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="o1">
+        <p>Entendo, [nome]. Muita gente imagina que a primeira conversa é gratuita.</p>
+        <p>A consulta é paga porque nela o Dr. Bruno já analisa o seu caso de verdade e te diz o caminho. Não é uma conversa de apresentação.</p>
+        <p>E se você seguir para o parecer, o valor da consulta é abatido.</p>
+        <p>Quer que eu reserve [dia] às [hora]?</p>
+      </div>
+    </div>
+
+    <div class="script"><div class="script-h"><span>"Vou negociar direto com o banco"</span><button class="btn" data-copy="o2"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="o2">
+        <p>Faz sentido tentar, [nome]. Ninguém quer gastar com advogado se puder resolver sozinho.</p>
+        <p>O ponto é que, negociando sozinho, o produtor costuma aceitar o que o banco oferece. Aqui a gente separa o que vence em até 6 meses, de 6 a 18 meses e depois de 18 meses, e monta um plano para você ter fôlego nas próximas safras sem precisar vender a terra.</p>
+        <p>[caso real do escritório, sem o nome do cliente]</p>
+        <p>Antes de sentar com o gerente, vale uma consulta para você chegar lá sabendo o que pedir. Posso marcar?</p>
+      </div>
+      <p class="script-note">A separação por prazo é como o Rocha explicou o trabalho de alongamento na call de abril.</p>
+    </div>
+
+    <div class="script"><div class="script-h"><span>"Preciso conversar com a família"</span><button class="btn" data-copy="o3"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="o3">
+        <p>Claro, [nome]. Uma decisão dessas precisa ser da família toda.</p>
+        <p>Por isso a consulta pode ter mais de uma pessoa: o Dr. Bruno explica para todos ao mesmo tempo e ninguém fica com informação pela metade.</p>
+        <p>Quem mais precisa estar? Consigo um horário que funcione para todo mundo.</p>
+      </div>
+    </div>
+
+    <div class="script"><div class="script-h"><span>"Está caro"</span><button class="btn" data-copy="o4"><i data-lucide="copy"></i>Copiar</button></div>
+      <div class="script-b" id="o4">
+        <p>Entendo, [nome]. É um valor que pesa, ainda mais num momento apertado.</p>
+        <p>Vale olhar o tamanho do que está em jogo: [a dívida / o patrimônio da família]. Uma decisão errada agora costuma custar muito mais do que o parecer.</p>
+        <p>[caso real do escritório, sem o nome do cliente]</p>
+        <p>Quer que eu te mande a proposta com as condições de pagamento?</p>
+      </div>
+      <p class="script-note">Em abril você contou que o pagamento do contrato costuma ter uma entrada pequena e o resto na colheita. Se isso valer, use aqui.</p>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="scripts"><i data-lucide="arrow-left"></i><span>Scripts</span></button><button class="btn primary next" data-go="funil"><span>Próximo: Frases do funil</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 06 -->
+  <section class="panel" id="funil" role="tabpanel" aria-labelledby="t-funil" hidden>
+    <div class="phead"><span class="eyebrow">06 · O pixel das palavras</span><h2>Frases fixas para o Tintim saber em que etapa cada lead está</h2><p class="intro">O Tintim lê as conversas do WhatsApp e move o lead no funil quando aparece uma frase combinada. Por isso não pode ser uma palavra solta como "consulta". Tem que ser uma frase inteira, sempre igual, que só o escritório escreve.</p></div>
+    <div class="card hl">
+      <div class="card-title"><div class="ic"><i data-lucide="line-chart"></i></div><h3>Por que isso importa</h3></div>
+      <p>É a diferença entre "hoje foi bom" e "foram 23 contatos, 2 consultas e tanto de faturamento para tanto investido em tráfego". Com isso a gente otimiza a campanha pelo que vira cliente, não só pelo que vira conversa.</p>
+    </div>
+    <div class="tl">
+      <div class="step"><span class="dayb">1</span><div class="body"><h3>Consulta agendada</h3><p><strong>"Agendado então, [nome]! Sua consulta com o Dr. Bruno fica para [dia] às [hora]."</strong></p></div></div>
+      <div class="step"><span class="dayb">2</span><div class="body"><h3>Consulta realizada</h3><p><strong>"Obrigado pela consulta hoje, [nome]!"</strong> (já é a abertura do script 6)</p></div></div>
+      <div class="step"><span class="dayb">3</span><div class="body"><h3>Proposta enviada</h3><p><strong>"Segue a proposta do Rocha Mazzo para o seu caso, [nome]."</strong></p></div></div>
+      <div class="step"><span class="dayb">4</span><div class="body"><h3>Fechou</h3><p><strong>"Segue aqui a lista de documentos que você precisa enviar, [nome]."</strong></p></div></div>
+    </div>
+    <div class="card flat">
+      <div class="card-title"><div class="ic"><i data-lucide="handshake"></i></div><h3>Próximo passo</h3></div>
+      <p>Essas frases são uma sugestão. Ajuste com a secretária para soar natural, mande para a gente a versão final e eu configuro no Tintim. Depois disso, ninguém muda a frase sem avisar, senão o funil para de contar.</p>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="objecoes"><i data-lucide="arrow-left"></i><span>Objeções</span></button><button class="btn primary next" data-go="followup"><span>Próximo: Follow-up e time</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 07 -->
+  <section class="panel" id="followup" role="tabpanel" aria-labelledby="t-followup" hidden>
+    <div class="phead"><span class="eyebrow">07 · Quem não respondeu</span><h2>Follow-up é onde a maioria das vendas acontece</h2><p class="intro">Quem não marcou na primeira conversa não disse não. Só não decidiu ainda. Esta é a cadência que eu uso.</p></div>
+    <div class="tl">
+      <div class="step"><span class="dayb">D0</span><div class="body"><h3>No mesmo dia</h3><p>Resposta em minutos. Se a conversa parou, um resumo do que ele contou e o próximo passo por escrito.</p></div></div>
+      <div class="step"><span class="dayb">D1</span><div class="body"><h3>Algo de valor</h3><p>Um vídeo do Dr. Bruno sobre o problema dele.</p></div></div>
+      <div class="step"><span class="dayb">D3</span><div class="body"><h3>Pergunta direta</h3><p>"Conseguiu conversar com a família sobre a consulta?"</p></div></div>
+      <div class="step"><span class="dayb">D7</span><div class="body"><h3>Nova prova</h3><p>Um caso parecido com o dele, sem o nome do cliente, e dois horários.</p></div></div>
+      <div class="step opt"><span class="dayb">D14</span><div class="body"><h3>Encerramento</h3><p>"Essa é a última mensagem que eu te mando sobre esse assunto. Se um dia fizer sentido, é só me chamar aqui."</p></div></div>
+    </div>
+    <div class="quote"><p>"Tem que ter uma pessoa muito responsável, que sabe fazer follow-up e vai administrando os leads como se fossem filhos."</p><span class="src">Carlos, na call de 22/10</span></div>
+    <div class="phead"><h3>Sobre contratar alguém para o comercial</h3><p class="intro">Você pediu para ter nomes no radar. Enquanto isso, o que eu recomendo para o formato:</p></div>
+    <div class="vs">
+      <div class="card hl"><span class="tag rec">Recomendado</span><h3>Fixo mais variável</h3><ul class="list"><li>Atrai gente mais estável, que fica.</li><li>Com um variável bom, vai atrás da venda do mesmo jeito.</li><li>Para achar a pessoa, um headhunter ou RH que dá garantia sai mais seguro.</li></ul></div>
+      <div class="card"><span class="tag warn">Só com condições</span><h3>Só variável</h3><ul class="list"><li>Atrai quem vende para vários ao mesmo tempo e esquece de você.</li><li>Só funciona com supervisão próxima e regras claras.</li></ul></div>
+    </div>
+    <div class="card flat">
+      <div class="card-title"><div class="ic"><i data-lucide="sparkles"></i></div><h3>Caso real relatado por Carlos</h3></div>
+      <p>Num lançamento recente de um cliente da C2Pro, no dia da abertura vieram 3 vendas. Ao final do carrinho eram 72, e todas tiveram contato com a comercial. Um comercial bom muda o resultado inteiro. A ressalva é que vender serviço é venda consultiva, mais lenta que curso, como você mesmo disse.</p>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="funil"><i data-lucide="arrow-left"></i><span>Frases do funil</span></button><button class="btn primary next" data-go="combinados"><span>Próximo: Combinados</span><i data-lucide="arrow-right"></i></button></div>
+  </section>
+
+  <!-- 08 -->
+  <section class="panel" id="combinados" role="tabpanel" aria-labelledby="t-combinados" hidden>
+    <div class="phead"><span class="eyebrow">08 · O que ficou combinado</span><h2>Combinados da call de 22/10</h2><p class="intro">Marque conforme for fazendo. Fica salvo neste navegador.</p></div>
+    <div class="card hl progress">
+      <div class="prog-row"><h4>Progresso</h4><span class="v" id="progTxt">0 de 0</span></div>
+      <div class="bar"><i id="progBar"></i></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="ic"><i data-lucide="users"></i></div><h3>Equipe Rocha Mazzo</h3></div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="c1"><span class="box"></span><span class="t">Juntar este script ao documento de atendimento da secretária<small>E treinar com ela os 4 tipos e as duas perguntas</small></span></label>
+        <label class="check"><input type="checkbox" id="c2"><span class="box"></span><span class="t">Ajustar as frases do funil com a secretária e mandar para a C2Pro<small>Aba 06</small></span></label>
+        <label class="check"><input type="checkbox" id="c3"><span class="box"></span><span class="t">Confirmar quantas das 23 conversas marcaram consulta<small>E passar a contar toda semana</small></span></label>
+        <label class="check"><input type="checkbox" id="c4"><span class="box"></span><span class="t">Definir o corte de valor da dívida para qualificar<small>Aba 03</small></span></label>
+        <label class="check"><input type="checkbox" id="c5"><span class="box"></span><span class="t">Gravar os criativos do Rocha em Ribeirão<small>Segunda e terça, 26 e 27/10</small></span></label>
+        <label class="check"><input type="checkbox" id="c6"><span class="box"></span><span class="t">Gravar os criativos com o Bruno na mesma semana, quando ele voltar</span></label>
+        <label class="check"><input type="checkbox" id="c7"><span class="box"></span><span class="t">Mandar a data de entrega dos criativos das narrativas</span></label>
+        <label class="check"><input type="checkbox" id="c8"><span class="box"></span><span class="t">Conversar com o Bruno sobre as lives semanais<small>Uma semana para cada especialista, temas óbvios para começar</small></span></label>
+        <label class="check"><input type="checkbox" id="c9"><span class="box"></span><span class="t">Abrir uma enquete no grupo para escolher os temas das lives</span></label>
+        <label class="check"><input type="checkbox" id="c10"><span class="box"></span><span class="t">Considerar leilão e compra de fazendas como uma das 5 narrativas<small>Foi o vídeo que viralizou no YouTube</small></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="ic"><i data-lucide="handshake"></i></div><h3>C2Pro</h3></div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="c11"><span class="box"></span><span class="t">Enviar o script comercial<small>Este material</small></span></label>
+        <label class="check"><input type="checkbox" id="c12"><span class="box"></span><span class="t">Configurar as frases do funil no Tintim quando chegarem</span></label>
+        <label class="check"><input type="checkbox" id="c13"><span class="box"></span><span class="t">Conectar a Hotmart ao dashboard<small>O acesso foi liberado na call</small></span></label>
+        <label class="check"><input type="checkbox" id="c14"><span class="box"></span><span class="t">Conversa com o Rocha sobre acesso às contas e a parceria<small>23/10</small></span></label>
+        <label class="check"><input type="checkbox" id="c15"><span class="box"></span><span class="t">Passar nomes de comercial para o radar</span></label>
+        <label class="check"><input type="checkbox" id="c16"><span class="box"></span><span class="t">Subir as campanhas das narrativas assim que os criativos chegarem</span></label>
+      </div>
+    </div>
+    <div class="pager"><button class="btn ghost" data-go="followup"><i data-lucide="arrow-left"></i><span>Follow-up e time</span></button><button class="btn primary next" data-go="diagnostico"><span>Voltar ao início</span><i data-lucide="arrow-up"></i></button></div>
+  </section>
+</main>
+
+<div class="wrap"><footer>Material preparado por Carlos Primo · C2Pro. Baseado no treinamento de comercial e na call de 22/10 com o Rocha Mazzo Advogados.</footer></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+(function(){
+  var slug=(document.getElementById('root')||{}).dataset?document.getElementById('root').dataset.slug:'plano';
+  var KEY_TAB=slug+'-tab',KEY_CK=slug+'-checks';
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  document.querySelectorAll('.month').forEach(function(m){
+    var n=+m.dataset.days||30,r=(m.dataset.on||'1-7').split('-'),a=+r[0],b=+(r[1]||r[0]);
+    for(var d=1;d<=n;d++){var c=document.createElement('div');c.className='day '+(d>=a&&d<=b?'on':'mid');c.textContent=d;m.appendChild(c)}
+  });
+  var tabs=[].slice.call(document.querySelectorAll('.tab')),panels=[].slice.call(document.querySelectorAll('.panel')),ids=panels.map(function(p){return p.id});
+  function show(id,scroll){
+    if(ids.indexOf(id)<0)id=ids[0];
+    panels.forEach(function(p){p.hidden=p.id!==id});
+    tabs.forEach(function(t){var on=t.dataset.tab===id;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;if(on){try{t.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'})}catch(e){}}});
+    store(KEY_TAB,id);try{history.replaceState(null,'','#'+id)}catch(e){}
+    if(scroll){var bar=document.querySelector('.tabbar');var y=bar.getBoundingClientRect().top+window.scrollY;if(window.scrollY>y)window.scrollTo({top:y,behavior:'smooth'})}
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){show(t.dataset.tab,true)});
+    t.addEventListener('keydown',function(e){var j=null;if(e.key==='ArrowRight')j=(i+1)%tabs.length;if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;if(j!==null){e.preventDefault();tabs[j].focus();show(tabs[j].dataset.tab,false)}});
+  });
+  document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){show(b.dataset.go,true)})});
+  show((location.hash||'').replace('#','')||store(KEY_TAB)||ids[0],false);
+  var boxes=[].slice.call(document.querySelectorAll('.check input')),saved={};try{saved=JSON.parse(store(KEY_CK)||'{}')||{}}catch(e){}
+  function upd(){var s={},n=0;boxes.forEach(function(b){if(b.checked){s[b.id]=1;n++}});store(KEY_CK,JSON.stringify(s));var t=document.getElementById('progTxt'),bar=document.getElementById('progBar');if(t)t.textContent=n+' de '+boxes.length;if(bar)bar.style.width=(boxes.length?Math.round(n/boxes.length*100):0)+'%'}
+  boxes.forEach(function(b){b.checked=!!saved[b.id];b.addEventListener('change',upd)});upd();
+  function flash(btn,txt){var old=btn.innerHTML;btn.textContent=txt;setTimeout(function(){btn.innerHTML=old},1800)}
+  function selectEl(el){try{var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}
+  function copyText(text,btn,el){var done=function(){flash(btn,'Copiado')};var fail=function(){if(!el)return;if(el.tagName==='TEXTAREA'){el.style.left='0';el.select();try{document.execCommand('copy');done()}catch(e){flash(btn,'Selecionado, copie manualmente')}el.style.left='-9999px'}else{selectEl(el);flash(btn,'Selecionado, copie manualmente')}};try{navigator.clipboard.writeText(text).then(done,fail)}catch(e){fail()}}
+  document.querySelectorAll('[data-copy]').forEach(function(btn){btn.addEventListener('click',function(){var el=document.getElementById(btn.dataset.copy);copyText([].slice.call(el.querySelectorAll('p')).map(function(p){return p.innerText.trim()}).join('\n\n'),btn,el)})});
+  var raw=document.getElementById('rawTranscript');
+  if(raw){document.getElementById('copyAll').addEventListener('click',function(){copyText(raw.value,this,raw)});var w=raw.value.trim().split(/\s+/).length;document.getElementById('trMeta').textContent=w.toLocaleString('pt-BR')+' palavras · cerca de '+Math.max(1,Math.round(w/200))+' min de leitura'}
+  if(window.lucide&&lucide.createIcons){try{lucide.createIcons({attrs:{'stroke-width':2}})}catch(e){}}
+})();
+</script>
+
+</body>
+</html>
