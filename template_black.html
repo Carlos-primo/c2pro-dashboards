@@ -605,14 +605,14 @@ function desenharGoogle(){
     ${anunciosGoogle(P.anuncios)}
   </section>
 
-  <section>
+  ${!P.campanhas.some(c => c.tipo === "Pesquisa" || c.tipo === "Performance Max") ? "" : `<section>
     <div class="sec-head"><div><h2>Pesquisas que converteram</h2><p class="sub">O que a pessoa digitou no Google antes de converter (campanhas de Pesquisa e PMax).</p></div></div>
     ${P.termos.length ? `<div class="card tbl-wrap"><table>
       <thead><tr><th>Pesquisa</th><th>Campanha</th><th>Cliques</th><th>Investimento</th><th>Conversões</th><th>Custo por conversão</th></tr></thead>
       <tbody>${P.termos.map(t => `<tr><td>${esc(t.t)}</td><td>${esc(t.camp)}</td><td>${fmtInt(t.cli)}</td><td>${fmtMoeda(t.custo)}</td>
         <td>${fmtConv(t.conv)}</td><td class="hl">${moedaOu(div(t.custo,t.conv))}</td></tr>`).join("")}</tbody></table></div>`
       : `<div class="card empty">Nenhuma pesquisa com conversão no período.</div>`}
-  </section>
+  </section>`}
 
   <footer>
     <div class="defs"><b>CTR:</b> cliques ÷ impressões. <b>CPC:</b> investimento ÷ cliques. <b>Taxa de conversão:</b> conversões ÷ cliques.
@@ -644,7 +644,9 @@ function anunciosGoogle(lista){
         ${kpi("cpa","Custo por conversão",moedaOu(m.cpa))}${kpi("conv","Conversões",fmtConv(m.conv))}${kpi("custo","Investido",fmtMoeda(m.custo))}
         ${kpi("ctr","CTR",pctOu(m.ctr))}${kpi("","Cliques",fmtInt(m.cli))}${kpi("","Taxa de conversão",pctOu(m.tx))}
       </div>${textos}
-      ${ad.url ? `<div class="links"><a class="lnk" href="${esc(ad.url)}" target="_blank" rel="noopener">${ICO_EYE}Abrir a página de destino</a></div>` : ""}
+      ${ad.video || ad.url ? `<div class="links">
+        ${ad.video ? `<a class="lnk" href="${esc(ad.video)}" target="_blank" rel="noopener">${ICO_EYE}Ver o vídeo no YouTube</a>` : ""}
+        ${ad.url ? `<a class="lnk" href="${esc(ad.url)}" target="_blank" rel="noopener">${ICO_EYE}Abrir a página de destino</a>` : ""}</div>` : ""}
     </div>`; }).join("")}</div>`;
 }
 

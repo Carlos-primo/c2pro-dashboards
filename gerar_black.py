@@ -102,6 +102,30 @@ def _google(g, gg, filtro, ontem):
                 for r in g.q(f"SELECT campaign.name, campaign.status, campaign.advertising_channel_type, {met} "
                              f"FROM campaign WHERE {gg.entre(ini, fim)} AND {onde} AND metrics.impressions > 0")]
 
+    def demand_gen(ads, ini, fim):
+        """Titulos, descricoes e video do YouTube dos anuncios de video Demand Gen. Extra: se a consulta falhar,
+        os cards ficam so com o nome, sem derrubar a aba."""
+        try:
+            pecas = {r["adGroupAd"]["ad"]["id"]: r["adGroupAd"]["ad"].get("demandGenVideoResponsiveAd", {}) for r in g.q(
+                "SELECT ad_group_ad.ad.id, ad_group_ad.ad.demand_gen_video_responsive_ad.headlines, "
+                "ad_group_ad.ad.demand_gen_video_responsive_ad.long_headlines, "
+                "ad_group_ad.ad.demand_gen_video_responsive_ad.descriptions, ad_group_ad.ad.demand_gen_video_responsive_ad.videos "
+                f"FROM ad_group_ad WHERE {gg.entre(ini, fim)} AND {onde} AND metrics.impressions > 0 "
+                "AND ad_group_ad.ad.type = 'DEMAND_GEN_VIDEO_RESPONSIVE_AD'")}
+            videos = {r["asset"]["resourceName"]: r["asset"].get("youtubeVideoAsset", {}).get("youtubeVideoId", "") for r in g.q(
+                "SELECT asset.resource_name, asset.youtube_video_asset.youtube_video_id FROM asset WHERE asset.type = 'YOUTUBE_VIDEO'")}
+        except SystemExit as erro:
+            print(f"  aviso: textos dos anuncios Demand Gen ficaram de fora ({erro})")
+            return
+        for a in ads:
+            p = pecas.get(a.pop("id", None))
+            if not p:
+                continue
+            a["titulos"] = [h["text"] for h in p.get("headlines", []) + p.get("longHeadlines", [])]
+            a["descricoes"] = [d["text"] for d in p.get("descriptions", [])]
+            ids = [videos.get(v.get("asset"), "") for v in p.get("videos", [])]
+            a["video"] = next((f"https://www.youtube.com/watch?v={i}" for i in ids if i), "")
+
     def anuncios(ini, fim):
         ads = []
         for r in g.q("SELECT campaign.name, ad_group.name, ad_group_ad.status, ad_group_ad.ad.id, ad_group_ad.ad.name, "
@@ -112,12 +136,13 @@ def _google(g, gg, filtro, ontem):
             ad = r["adGroupAd"]["ad"]
             peca = ad.get("responsiveSearchAd") or ad.get("responsiveDisplayAd") or {}
             titulos = [h["text"] for h in peca.get("headlines", [])]
-            ads.append({"nome": titulos[0] if titulos else ad.get("name") or f"Anúncio {ad['id']}",
+            ads.append({"id": ad["id"], "nome": ad.get("name") or (titulos[0] if titulos else f"Anúncio {ad['id']}"),
                         "tipo": ad.get("type", "").replace("_", " ").title(), "titulos": titulos,
                         "descricoes": [d["text"] for d in peca.get("descriptions", [])],
                         "url": (ad.get("finalUrls") or [""])[0], "campanha": r["campaign"]["name"],
                         "grupo": r["adGroup"]["name"], "status": r["adGroupAd"].get("status", ""),
                         "aprovacao": r["adGroupAd"].get("policySummary", {}).get("approvalStatus", ""), **m(r)})
+        demand_gen(ads, ini, fim)
         # Performance Max nao tem ad_group_ad: o "anuncio" dela e o grupo de recursos.
         for r in g.q(f"SELECT campaign.name, asset_group.name, asset_group.status, asset_group.final_urls, {met} "
                      f"FROM asset_group WHERE {gg.entre(ini, fim)} AND {onde} AND metrics.impressions > 0"):
