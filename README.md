@@ -194,6 +194,7 @@ https://carlos-primo.github.io/c2pro-dashboards/planejamento/<cliente>/
 | Cliente | Link |
 |---|---|
 | Mariana Groth (Growth Compliance) | https://carlos-primo.github.io/c2pro-dashboards/planejamento/mariana-groth/ |
+| Bárbara Nunes (consultoria) | https://carlos-primo.github.io/c2pro-dashboards/planejamento/barbara-nunes/ |
 
 ## Relatórios
 
