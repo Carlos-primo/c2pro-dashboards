@@ -6,5 +6,6 @@
   "contas": [
     {"id": "act_359674206839374", "nome": "Camila"},
     {"id": "act_1072009758391272", "nome": "Revenda"}
-  ]
+  ],
+  "google": {"customer_id": "7321202082", "nome": "Camila"}
 }

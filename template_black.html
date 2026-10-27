@@ -149,6 +149,24 @@ td.hl{color:var(--acc-h)}
 .lnk:hover{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
 .lnk svg{width:14px;height:14px}
 .lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.abas{display:flex;gap:4px;margin:24px 0 16px;border-bottom:1px solid var(--b-def)}
+.abas button{all:unset;cursor:pointer;flex:1;max-width:280px;padding:14px 18px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;
+  font:700 17px/1.2 Inter,sans-serif;letter-spacing:-.01em;color:var(--t-muted);transition:.15s}
+.abas button small{display:block;margin-top:4px;font:400 12px/1.3 var(--mono);color:var(--t-faint)}
+.abas button:hover{color:var(--t-strong)}
+.abas button[aria-selected="true"]{color:var(--acc-h);border-bottom-color:var(--acc);background:linear-gradient(0deg,var(--acc-soft),transparent)}
+.abas button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.gad{padding:18px}
+.gad .nm{color:var(--t-strong);font-weight:600;font-size:14px;line-height:1.35;word-break:break-word}
+.gad .cp{color:var(--t-faint);font-size:12px;margin:4px 0 12px;word-break:break-word}
+.gad .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px;font:400 12px/1.35 var(--mono);color:var(--t-muted)}
+.gad .kpis b{display:block;color:var(--t-strong);font-weight:500;font-size:13px}
+.gad .kpis .sel b{color:var(--acc-h)}
+.gad .links{margin-top:12px}
+.rank-g{display:inline-block;min-width:22px;margin-right:8px;padding:1px 6px;border-radius:999px;border:1px solid var(--b-def);
+  font:600 11px/1.5 var(--mono);color:var(--t-strong);text-align:center;vertical-align:1px}
+.txts{margin:10px 0 0;padding-left:18px;font-size:13px;color:var(--t-body);line-height:1.5}
+.txts.desc{color:var(--t-muted)}
 .empty{padding:24px;color:var(--t-muted);font-size:14px}
 .defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
 .defs b{color:var(--t-muted);font-weight:500}
@@ -258,7 +276,8 @@ let D, PER = "7";
 let CONTA = "todas";
 try { PER = localStorage.getItem("c2pro-black-periodo") || "7"; CONTA = localStorage.getItem("c2pro-black-conta") || "todas"; } catch(_){}
 
-function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.visoes.todas.periodos[PER]) PER = "7"; if (!D.visoes[CONTA]) CONTA = "todas"; desenhar(); }
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.visoes.todas.periodos[PER]) PER = "7";
+  if (!D.visoes[CONTA] && !(CONTA === "google" && D.google)) CONTA = "todas"; desenhar(); }
 
 // Variação relativa (custos, volumes).
 function delta(atual, anterior, melhorQuando){
@@ -366,33 +385,64 @@ try { ORDEM = localStorage.getItem("c2pro-black-ordem") || "cpl"; if (!ORDENS[OR
 const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias"};
 
 const nomeConta = k => k === "todas" ? "Todas as contas" : k;
+const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
 
-function desenhar(){
-  const V = D.visoes[CONTA];
-  const P = V.periodos[PER];
-  const a = derivadas(P.atual), b = derivadas(P.anterior);
-  const unica = CONTA !== "todas";
+// Topo comum às abas da Meta e do Google: marca, período, contas e datas.
+function cabecalho(P, contaTxt){
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
-  const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
-  const DD = V.diario.map(d => derivadas(d));
-
-  app.innerHTML = `<div class="wrap">
-  <header>
+  // Meta e Google ficam separados: primeiro a plataforma, depois (só na Meta) a conta. Nada soma entre plataformas.
+  const google = CONTA === "google";
+  const plataformas = D.google ? `<nav class="abas" role="tablist" aria-label="Plataforma">
+      <button role="tab" data-s="${google ? "todas" : esc(CONTA)}" aria-selected="${!google}">Meta Ads<small>Black no Facebook e Instagram</small></button>
+      <button role="tab" data-s="google" aria-selected="${google}">Google Ads<small>Black no Google</small></button></nav>` : "";
+  const contas = google ? "" : `<div class="pills" role="group" aria-label="Conta de anúncio da Meta" style="margin-bottom:12px">
+      ${["todas", ...D.contas].map(k => `<button data-s="${esc(k)}" aria-pressed="${CONTA===k}">${esc(nomeConta(k))}</button>`).join("")}
+    </div>`;
+  return `<header>
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Campanhas de vendas")}</div><h1>${esc(D.nome)}</h1></div></div>
     <div class="pills" role="group" aria-label="Período">
       ${Object.keys(D.visoes.todas.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${NOMES_PER[k] || k+" dias"}</button>`).join("")}
     </div>
   </header>
-  <div class="pills" role="group" aria-label="Conta de anúncio" style="margin-bottom:12px">
-      ${["todas", ...D.contas].map(k => `<button data-s="${esc(k)}" aria-pressed="${CONTA===k}">${esc(nomeConta(k))}</button>`).join("")}
-    </div>
+  ${plataformas}${contas}
   <div class="meta">
-    <span>Conta de anúncio: ${esc(nomeConta(CONTA))}</span>
+    <span>${contaTxt}</span>
     <span>Período: ${faixa(P.inicio, P.fim)}</span>
     <span>Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}</span>
     <span>Atualizado em ${quando}</span>
-  </div>
+  </div>`;
+}
+
+function eventos(){
+  app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
+    PER = bt.dataset.p; try { localStorage.setItem("c2pro-black-periodo", PER); } catch(_){}
+    desenhar();
+  }));
+  app.querySelectorAll("[data-s]").forEach(bt => bt.addEventListener("click", () => {
+    CONTA = bt.dataset.s; try { localStorage.setItem("c2pro-black-conta", CONTA); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+  app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
+    ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-black-ordem", ORDEM); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+  app.querySelectorAll("[data-og]").forEach(bt => bt.addEventListener("click", () => {
+    ORDEM_G = bt.dataset.og; try { localStorage.setItem("c2pro-black-ordem-google", ORDEM_G); } catch(_){}
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
+  }));
+}
+
+function desenhar(){
+  if (CONTA === "google") return desenharGoogle();
+  const V = D.visoes[CONTA];
+  const P = V.periodos[PER];
+  const a = derivadas(P.atual), b = derivadas(P.anterior);
+  const unica = CONTA !== "todas";
+  const DD = V.diario.map(d => derivadas(d));
+
+  app.innerHTML = `<div class="wrap">
+  ${cabecalho(P, `Meta Ads: ${CONTA === "todas" ? `todas as contas (${esc(D.contas.join(" + "))})` : `conta ${esc(CONTA)}`}`)}
 
   <section>
     <div class="tiles">
@@ -467,28 +517,143 @@ function desenhar(){
   </footer>
   </div>`;
 
-  app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
-    PER = bt.dataset.p; try { localStorage.setItem("c2pro-black-periodo", PER); } catch(_){}
-    desenhar();
-  }));
-  app.querySelectorAll("[data-s]").forEach(bt => bt.addEventListener("click", () => {
-    CONTA = bt.dataset.s; try { localStorage.setItem("c2pro-black-conta", CONTA); } catch(_){}
-    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
-  }));
-  app.querySelectorAll("[data-o]").forEach(bt => bt.addEventListener("click", () => {
-    ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-black-ordem", ORDEM); } catch(_){}
-    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
-  }));
+  eventos();
   graficoBarras(document.getElementById("c-compras"), DD.map(d => ({x:d.data, y:d.leads, g:d.gasto})),
     p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por lead: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.compras, g:d.gasto})),
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
 }
 
+// ---------- aba Google Ads ----------
+function derivG(m){
+  return { ...m, ctr: div(m.cli*100, m.imp), cpc: div(m.custo, m.cli), cpm: div(m.custo*1000, m.imp),
+    cpa: div(m.custo, m.conv), tx: div(m.conv*100, m.cli), roas: div(m.valor, m.custo) };
+}
+const fmtConv = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:v % 1 ? 1 : 0}).format(v||0);
+
+const ORDENS_G = {
+  cpa:  {label:"Custo por conversão", val:m => m.cpa,  melhor:"menor"},
+  conv: {label:"Conversões",          val:m => m.conv, melhor:"maior"},
+  custo:{label:"Investimento",        val:m => m.custo,melhor:"maior"},
+  ctr:  {label:"CTR",                 val:m => m.ctr,  melhor:"maior"},
+};
+let ORDEM_G = "custo";
+try { ORDEM_G = localStorage.getItem("c2pro-black-ordem-google") || "custo"; if (!ORDENS_G[ORDEM_G]) ORDEM_G = "custo"; } catch(_){}
+
+function desenharGoogle(){
+  const G = D.google, P = G.periodos[PER];
+  const a = derivG(P.atual), b = derivG(P.anterior);
+  const DD = G.diario.map(derivG);
+  const conta = G.conta.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+  const acoes = Object.entries(P.acoes).sort((x,y) => y[1]-x[1]);
+
+  app.innerHTML = `<div class="wrap">
+  ${cabecalho(P, `Google Ads: conta ${esc(G.nome)} (${conta})`)}
+
+  <section>
+    <div class="tiles">
+      ${tile("Custo por conversão", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"), `${fmtConv(a.conv)} conversões`, true)}
+      ${tile("Conversões", fmtConv(a.conv), delta(a.conv,b.conv,"sobe"))}
+      ${tile("Investimento", fmtMoeda(a.custo), delta(a.custo,b.custo,null))}
+      ${tile("Taxa de conversão", pctOu(a.tx), delta(a.tx,b.tx,"sobe"), "conversões ÷ cliques")}
+      ${tile("Cliques", fmtInt(a.cli), delta(a.cli,b.cli,"sobe"))}
+      ${tile("CTR", pctOu(a.ctr), delta(a.ctr,b.ctr,"sobe"))}
+      ${tile("CPC", moedaOu(a.cpc), delta(a.cpc,b.cpc,"desce"))}
+      ${tile("Impressões", fmtInt(a.imp), delta(a.imp,b.imp,"sobe"), `CPM ${moedaOu(a.cpm)}`)}
+      ${a.valor ? tile("Valor de conversão", fmtMoeda(a.valor), delta(a.valor,b.valor,"sobe"), `ROAS ${fmtX(a.roas)}`) : ""}
+    </div>
+    ${acoes.length ? `<div class="fn-rodape" style="margin-top:16px;border-top:0;padding-top:0">
+      ${acoes.map(([n,v]) => `<div>${esc(n)}: <b>${fmtConv(v)}</b></div>`).join("")}</div>` : ""}
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Últimos 30 dias, independente do período selecionado.</p></div></div>
+    <div class="charts">
+      <div class="card chart"><h3>Conversões por dia</h3>
+        <div class="tot">Total: ${fmtConv(DD.reduce((s,d)=>s+d.conv,0))} conversões</div><svg id="g-conv"></svg></div>
+      <div class="card chart"><h3>Investimento por dia</h3>
+        <div class="tot">Total: ${fmtMoeda(DD.reduce((s,d)=>s+d.custo,0))}</div><svg id="g-custo"></svg></div>
+    </div>
+    <details><summary>Ver cada dia em tabela</summary>
+      <div class="card tbl-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>Dia</th><th>Investimento</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th><th>Conversões</th><th>Custo por conversão</th></tr></thead>
+        <tbody>${DD.slice().reverse().map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtMoeda(d.custo)}</td>
+          <td>${fmtInt(d.imp)}</td><td>${fmtInt(d.cli)}</td><td>${pctOu(d.ctr)}</td><td>${moedaOu(d.cpc)}</td>
+          <td>${fmtConv(d.conv)}</td><td class="${d.conv?"hl":""}">${moedaOu(d.cpa)}</td></tr>`).join("")}</tbody>
+      </table></div></details>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Campanhas do Google com "${esc(D.filtro)}" no nome que rodaram no período.</p></div></div>
+    ${P.campanhas.length ? `<div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Tipo</th><th>Investimento</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th>
+        <th>Conversões</th><th>Custo por conversão</th><th>Taxa de conversão</th></tr></thead>
+      <tbody>${P.campanhas.map(c => { const m = derivG(c);
+        return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${esc(c.tipo)}</td><td>${fmtMoeda(m.custo)}</td>
+          <td>${fmtInt(m.imp)}</td><td>${fmtInt(m.cli)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(m.cpc)}</td>
+          <td>${fmtConv(m.conv)}</td><td class="hl">${moedaOu(m.cpa)}</td><td>${pctOu(m.tx)}</td></tr>`; }).join("")}</tbody></table></div>`
+      : `<div class="card empty">Nenhuma campanha com "${esc(D.filtro)}" no nome rodou no Google nesse período.</div>`}
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div><h2>Anúncios</h2><p class="sub">Cada anúncio que rodou no período, com títulos, descrições e para onde leva. Na Performance Max, o grupo de recursos.</p></div>
+      <div class="pills" role="group" aria-label="Ordenar anúncios por">
+        ${Object.entries(ORDENS_G).map(([k,o]) => `<button data-og="${k}" aria-pressed="${ORDEM_G===k}">${o.label}</button>`).join("")}
+      </div>
+    </div>
+    ${anunciosGoogle(P.anuncios)}
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Pesquisas que converteram</h2><p class="sub">O que a pessoa digitou no Google antes de converter (campanhas de Pesquisa e PMax).</p></div></div>
+    ${P.termos.length ? `<div class="card tbl-wrap"><table>
+      <thead><tr><th>Pesquisa</th><th>Campanha</th><th>Cliques</th><th>Investimento</th><th>Conversões</th><th>Custo por conversão</th></tr></thead>
+      <tbody>${P.termos.map(t => `<tr><td>${esc(t.t)}</td><td>${esc(t.camp)}</td><td>${fmtInt(t.cli)}</td><td>${fmtMoeda(t.custo)}</td>
+        <td>${fmtConv(t.conv)}</td><td class="hl">${moedaOu(div(t.custo,t.conv))}</td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="card empty">Nenhuma pesquisa com conversão no período.</div>`}
+  </section>
+
+  <footer>
+    <div class="defs"><b>CTR:</b> cliques ÷ impressões. <b>CPC:</b> investimento ÷ cliques. <b>Taxa de conversão:</b> conversões ÷ cliques.
+      <b>Custo por conversão:</b> investimento ÷ conversões. Conversões são as que o Google Ads conta na coluna "Conversões" (ações marcadas como principais).</div>
+    <div style="margin-top:12px">Dados puxados direto da API do Google Ads, só campanhas com "${esc(D.filtro)}" no nome, na conta ${esc(G.nome)} (${conta}). O Google pode ajustar conversões dos últimos dias depois que elas acontecem. O dia de hoje não entra, os períodos terminam ontem.</div>
+  </footer>
+  </div>`;
+
+  eventos();
+  graficoBarras(document.getElementById("g-conv"), DD.map(d => ({x:d.data, y:d.conv, g:d.custo})),
+    p => `<b>${dataBRano(p.x)}</b><br>Conversões: ${fmtConv(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por conversão: ${moedaOu(div(p.g,p.y))}`);
+  graficoBarras(document.getElementById("g-custo"), DD.map(d => ({x:d.data, y:d.custo, g:d.cli})),
+    p => `<b>${dataBRano(p.x)}</b><br>Investimento: ${fmtMoeda(p.y)}<br>Cliques: ${fmtInt(p.g)}`, v => fmtCompacto(v));
+}
+
+function anunciosGoogle(lista){
+  if (!lista.length) return `<div class="card empty">Nenhum anúncio rodou no período.</div>`;
+  const o = ORDENS_G[ORDEM_G];
+  const chave = a => { const v = o.val(derivG(a)); return v == null ? (o.melhor === "menor" ? Infinity : -Infinity) : v; };
+  const ord = lista.slice().sort((x,y) => (o.melhor === "menor" ? chave(x) - chave(y) : chave(y) - chave(x)) || y.custo - x.custo);
+  const kpi = (k, lbl, v) => `<div class="${ORDEM_G===k?"sel":""}">${lbl}<b>${v}</b></div>`;
+  return `<div class="ads">${ord.map((ad, i) => { const m = derivG(ad);
+    const textos = ad.titulos.length || ad.descricoes.length ? `<details style="margin-top:10px"><summary>Títulos e descrições (${ad.titulos.length} + ${ad.descricoes.length})</summary>
+      <ul class="txts">${ad.titulos.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+      ${ad.descricoes.length ? `<ul class="txts desc">${ad.descricoes.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}</details>` : "";
+    return `<div class="card gad"><div class="nm"><span class="rank-g">${i+1}</span>${esc(ad.nome)}${statusBadge(ad.status)}${statusBadge(ad.aprovacao)}</div>
+      <div class="cp">${esc(ad.tipo)} · ${esc(ad.campanha)}${ad.grupo ? " · " + esc(ad.grupo) : ""}</div>
+      <div class="kpis">
+        ${kpi("cpa","Custo por conversão",moedaOu(m.cpa))}${kpi("conv","Conversões",fmtConv(m.conv))}${kpi("custo","Investido",fmtMoeda(m.custo))}
+        ${kpi("ctr","CTR",pctOu(m.ctr))}${kpi("","Cliques",fmtInt(m.cli))}${kpi("","Taxa de conversão",pctOu(m.tx))}
+      </div>${textos}
+      ${ad.url ? `<div class="links"><a class="lnk" href="${esc(ad.url)}" target="_blank" rel="noopener">${ICO_EYE}Abrir a página de destino</a></div>` : ""}
+    </div>`; }).join("")}</div>`;
+}
+
 function statusBadge(s){
   if (!s) return "";
-  const map = {ACTIVE:"ativa",PAUSED:"pausada",CAMPAIGN_PAUSED:"campanha pausada",ADSET_PAUSED:"conjunto pausado",ARCHIVED:"arquivada",DELETED:"excluída",WITH_ISSUES:"com problema",IN_PROCESS:"em análise",PENDING_REVIEW:"em revisão",DISAPPROVED:"reprovada"};
-  return `<span class="badge${s==="ACTIVE"?" on":""}">${esc(map[s]||s.toLowerCase())}</span>`;
+  const map = {ENABLED:"ativa",REMOVED:"removida",APPROVED:"aprovado",APPROVED_LIMITED:"aprovado (limitado)",AREA_OF_INTEREST_ONLY:"aprovado (restrito)",
+    UNDER_REVIEW:"em revisão",UNKNOWN:"",UNSPECIFIED:"",ACTIVE:"ativa",PAUSED:"pausada",CAMPAIGN_PAUSED:"campanha pausada",ADSET_PAUSED:"conjunto pausado",ARCHIVED:"arquivada",DELETED:"excluída",WITH_ISSUES:"com problema",IN_PROCESS:"em análise",PENDING_REVIEW:"em revisão",DISAPPROVED:"reprovada"};
+  if (map[s] === "") return "";
+  return `<span class="badge${s==="ACTIVE"||s==="ENABLED"?" on":""}">${esc(map[s]||s.toLowerCase())}</span>`;
 }
 
 function tabelaCampanhas(lista){

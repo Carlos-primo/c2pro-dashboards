@@ -71,7 +71,7 @@ https://carlos-primo.github.io/c2pro-dashboards/black/<cliente>/
 |---|---|---|
 | Wescley Lima | Camila e Revenda (C.Ad2) | https://carlos-primo.github.io/c2pro-dashboards/black/wescley/ |
 
-Abas por conta + "Todas as contas" (alcance nao soma entre contas). Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`.
+Abas por conta + "Todas as contas" (alcance nao soma entre contas). Com o campo `google` no config (`{"customer_id": "...", "nome": "..."}`), ganha a aba Google Ads, separada da Meta e com o mesmo filtro: campanhas, anuncios (titulos, descricoes, destino), pesquisas que converteram e dia a dia. Wescley: conta Google da Camila, 732-120-2082. Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`.
 Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black" do workflow.
 
 ## Dashboards de leads
