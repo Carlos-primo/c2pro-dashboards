@@ -209,6 +209,7 @@ https://carlos-primo.github.io/c2pro-dashboards/relatorios/<cliente>/
 |---|---|---|
 | Todos Arquitetura | Vendas de ingressos (captação 27/08 a 15/09/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/todos-arquitetura/ |
 | BJJ Protech | Análise do fim de semana de queda (10 e 11/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/bjj-protech-fim-de-semana/ |
+| Ana Paula Lima | Passagem de bastão para a Jessica (28/10/2026; com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/ana-paula-lima-passagem-de-bastao/ |
 
 ## Apresentações
 
