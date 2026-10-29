@@ -14,6 +14,7 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 | Evaldit Rafaela | https://carlos-primo.github.io/c2pro-dashboards/evaldit-rafaela-ibama/ |
 | Método NeuroappAvalia | https://carlos-primo.github.io/c2pro-dashboards/metodo-neuroapp-avalia-cartao/ |
 | Amanda Elia Advogada (período fixo: 22/12/2025 a 18/02/2026) | https://carlos-primo.github.io/c2pro-dashboards/amanda-elia/ |
+| Ingrid Villarraso (contatos + distribuição) | https://carlos-primo.github.io/c2pro-dashboards/ingrid-villarraso/ |
 
 ## O que cada dashboard de distribuição mostra
 
@@ -29,6 +30,19 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 **Regra fixa:** só entram campanhas com `DISTRIBUICAO` no nome. O filtro está no código (`FILTRO` em `gerar.py`), não é configurável, e o gerador aborta se algum dado fugir da regra.
 
 **Definições:** hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
+
+## Contatos e distribuição no mesmo link
+
+Com `"modelo": "contatos_distribuicao"` no `clientes/<slug>/config.json`, o dashboard ganha duas abas
+(hoje: Ingrid Villarraso). Cada aba é o dashboard aprovado do seu tipo, com as métricas do objetivo dela:
+
+- **Contatos:** só campanhas com `CONTATOS` no nome (filtro fixo em `gerar_contatos_distribuicao.py`). Mesmas regras
+  do dashboard de contatos: conversas iniciadas, criativos ranqueados por contatos, engajamento e vídeo, funil
+  impressões > cliques > contatos. Sem investimento, custo ou comparação.
+- **Distribuição:** só campanhas com `DISTRIBUICAO` no nome, igual ao dashboard de distribuição (custos por view,
+  hook rate, retenção, entrega, dia a dia, campanhas e criativos).
+
+Roda junto com a distribuição (2h). Rodar no PC: `python gerar.py <slug>`. Sem senha nesse modelo.
 
 ## Dashboards de vendas
 
