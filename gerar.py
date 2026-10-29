@@ -270,14 +270,8 @@ def criptografar(texto, senha):
     return {"enc": True, "sal": b64(sal), "iv": b64(iv), "ct": b64(ct), "iter": 250_000}
 
 
-def gerar_cliente(slug):
-    CFG.clear()
-    CFG.update(json.loads((AQUI / "clientes" / slug / "config.json").read_text(encoding="utf-8")))
-    if CFG.get("modelo") == "funil":
-        import gerar_funil  # topo/meio/fundo com abas Meta e Google, so para quem pede no config
-        return gerar_funil.gerar(slug)
-    saida = SITE / slug
-
+def montar_dados():
+    """Dados do dashboard de distribuicao do cliente em CFG (o gerar_contatos_distribuicao.py tambem usa)."""
     conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
     fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
     agora = dt.datetime.now(fuso)
@@ -306,6 +300,23 @@ def gerar_cliente(slug):
     soma_diaria = sum(d["gasto"] for d in diario)
     conferir(abs(soma_diaria - periodos[chave]["atual"]["gasto"]) < 0.05,
              "serie diaria nao bate com o total do periodo")
+
+    return dados
+
+
+def gerar_cliente(slug):
+    CFG.clear()
+    CFG.update(json.loads((AQUI / "clientes" / slug / "config.json").read_text(encoding="utf-8")))
+    if CFG.get("modelo") == "funil":
+        import gerar_funil  # topo/meio/fundo com abas Meta e Google, so para quem pede no config
+        return gerar_funil.gerar(slug)
+    if CFG.get("modelo") == "contatos_distribuicao":
+        import gerar_contatos_distribuicao  # abas de contatos e de distribuicao no mesmo link
+        return gerar_contatos_distribuicao.gerar(slug)
+    saida = SITE / slug
+    dados = montar_dados()
+    fixo = dados["fixo"]
+    periodos, chave = dados["periodos"], "fixo" if fixo else "30"
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     senha = os.environ.get(f"SENHA_{slug.upper().replace('-', '_')}", "")

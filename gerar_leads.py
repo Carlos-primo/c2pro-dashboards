@@ -71,6 +71,10 @@ def conferir(condicao, mensagem):
 
 
 def insights(nivel, inicio, fim, campos, **extra):
+    # "filtro_campanha" (so o gerar_contatos_distribuicao.py usa): so campanhas com esse trecho no nome.
+    if CFG.get("filtro_campanha"):
+        extra["filtering"] = json.dumps([{"field": "campaign.name", "operator": "CONTAIN",
+                                          "value": CFG["filtro_campanha"]}])
     return api(
         f"{CFG['conta_anuncio']}/insights",
         level=nivel,
@@ -177,6 +181,8 @@ def periodo(dias, ontem):
     campanhas, gasto_campanhas = [], 0.0
     for l in insights("campaign", inicio, fim, "campaign_name," + CAMPOS_METRICAS):
         gasto = float(l.get("spend", 0))
+        conferir(CFG.get("filtro_campanha", "").upper() in l["campaign_name"].upper(),
+                 f"campanha fora do filtro: {l['campaign_name']}")
         if gasto > 0:
             gasto_campanhas += gasto
             m = metricas(l)
@@ -283,11 +289,8 @@ def resumo_formulario(linhas, inicio, fim, fuso):
     }
 
 
-def gerar_cliente(slug):
-    CFG.clear()
-    CFG.update(json.loads((AQUI / "leads" / slug / "config.json").read_text(encoding="utf-8")))
-    saida = SITE / slug
-
+def montar_dados(slug):
+    """Dados do dashboard do cliente em CFG (o gerar_contatos_distribuicao.py tambem usa)."""
     conta = api(CFG["conta_anuncio"], fields="name,timezone_name")
     fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
     agora = dt.datetime.now(fuso)
@@ -315,7 +318,7 @@ def gerar_cliente(slug):
 
     hotmart = bloco_hotmart(slug, periodos, ontem, fuso) if CFG.get("hotmart") else None
 
-    dados = {
+    return {
         "nome": CFG["nome"],
         "subtitulo": CFG.get("subtitulo", ""),
         "principal": PRINCIPAL(),
@@ -323,6 +326,14 @@ def gerar_cliente(slug):
         "periodos": periodos,
         "hotmart": hotmart,
     }
+
+
+def gerar_cliente(slug):
+    CFG.clear()
+    CFG.update(json.loads((AQUI / "leads" / slug / "config.json").read_text(encoding="utf-8")))
+    saida = SITE / slug
+    dados = montar_dados(slug)
+    periodos, hotmart = dados["periodos"], dados["hotmart"]
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
     senha = os.environ.get(f"SENHA_LEADS_{slug.upper().replace('-', '_')}", "")

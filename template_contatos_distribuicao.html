@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>__NOME__ · C2Pro</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --b-def:rgba(255,255,255,.12); --b-sub:rgba(255,255,255,.07);
+  --t-strong:#F2F6FA; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --on-acc:#00171C; --s1:rgba(255,255,255,.028);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-muted);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.barra{position:sticky;top:0;z-index:10;background:rgba(5,7,10,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--b-sub)}
+.barra-in{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:center;gap:10px;min-width:0;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--t-faint)}
+.marca img{width:28px;height:28px;object-fit:contain;flex:none}
+.marca span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.abas{display:inline-flex;flex:none;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.abas button{all:unset;cursor:pointer;white-space:nowrap;padding:9px 18px;border-radius:999px;font:600 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.abas button:hover{color:var(--t-strong)}
+.abas button[aria-selected="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.abas button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+iframe{display:block;width:100%;height:100vh;border:0;background:transparent}
+iframe[hidden]{display:none}
+@media (max-width:520px){ .marca span{display:none} .abas button{padding:9px 14px} }
+</style>
+</head>
+<body>
+<div class="barra"><div class="barra-in">
+  <div class="marca"><img src="logo.png" alt="C2Pro"><span>__NOME__</span></div>
+  <div class="abas" role="tablist" aria-label="Tipo de campanha">
+    <button role="tab" id="aba-contatos" data-aba="contatos" aria-controls="painel-contatos">Contatos</button>
+    <button role="tab" id="aba-distribuicao" data-aba="distribuicao" aria-controls="painel-distribuicao">Distribuição</button>
+  </div>
+</div></div>
+<iframe id="painel-contatos" title="Campanhas de contatos" role="tabpanel" aria-labelledby="aba-contatos" hidden></iframe>
+<iframe id="painel-distribuicao" title="Campanhas de distribuição" role="tabpanel" aria-labelledby="aba-distribuicao" hidden></iframe>
+<script>
+const PAGINAS = {contatos: __CONTATOS__, distribuicao: __DISTRIBUICAO__};
+
+// A altura do iframe acompanha o conteudo da pagina de dentro: a rolagem fica so na pagina de fora.
+function acompanhar(f){
+  const d = f.contentDocument;
+  const ajustar = () => { if (d.body) f.style.height = Math.ceil(d.body.getBoundingClientRect().height) + "px"; };
+  new ResizeObserver(ajustar).observe(d.body);
+  ajustar();
+}
+
+// Cada pagina so e montada quando a aba abre pela primeira vez (graficos medem a largura ao desenhar).
+function abrir(aba){
+  if (!PAGINAS[aba]) aba = "contatos";
+  for (const k of Object.keys(PAGINAS)) {
+    const f = document.getElementById("painel-" + k), ativo = k === aba;
+    f.hidden = !ativo;
+    document.getElementById("aba-" + k).setAttribute("aria-selected", ativo);
+    if (ativo && !f.dataset.pronto) {
+      f.dataset.pronto = "1";
+      f.addEventListener("load", () => acompanhar(f), {once: true});
+      f.srcdoc = PAGINAS[k];
+    }
+  }
+  if (location.hash.slice(1) !== aba) history.replaceState(null, "", "#" + aba);
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll(".abas button").forEach(b => b.addEventListener("click", () => abrir(b.dataset.aba)));
+window.addEventListener("hashchange", () => abrir(location.hash.slice(1)));
+abrir(location.hash.slice(1));
+</script>
+</body>
+</html>
