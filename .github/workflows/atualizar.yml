@@ -190,12 +190,12 @@ jobs:
             [ -f "site/$destino/index.html" ] && continue
             alvo="${!var}"; [ "$alvo" = todos ] || [ "$alvo" = "$slug" ] && falhou=1 || falhou=0
             mkdir -p "site/$destino"
-            if curl -sfL "https://carlos-primo.github.io/c2pro-dashboards/$destino/?t=$(date +%s)" -o "site/$destino/index.html"; then
+            if curl -sfL --retry 5 --retry-delay 3 --retry-all-errors "https://carlos-primo.github.io/c2pro-dashboards/$destino/?t=$(date +%s)" -o "site/$destino/index.html"; then
               cp logo.png "site/$destino/logo.png"
               [ $falhou = 1 ] && echo "::warning::$destino nao foi gerado; ficou no ar a ultima versao publicada"
             else
               rm -rf "site/$destino"
-              [ $falhou = 1 ] && echo "::warning::$destino nao foi gerado e nao tinha versao publicada"
+              echo "::warning::$destino nao foi gerado e a versao publicada nao veio; saiu do ar"
             fi
           done
           true
