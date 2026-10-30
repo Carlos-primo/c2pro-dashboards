@@ -1,0 +1,9 @@
+{
+  "nome": "Vita Hair",
+  "subtitulo": "Black Friday",
+  "filtro": "BLACK",
+  "criativos_gasto_minimo": 5,
+  "contas": [
+    {"id": "act_1320774509162020", "nome": "CA03"}
+  ]
+}
