@@ -238,6 +238,7 @@ imagens em `img/`, e o workflow só copia a pasta pro site. Setas ou toque pra n
 | Debriefing EARQ Mind, 1º lançamento (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/earq-debriefing-l01/ |
 | Resultados Atento, 13 a 22/10/2026 (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/atento-resultados-out26/ |
 | Histórico e Black, Débora Maciel, 29/10/2026 (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/debora-historico-black/ |
+| Estratégia de novembro, BJJ Protech (Rodrigo Goedert), 02/11/2026 (com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/apresentacoes/bjj-protech-estrategia-nov26/ |
 
 ## Dashboards do Google Ads
 
