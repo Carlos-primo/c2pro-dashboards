@@ -190,6 +190,24 @@ def _google(g, gg, filtro, ontem):
     return {"periodos": periodos, "diario": diario}
 
 
+def leads_por_atribuicao(contas, inicio, fim):
+    """Leads da Meta separados em quem clicou no anuncio (7 dias) e quem so viu (1 dia), pra conciliar com a planilha.
+    Usa o mesmo evento de lead do dashboard (o primeiro de EVENTOS_LEAD que aparecer)."""
+    t = {"total": 0.0, "clique": 0.0, "visualizacao": 0.0}
+    for conta in contas:
+        for linha in api(f"{conta}/insights", level="account", fields="actions",
+                         time_range=json.dumps({"since": inicio, "until": fim}),
+                         filtering=json.dumps([{"field": "campaign.name", "operator": "CONTAIN", "value": gv.FILTRO}]),
+                         action_attribution_windows=json.dumps(["7d_click", "1d_view"])):
+            acoes = {a["action_type"]: a for a in linha.get("actions", [])}
+            a = next((acoes[e] for e in EVENTOS_LEAD if e in acoes), None)
+            if a:
+                t["total"] += float(a.get("value", 0))
+                t["clique"] += float(a.get("7d_click", 0))
+                t["visualizacao"] += float(a.get("1d_view", 0))
+    return t
+
+
 def origem(slug, ocfg, periodos_meta, ontem):
     """Aba pago x organico, da planilha de UTM do cliente (so contagens, nenhum dado pessoal)."""
     resumo, fonte = origem_leads.carregar(slug, ocfg)
@@ -197,7 +215,11 @@ def origem(slug, ocfg, periodos_meta, ontem):
         print("  aviso: origem dos leads ficou de fora (planilha fechada e sem resumo salvo)")
         return None
     per, diario = origem_leads.periodos(resumo, periodos_meta, ontem, ontem - dt.timedelta(days=29))
+    contas = [c["id"] for c in json.loads((AQUI / "black" / slug / "config.json").read_text(encoding="utf-8"))["contas"]]
     for k, p in per.items():
+        p["meta"] = leads_por_atribuicao(contas, periodos_meta[k]["inicio"], periodos_meta[k]["fim"])
+        gv.conferir(abs(p["meta"]["total"] - periodos_meta[k]["atual"]["leads"]) < 0.5,
+                    f"origem {k}d: leads por atribuicao nao batem com o total da Meta")
         gv.conferir(p["atual"]["total"] == sum(c["leads"] for c in p["canais"]), f"origem {k}d: canais nao fecham")
         gv.conferir(p["atual"]["pago"] == sum(a["leads"] for a in p["anuncios"]), f"origem {k}d: anuncios nao fecham")
     return {"fonte": fonte, "ate": resumo["ate"], "fora": resumo.get("fora", {}), "periodos": per, "diario": diario}

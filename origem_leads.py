@@ -7,8 +7,9 @@ Cada linha da planilha e um cadastro na pagina, com as UTMs que vieram na URL. A
   - PAGO: UTM de anuncio da Meta (utm_source ig/fb/an/msg, utm_medium "paid", campanha C2PRO ou macro {{...}}
     que a Meta nao substituiu).
   - ORGANICO: todo o resto, separado por canal: bio do Instagram, WhatsApp, e-mail e sem UTM.
-  - Fora da conta: cadastros de teste e linhas sem e-mail e sem telefone (envio vazio do formulario).
-  - Lead unico pelo e-mail (ou telefone): quem se cadastrou mais de uma vez conta uma vez so, no primeiro cadastro.
+  - Fora da conta: so os cadastros de teste.
+  - Todo cadastro conta, como a Meta conta cada envio do formulario (inclusive os que chegaram com e-mail "null",
+    quando a captura falhou mas a UTM veio). A parte ("u"), quantos sao pessoas novas pelo e-mail ou telefone.
 
 O repositorio e publico, entao nenhum e-mail, nome ou telefone sai daqui: so contagens por dia, origem, canal,
 campanha e anuncio. Se a planilha nao estiver aberta para "qualquer pessoa com o link", o gerador usa o resumo
@@ -68,23 +69,13 @@ def _anuncio(v):
 
 def resumir(linhas):
     """Linhas cruas da planilha -> resumo sem dado pessoal: contagens por dia/origem/canal/campanha/anuncio."""
-    vistos, cont = set(), collections.Counter()
+    vistos, cont, unicos = set(), collections.Counter(), collections.Counter()
     fora = collections.Counter()
     for l in linhas:
         c = classificar(l)
         if c is None:
             fora["teste"] += 1
             continue
-        email = _limpo(l.get("Email")).lower()
-        fone = re.sub(r"\D", "", l.get("fone") or "")[-11:]
-        chave = email or fone
-        if not chave:
-            fora["vazio"] += 1
-            continue
-        if chave in vistos:
-            fora["repetido"] += 1
-            continue
-        vistos.add(chave)
         try:
             data = dt.datetime.strptime(l["Data"].strip()[:10], "%d/%m/%Y").date().isoformat()
         except ValueError:
@@ -94,9 +85,22 @@ def resumir(linhas):
         camp = _limpo(l.get("utm_campaign")) if origem == "pago" else ""
         camp = "(UTM da campanha não preenchida)" if "{{" in camp else camp
         anuncio = _anuncio(l.get("utm_content")) if origem == "pago" else ""
-        cont[(data, origem, canal, camp, anuncio)] += 1
-    registros = [{"data": d, "origem": o, "canal": c, "campanha": cp, "anuncio": a, "n": n}
-                 for (d, o, c, cp, a), n in sorted(cont.items())]
+        chave_reg = (data, origem, canal, camp, anuncio)
+        # Todo cadastro conta (como a Meta conta cada envio do formulario). A parte, quantos sao pessoas novas.
+        cont[chave_reg] += 1
+        email = _limpo(l.get("Email")).lower()
+        fone = re.sub(r"\D", "", l.get("fone") or "")[-11:]
+        chave = email or fone
+        if not chave:
+            fora["sem_contato"] += 1  # a captura falhou (e-mail "null"), mas o cadastro veio com UTM e conta
+            unicos[chave_reg] += 1
+        elif chave in vistos:
+            fora["repetido"] += 1
+        else:
+            vistos.add(chave)
+            unicos[chave_reg] += 1
+    registros = [{"data": d, "origem": o, "canal": c, "campanha": cp, "anuncio": a, "n": n,
+                  "u": unicos[(d, o, c, cp, a)]} for (d, o, c, cp, a), n in sorted(cont.items())]
     return {"ate": max((r["data"] for r in registros), default=""), "linhas": len(linhas),
             "fora": dict(fora), "registros": registros}
 
@@ -134,7 +138,8 @@ def _agrupar(regs, chave):
 def _bloco(regs):
     pago = sum(r["n"] for r in regs if r["origem"] == "pago")
     org = sum(r["n"] for r in regs if r["origem"] == "organico")
-    return {"total": pago + org, "pago": pago, "organico": org}
+    return {"total": pago + org, "pago": pago, "organico": org,
+            "unicos": sum(r.get("u", r["n"]) for r in regs)}
 
 
 def periodos(resumo, periodos_meta, ontem, ini30):

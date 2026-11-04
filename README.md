@@ -93,8 +93,9 @@ Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black"
 de UTM da página e separa os leads em **tráfego pago** (UTM de anúncio da Meta: source ig/fb/an, campanhas C2PRO) e
 **orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station, sem UTM). Mostra pago x orgânico nos mesmos períodos da
 aba Meta, dia a dia empilhado, os canais, os anúncios que trouxeram lead pago e o custo por lead pago real (investimento
-Meta ÷ leads pagos da planilha). Cada pessoa conta uma vez (e-mail ou telefone, primeiro cadastro); testes e envios
-vazios ficam de fora. Link direto: `.../black/<slug>/#origem`.
+Meta ÷ leads pagos da planilha). Todo cadastro conta, como no gerenciador (inclusive os que chegaram com a UTM mas
+e-mail "null"); só os testes ficam de fora, e "pessoas diferentes" aparece à parte. O quadro "Gerenciador x planilha"
+mostra os leads da Meta separados em clique (7 dias) e só visualização (1 dia), que a planilha conta como orgânico. Link direto: `.../black/<slug>/#origem`.
 Se a planilha estiver como "qualquer pessoa com o link pode ver", é lida a cada atualização. Se não, usa o resumo salvo em
 `black/<slug>/origem.json` (só contagens, sem e-mail, nome ou telefone). Pra atualizar o resumo: baixar a planilha em CSV e
 rodar `python origem_leads.py <slug> arquivo.csv`, depois dar push. Regras em `origem_leads.py`.

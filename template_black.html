@@ -563,12 +563,12 @@ function desenharOrigem(){
 
   <section>
     <div class="tiles">
-      ${tile("Leads no período", fmtInt(a.total), delta(a.total,b.total,"sobe"), "pessoas únicas que se cadastraram", true)}
+      ${tile("Leads no período", fmtInt(a.total), delta(a.total,b.total,"sobe"), `cadastros na página (${fmtInt(a.unicos)} pessoas diferentes)`, true)}
       ${tile("Tráfego pago", fmtInt(a.pago), delta(a.pago,b.pago,"sobe"), `${pctOu(pp)} dos leads`)}
       <div class="card tile org"><div class="lbl">Orgânico</div><div class="val">${fmtInt(a.organico)}</div>
         <div class="extra">${pctOu(po)} dos leads</div>${delta(a.organico,b.organico,"sobe")}</div>
-      ${tile("Custo por lead pago (real)", moedaOu(cplReal), delta(cplReal,cplRealAnt,"desce"), "investimento Meta ÷ leads pagos da planilha")}
-      ${tile("Leads pela Meta (pixel)", fmtInt(PM.atual.leads), delta(PM.atual.leads,PM.anterior.leads,"sobe"), "para comparar com o pago da planilha")}
+      ${tile("Custo por lead pago (planilha)", moedaOu(cplReal), delta(cplReal,cplRealAnt,"desce"), "investimento Meta ÷ leads pagos da planilha")}
+      ${tile("Leads no gerenciador", fmtInt(PM.atual.leads), delta(PM.atual.leads,PM.anterior.leads,"sobe"), "o que a Meta registrou (ver conciliação abaixo)")}
     </div>
     <div class="card" style="padding:18px 20px;margin-top:16px">
       <div class="split" role="img" aria-label="Pago ${pctOu(pp)}, orgânico ${pctOu(po)}">
@@ -577,6 +577,22 @@ function desenharOrigem(){
         <span style="--c:${COR_ORG}">Orgânico: ${fmtInt(a.organico)} (${pctOu(po)})</span></div>
     </div>
   </section>
+
+  ${P.meta ? `<section>
+    <div class="sec-head"><div><h2>Gerenciador x planilha</h2><p class="sub">Por que os leads do gerenciador não são iguais aos leads pagos da planilha.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th class="nome">O que é</th><th>Leads</th></tr></thead>
+      <tbody>
+        <tr><td class="nome"><b>Leads no gerenciador da Meta</b></td><td class="hl">${fmtInt(P.meta.total)}</td></tr>
+        <tr><td class="nome">↳ clicaram no anúncio e se cadastraram em até 7 dias</td><td>${fmtInt(P.meta.clique)}</td></tr>
+        <tr><td class="nome">↳ só viram o anúncio (sem clicar) e se cadastraram em até 1 dia, por outro caminho</td><td>${fmtInt(P.meta.visualizacao)}</td></tr>
+        <tr><td class="nome"><b>Cadastros com UTM de anúncio na planilha</b></td><td class="hl">${fmtInt(a.pago)}</td></tr>
+        <tr><td class="nome">Diferença entre os cliques da Meta e a planilha</td><td>${fmtInt(P.meta.clique - a.pago)}</td></tr>
+      </tbody></table></div>
+    <p class="sub" style="margin-top:12px">A Meta dá o lead para o anúncio sempre que a pessoa teve contato com ele, mesmo que tenha se cadastrado depois pela bio, pelo WhatsApp ou pelo e-mail.
+      A planilha registra o caminho do cadastro: quem viu o anúncio e depois entrou pela bio aparece como orgânico aqui e como lead no gerenciador.
+      Por isso os ${fmtInt(P.meta.visualizacao)} que só viram o anúncio e parte dos que clicaram dias antes estão entre os leads orgânicos.</p>
+  </section>` : ""}
 
   <section>
     <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Leads por dia nos últimos 30 dias, independente do período selecionado.</p></div>
@@ -607,11 +623,12 @@ function desenharOrigem(){
   <footer>
     <div class="defs"><b>Tráfego pago:</b> cadastros com UTM de anúncio da Meta (utm_source ig, fb ou an, campanhas C2PRO).
       <b>Orgânico:</b> todo o resto: link da bio do Instagram, disparos de WhatsApp, e-mail (RD Station) e quem chegou sem UTM.
-      <b>Custo por lead pago (real):</b> investimento das campanhas "${esc(D.filtro)}" na Meta ÷ leads pagos contados na planilha.
-      <b>Leads pela Meta (pixel):</b> o que o pixel registrou; costuma diferir da planilha porque o pixel conta eventos e a planilha conta pessoas.</div>
+      <b>Custo por lead pago (planilha):</b> investimento das campanhas "${esc(D.filtro)}" na Meta ÷ leads pagos contados na planilha.
+      <b>Leads no gerenciador:</b> o que a Meta registrou, com a atribuição padrão (7 dias após o clique ou 1 dia após ver o anúncio).</div>
     <div style="margin-top:12px">Fonte: planilha de captura de UTM da página (${O.fonte === "planilha" ? "lida na atualização" : "resumo salvo da planilha"}).
-      Cada pessoa conta uma vez, no primeiro cadastro (pelo e-mail ou telefone).
-      Ficaram de fora ${fmtInt(fora.repetido||0)} cadastros repetidos, ${fmtInt(fora.vazio||0)} envios sem e-mail nem telefone e ${fmtInt(fora.teste||0)} testes.
+      Todo cadastro conta, como no gerenciador, inclusive os ${fmtInt(fora.sem_contato||0)} que chegaram com a UTM mas sem e-mail (falha na captura do formulário).
+      ${fmtInt(fora.repetido||0)} cadastros são de pessoas que já tinham se cadastrado antes; eles contam nos leads e ficam de fora só em "pessoas diferentes".
+      Só os ${fmtInt(fora.teste||0)} testes ficam de fora.
       Os períodos são os mesmos da aba Meta Ads e terminam ontem.</div>
   </footer>
   </div>`;
