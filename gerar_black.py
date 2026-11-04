@@ -10,7 +10,9 @@ e o dashboard junta varias contas de anuncio (config "contas"), com uma visao po
 config.json:
   {"nome": "...", "subtitulo": "...", "filtro": "BLACK", "criativos_gasto_minimo": 10,
    "contas": [{"id": "act_...", "nome": "Camila"}, {"id": "act_...", "nome": "Revenda"}],
-   "google": {"customer_id": "7321202082", "nome": "Camila"}}     (opcional: aba Google Ads, mesmo filtro)
+   "google": {"customer_id": "7321202082", "nome": "Camila"},      (opcional: aba Google Ads, mesmo filtro)
+   "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"}}  (opcional: aba pago x organico,
+                                                                       ver origem_leads.py)
 
 Uso local:   python gerar_black.py            (todos)
              python gerar_black.py wescley     (so um)
@@ -25,6 +27,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import gerar_vendas as gv
+import origem_leads
 from gerar import api, criptografar
 
 AQUI = Path(__file__).resolve().parent
@@ -187,6 +190,19 @@ def _google(g, gg, filtro, ontem):
     return {"periodos": periodos, "diario": diario}
 
 
+def origem(slug, ocfg, periodos_meta, ontem):
+    """Aba pago x organico, da planilha de UTM do cliente (so contagens, nenhum dado pessoal)."""
+    resumo, fonte = origem_leads.carregar(slug, ocfg)
+    if not resumo:
+        print("  aviso: origem dos leads ficou de fora (planilha fechada e sem resumo salvo)")
+        return None
+    per, diario = origem_leads.periodos(resumo, periodos_meta, ontem, ontem - dt.timedelta(days=29))
+    for k, p in per.items():
+        gv.conferir(p["atual"]["total"] == sum(c["leads"] for c in p["canais"]), f"origem {k}d: canais nao fecham")
+        gv.conferir(p["atual"]["pago"] == sum(a["leads"] for a in p["anuncios"]), f"origem {k}d: anuncios nao fecham")
+    return {"fonte": fonte, "ate": resumo["ate"], "fora": resumo.get("fora", {}), "periodos": per, "diario": diario}
+
+
 def gerar_cliente(slug):
     cfg = json.loads((AQUI / "black" / slug / "config.json").read_text(encoding="utf-8"))
     gv.FILTRO = cfg["filtro"].upper()
@@ -242,6 +258,7 @@ def gerar_cliente(slug):
         "contas": nomes,
         "visoes": {"todas": visoes_todas, **visoes},
         "google": google(cfg["google"], gv.FILTRO, ontem) if cfg.get("google") else None,
+        "origem": origem(slug, cfg["origem_leads"], visoes_todas["periodos"], ontem) if cfg.get("origem_leads") else None,
     }
 
     senha = os.environ.get(f"SENHA_BLACK_{slug.upper().replace('-', '_')}", "")
@@ -261,6 +278,9 @@ def gerar_cliente(slug):
         gt = dados["google"]["periodos"]["30"]
         partes += (f"; Google: R$ {gt['atual']['custo']:.2f}, {gt['atual']['conv']:.0f} conversoes, "
                    f"{len(gt['campanhas'])} campanhas, {len(gt['anuncios'])} anuncios")
+    if dados["origem"]:
+        o = dados["origem"]["periodos"]["30"]["atual"]
+        partes += f"; Origem ({dados['origem']['fonte']}): {o['pago']} pago, {o['organico']} organico"
     print(f"OK black/{slug}: 30d {partes} | {'com senha' if senha else 'link aberto, sem senha'}")
 
 

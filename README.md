@@ -89,6 +89,16 @@ https://carlos-primo.github.io/c2pro-dashboards/black/<cliente>/
 Abas por conta + "Todas as contas" (alcance nao soma entre contas). Com o campo `google` no config (`{"customer_id": "...", "nome": "..."}`), ganha a aba Google Ads, separada da Meta e com o mesmo filtro: campanhas, anuncios (titulos, descricoes, destino), pesquisas que converteram e dia a dia. Wescley: conta Google da Camila, 732-120-2082. Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`.
 Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black" do workflow.
 
+**Origem dos leads (pago x orgânico)**, com `origem_leads` no config (hoje: Vita Hair): aba que lê a planilha de captura
+de UTM da página e separa os leads em **tráfego pago** (UTM de anúncio da Meta: source ig/fb/an, campanhas C2PRO) e
+**orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station, sem UTM). Mostra pago x orgânico nos mesmos períodos da
+aba Meta, dia a dia empilhado, os canais, os anúncios que trouxeram lead pago e o custo por lead pago real (investimento
+Meta ÷ leads pagos da planilha). Cada pessoa conta uma vez (e-mail ou telefone, primeiro cadastro); testes e envios
+vazios ficam de fora. Link direto: `.../black/<slug>/#origem`.
+Se a planilha estiver como "qualquer pessoa com o link pode ver", é lida a cada atualização. Se não, usa o resumo salvo em
+`black/<slug>/origem.json` (só contagens, sem e-mail, nome ou telefone). Pra atualizar o resumo: baixar a planilha em CSV e
+rodar `python origem_leads.py <slug> arquivo.csv`, depois dar push. Regras em `origem_leads.py`.
+
 ## Dashboards de leads
 
 Avaliação de leads: só volume, sem investimento, custo ou comparação com período anterior (nada disso vai pro payload).

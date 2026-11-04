@@ -16,7 +16,7 @@
   --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
   --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
   --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
-  --pos:#23D18B; --neg:#FF4D5E;
+  --pos:#23D18B; --neg:#FF4D5E; --org:#B48CFF;
   --grid:rgba(255,255,255,.07);
   --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
   --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
@@ -156,6 +156,14 @@ td.hl{color:var(--acc-h)}
 .abas button:hover{color:var(--t-strong)}
 .abas button[aria-selected="true"]{color:var(--acc-h);border-bottom-color:var(--acc);background:linear-gradient(0deg,var(--acc-soft),transparent)}
 .abas button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.split{height:14px;border-radius:999px;overflow:hidden;display:flex;gap:2px;background:var(--s2);margin:0 0 10px}
+.split i{display:block;height:100%}
+.legenda{display:flex;gap:6px 18px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.legenda span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.tile.org{border-color:rgba(180,140,255,.4)}
+.barra-tb{display:inline-block;height:6px;border-radius:3px;background:var(--c);vertical-align:middle;margin-right:10px}
+td.nome,th.nome{text-align:left;white-space:normal;font-family:Inter,sans-serif}
+.aviso{margin-top:12px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,77,94,.35);background:rgba(255,77,94,.08);font-size:13px;color:var(--t-body)}
 .gad{padding:18px}
 .gad .nm{color:var(--t-strong);font-weight:600;font-size:14px;line-height:1.35;word-break:break-word}
 .gad .cp{color:var(--t-faint);font-size:12px;margin:4px 0 12px;word-break:break-word}
@@ -275,9 +283,10 @@ async function iniciar(){
 let D, PER = "7";
 let CONTA = "todas";
 try { PER = localStorage.getItem("c2pro-black-periodo") || "7"; CONTA = localStorage.getItem("c2pro-black-conta") || "todas"; } catch(_){}
+if (location.hash === "#origem") CONTA = "origem";
 
 function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.visoes.todas.periodos[PER]) PER = "7";
-  if (!D.visoes[CONTA] && !(CONTA === "google" && D.google)) CONTA = "todas"; desenhar(); }
+  if (!D.visoes[CONTA] && !(CONTA === "google" && D.google) && !(CONTA === "origem" && D.origem)) CONTA = "todas"; desenhar(); }
 
 // Variação relativa (custos, volumes).
 function delta(atual, anterior, melhorQuando){
@@ -391,11 +400,12 @@ const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
 function cabecalho(P, contaTxt){
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   // Meta e Google ficam separados: primeiro a plataforma, depois (só na Meta) a conta. Nada soma entre plataformas.
-  const google = CONTA === "google";
-  const plataformas = D.google ? `<nav class="abas" role="tablist" aria-label="Plataforma">
-      <button role="tab" data-s="${google ? "todas" : esc(CONTA)}" aria-selected="${!google}">Meta Ads<small>Black no Facebook e Instagram</small></button>
-      <button role="tab" data-s="google" aria-selected="${google}">Google Ads<small>Black no Google</small></button></nav>` : "";
-  const contas = google ? "" : `<div class="pills" role="group" aria-label="Conta de anúncio da Meta" style="margin-bottom:12px">
+  const google = CONTA === "google", org = CONTA === "origem", meta = !google && !org;
+  const plataformas = D.google || D.origem ? `<nav class="abas" role="tablist" aria-label="Plataforma">
+      <button role="tab" data-s="${meta ? esc(CONTA) : "todas"}" aria-selected="${meta}">Meta Ads<small>Black no Facebook e Instagram</small></button>
+      ${D.google ? `<button role="tab" data-s="google" aria-selected="${google}">Google Ads<small>Black no Google</small></button>` : ""}
+      ${D.origem ? `<button role="tab" data-s="origem" aria-selected="${org}">Origem dos leads<small>Pago x orgânico (UTM)</small></button>` : ""}</nav>` : "";
+  const contas = !meta ? "" : `<div class="pills" role="group" aria-label="Conta de anúncio da Meta" style="margin-bottom:12px">
       ${["todas", ...D.contas].map(k => `<button data-s="${esc(k)}" aria-pressed="${CONTA===k}">${esc(nomeConta(k))}</button>`).join("")}
     </div>`;
   return `<header>
@@ -435,6 +445,7 @@ function eventos(){
 
 function desenhar(){
   if (CONTA === "google") return desenharGoogle();
+  if (CONTA === "origem") return desenharOrigem();
   const V = D.visoes[CONTA];
   const P = V.periodos[PER];
   const a = derivadas(P.atual), b = derivadas(P.anterior);
@@ -522,6 +533,107 @@ function desenhar(){
     p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por lead: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.compras, g:d.gasto})),
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
+}
+
+// ---------- aba Origem dos leads (planilha de UTM) ----------
+const COR_PAGO = "var(--acc)", COR_ORG = "var(--org)";
+const pctDe = (n, t) => t ? n * 100 / t : null;
+
+function tabelaSimples(lista, total, cor, rotulo, vazio){
+  if (!lista.length) return `<div class="card empty">${vazio}</div>`;
+  const max = Math.max(...lista.map(x => x.leads));
+  return `<div class="card tbl-wrap"><table>
+    <thead><tr><th class="nome">${rotulo}</th><th>Leads</th><th>% do total</th></tr></thead>
+    <tbody>${lista.map(x => `<tr><td class="nome"><span class="barra-tb" style="--c:${cor(x)};width:${Math.max(4, Math.round(x.leads*80/max))}px"></span>${esc(x.nome)}</td>
+      <td>${fmtInt(x.leads)}</td><td>${pctOu(pctDe(x.leads, total))}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function desenharOrigem(){
+  const O = D.origem, P = O.periodos[PER], PM = D.visoes.todas.periodos[PER];
+  const a = P.atual, b = P.anterior;
+  const pp = pctDe(a.pago, a.total), po = pctDe(a.organico, a.total);
+  const cplReal = div(PM.atual.gasto, a.pago), cplRealAnt = div(PM.anterior.gasto, b.pago);
+  const DD = O.diario, fora = O.fora || {};
+  const atrasada = O.ate && O.ate < PM.fim;
+  const soma = k => DD.reduce((s,d) => s + d[k], 0);
+
+  app.innerHTML = `<div class="wrap">
+  ${cabecalho(PM, `Planilha de captura de UTM${O.ate ? ` (cadastros até ${dataBRano(O.ate)})` : ""}`)}
+  ${atrasada ? `<div class="aviso">A planilha foi lida até ${dataBRano(O.ate)}. Os dias depois disso ainda não entraram nesta aba.</div>` : ""}
+
+  <section>
+    <div class="tiles">
+      ${tile("Leads no período", fmtInt(a.total), delta(a.total,b.total,"sobe"), "pessoas únicas que se cadastraram", true)}
+      ${tile("Tráfego pago", fmtInt(a.pago), delta(a.pago,b.pago,"sobe"), `${pctOu(pp)} dos leads`)}
+      <div class="card tile org"><div class="lbl">Orgânico</div><div class="val">${fmtInt(a.organico)}</div>
+        <div class="extra">${pctOu(po)} dos leads</div>${delta(a.organico,b.organico,"sobe")}</div>
+      ${tile("Custo por lead pago (real)", moedaOu(cplReal), delta(cplReal,cplRealAnt,"desce"), "investimento Meta ÷ leads pagos da planilha")}
+      ${tile("Leads pela Meta (pixel)", fmtInt(PM.atual.leads), delta(PM.atual.leads,PM.anterior.leads,"sobe"), "para comparar com o pago da planilha")}
+    </div>
+    <div class="card" style="padding:18px 20px;margin-top:16px">
+      <div class="split" role="img" aria-label="Pago ${pctOu(pp)}, orgânico ${pctOu(po)}">
+        ${a.pago ? `<i style="flex:${a.pago};background:${COR_PAGO}"></i>` : ""}${a.organico ? `<i style="flex:${a.organico};background:${COR_ORG}"></i>` : ""}</div>
+      <div class="legenda"><span style="--c:${COR_PAGO}">Tráfego pago: ${fmtInt(a.pago)} (${pctOu(pp)})</span>
+        <span style="--c:${COR_ORG}">Orgânico: ${fmtInt(a.organico)} (${pctOu(po)})</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Leads por dia nos últimos 30 dias, independente do período selecionado.</p></div>
+      <div class="legenda"><span style="--c:${COR_PAGO}">Pago</span><span style="--c:${COR_ORG}">Orgânico</span></div></div>
+    <div class="card chart"><h3>Leads por dia: pago e orgânico</h3>
+      <div class="tot">Total: ${fmtInt(soma("total"))} leads (${fmtInt(soma("pago"))} pago, ${fmtInt(soma("organico"))} orgânico)</div>
+      <svg id="o-dia"></svg></div>
+    <details><summary>Ver cada dia em tabela</summary>
+      <div class="card tbl-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>Dia</th><th>Leads</th><th>Pago</th><th>Orgânico</th><th>% pago</th></tr></thead>
+        <tbody>${DD.slice().reverse().filter(d => d.total).map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtInt(d.total)}</td>
+          <td>${fmtInt(d.pago)}</td><td>${fmtInt(d.organico)}</td><td>${pctOu(pctDe(d.pago,d.total))}</td></tr>`).join("")}</tbody>
+      </table></div></details>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>De onde veio cada lead</h2><p class="sub">Todos os canais no período, pelas UTMs do cadastro.</p></div></div>
+    ${tabelaSimples(P.canais, a.total, x => x.nome === "Meta Ads" ? COR_PAGO : COR_ORG, "Canal", "Nenhum lead na planilha nesse período.")}
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Leads do tráfego pago por anúncio</h2><p class="sub">Pelo utm_content do cadastro (o nome do anúncio na Meta).</p></div></div>
+    ${tabelaSimples(P.anuncios, a.pago, () => COR_PAGO, "Anúncio", "Nenhum lead pago na planilha nesse período.")}
+    <details><summary>Ver por campanha</summary><div style="margin-top:12px">
+      ${tabelaSimples(P.campanhas, a.pago, () => COR_PAGO, "Campanha (utm_campaign)", "Nenhum lead pago na planilha nesse período.")}</div></details>
+  </section>
+
+  <footer>
+    <div class="defs"><b>Tráfego pago:</b> cadastros com UTM de anúncio da Meta (utm_source ig, fb ou an, campanhas C2PRO).
+      <b>Orgânico:</b> todo o resto: link da bio do Instagram, disparos de WhatsApp, e-mail (RD Station) e quem chegou sem UTM.
+      <b>Custo por lead pago (real):</b> investimento das campanhas "${esc(D.filtro)}" na Meta ÷ leads pagos contados na planilha.
+      <b>Leads pela Meta (pixel):</b> o que o pixel registrou; costuma diferir da planilha porque o pixel conta eventos e a planilha conta pessoas.</div>
+    <div style="margin-top:12px">Fonte: planilha de captura de UTM da página (${O.fonte === "planilha" ? "lida na atualização" : "resumo salvo da planilha"}).
+      Cada pessoa conta uma vez, no primeiro cadastro (pelo e-mail ou telefone).
+      Ficaram de fora ${fmtInt(fora.repetido||0)} cadastros repetidos, ${fmtInt(fora.vazio||0)} envios sem e-mail nem telefone e ${fmtInt(fora.teste||0)} testes.
+      Os períodos são os mesmos da aba Meta Ads e terminam ontem.</div>
+  </footer>
+  </div>`;
+
+  eventos();
+  graficoEmpilhado(document.getElementById("o-dia"), DD.map(d => ({x:d.data, y:d.total, p:d.pago, o:d.organico})),
+    p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Pago: ${fmtInt(p.p)} (${pctOu(pctDe(p.p,p.y))})<br>Orgânico: ${fmtInt(p.o)}`);
+}
+
+function graficoEmpilhado(svg, pts, tooltip){
+  const geo = base(svg, pts);
+  const bw = Math.max(2, geo.pw - 2), y0 = geo.y(0);
+  let g = "";
+  pts.forEach((p,i) => {
+    const x0 = geo.x(i) - bw/2, yP = geo.y(p.p), yT = geo.y(p.y);
+    if (p.p) g += `<rect data-i="${i}" x="${x0}" y="${yP}" width="${bw}" height="${y0-yP}" fill="${COR_PAGO}"/>`;
+    if (p.o) g += `<rect data-i="${i}" x="${x0}" y="${yT}" width="${bw}" height="${Math.max(1, yP-yT-(p.p?2:0))}" rx="2" fill="${COR_ORG}"/>`;
+  });
+  svg.insertAdjacentHTML("beforeend", g);
+  const barras = [...svg.querySelectorAll("rect[data-i]")];
+  hover(svg, pts, geo, tooltip,
+    i => barras.forEach(b => b.setAttribute("opacity", i < 0 || +b.dataset.i === i ? 1 : .35)));
 }
 
 // ---------- aba Google Ads ----------

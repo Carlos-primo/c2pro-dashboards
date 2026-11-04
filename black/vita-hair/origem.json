@@ -1,0 +1,451 @@
+{
+ "ate": "2026-11-04",
+ "linhas": 901,
+ "fora": {
+  "teste": 6,
+  "repetido": 96,
+  "vazio": 85
+ },
+ "registros": [
+  {
+   "data": "2026-10-28",
+   "origem": "organico",
+   "canal": "Sem UTM (direto)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 2
+  },
+  {
+   "data": "2026-10-28",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26",
+   "anuncio": "AD01_CAPTACAO_BLACK_ESTATICO",
+   "n": 3
+  },
+  {
+   "data": "2026-10-28",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26",
+   "anuncio": "AD02_CAPTACAO_BLACK_ESTATICO",
+   "n": 3
+  },
+  {
+   "data": "2026-10-28",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26",
+   "anuncio": "AD06_CAPTACAO_BLACK_ESTATICO",
+   "n": 1
+  },
+  {
+   "data": "2026-10-28",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26",
+   "anuncio": "AD07_CAPTACAO_BLACK_ESTATICO",
+   "n": 6
+  },
+  {
+   "data": "2026-10-28",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26",
+   "anuncio": "AD09_CAPTACAO_BLACK_ESTATICO",
+   "n": 3
+  },
+  {
+   "data": "2026-10-29",
+   "origem": "organico",
+   "canal": "Sem UTM (direto)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 2
+  },
+  {
+   "data": "2026-10-29",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 26
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 8
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 17
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 3
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD02_CAPTACAO_BLACK_VIDEO",
+   "n": 1
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD03_CAPTACAO_BLACK_VIDEO",
+   "n": 13
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 23
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD13_CAPTACAO_BLACK_ESTATICO",
+   "n": 5
+  },
+  {
+   "data": "2026-10-30",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD14_CAPTACAO_BLACK_ESTATICO",
+   "n": 2
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 4
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 228
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "organico",
+   "canal": "WhatsApp",
+   "campanha": "",
+   "anuncio": "",
+   "n": 47
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 2
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD02_CAPTACAO_BLACK_VIDEO",
+   "n": 7
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD03_CAPTACAO_BLACK_VIDEO",
+   "n": 7
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 15
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD13_CAPTACAO_BLACK_ESTATICO",
+   "n": 1
+  },
+  {
+   "data": "2026-10-31",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD14_CAPTACAO_BLACK_ESTATICO",
+   "n": 4
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 2
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 19
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "organico",
+   "canal": "WhatsApp",
+   "campanha": "",
+   "anuncio": "",
+   "n": 18
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "(UTM da campanha não preenchida)",
+   "anuncio": "(UTM do anúncio não preenchida)",
+   "n": 2
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 5
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD02_CAPTACAO_BLACK_VIDEO",
+   "n": 7
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD03_CAPTACAO_BLACK_VIDEO",
+   "n": 1
+  },
+  {
+   "data": "2026-11-01",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 11
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 2
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 19
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "organico",
+   "canal": "WhatsApp",
+   "campanha": "",
+   "anuncio": "",
+   "n": 18
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 32
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD02_CAPTACAO_BLACK_VIDEO",
+   "n": 4
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD03_CAPTACAO_BLACK_VIDEO",
+   "n": 1
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 7
+  },
+  {
+   "data": "2026-11-02",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD14_CAPTACAO_BLACK_ESTATICO",
+   "n": 1
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 3
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 27
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "organico",
+   "canal": "Sem UTM (direto)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 1
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "organico",
+   "canal": "WhatsApp",
+   "campanha": "",
+   "anuncio": "",
+   "n": 26
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 35
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD02_CAPTACAO_BLACK_VIDEO",
+   "n": 2
+  },
+  {
+   "data": "2026-11-03",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 6
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "organico",
+   "canal": "E-mail",
+   "campanha": "",
+   "anuncio": "",
+   "n": 1
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "organico",
+   "canal": "Instagram (bio e perfil)",
+   "campanha": "",
+   "anuncio": "",
+   "n": 9
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "organico",
+   "canal": "WhatsApp",
+   "campanha": "",
+   "anuncio": "",
+   "n": 10
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD01_CAPTACAO_BLACK_VIDEO",
+   "n": 7
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD03_CAPTACAO_BLACK_VIDEO",
+   "n": 1
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_VIDEO",
+   "anuncio": "AD04_CAPTACAO_BLACK_VIDEO",
+   "n": 3
+  },
+  {
+   "data": "2026-11-04",
+   "origem": "pago",
+   "canal": "Meta Ads",
+   "campanha": "C2PRO_CAPTACAO_BLACK_Q_OUT_26_v2",
+   "anuncio": "AD14_CAPTACAO_BLACK_ESTATICO",
+   "n": 1
+  }
+ ]
+}
