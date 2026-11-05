@@ -6,7 +6,8 @@ Usado pelo gerar_black.py quando o config tem "origem_leads":
 Cada linha da planilha e um cadastro na pagina, com as UTMs que vieram na URL. A regra:
   - PAGO: UTM de anuncio da Meta (utm_source ig/fb/an/msg, utm_medium "paid", campanha C2PRO ou macro {{...}}
     que a Meta nao substituiu).
-  - ORGANICO: todo o resto, separado por canal: bio do Instagram, WhatsApp, e-mail e sem UTM.
+  - ORGANICO: UTM de canal proprio, separado por canal: bio do Instagram, WhatsApp e e-mail.
+  - NAO TRAQUEADO: cadastro sem UTM nenhuma, nao da pra saber de onde veio.
   - Fora da conta: so os cadastros de teste.
   - Todo cadastro conta, como a Meta conta cada envio do formulario (inclusive os que chegaram com e-mail "null",
     quando a captura falhou mas a UTM veio). A parte ("u"), quantos sao pessoas novas pelo e-mail ou telefone.
@@ -41,11 +42,13 @@ def _limpo(v):
 
 
 def classificar(linha):
-    """-> (origem, canal) ou None para teste. origem: 'pago' ou 'organico'."""
+    """-> (origem, canal) ou None para teste. origem: 'pago', 'organico' ou 'nao_traqueado' (sem UTM nenhuma)."""
     src, med, camp = (_limpo(linha.get(k)).lower() for k in ("utm_source", "utm_medium", "utm_campaign"))
     email = _limpo(linha.get("Email")).lower()
     if src == "teste" or "teste" in camp or any(t in email for t in TESTES_EMAIL):
         return None
+    if not src and not med and not camp:
+        return "nao_traqueado", "Não traqueado (sem UTM)"
     if src in FONTES_PAGAS or med == "paid" or camp.startswith("c2pro") or "{{" in src + camp:
         return "pago", "Meta Ads"
     if src in ("instagram", "insta") or med == "bio":
@@ -54,8 +57,8 @@ def classificar(linha):
         return "organico", "WhatsApp"
     if "email" in med or "e-mail" in med or "rd station" in src:
         return "organico", "E-mail"
-    if not src:
-        return "organico", "Sem UTM (direto)"
+    if not src:  # tem algum pedaco de UTM, mas sem a fonte nao da pra dizer o canal
+        return "nao_traqueado", "Não traqueado (sem UTM)"
     return "organico", f"Outros ({src})"
 
 
@@ -136,9 +139,9 @@ def _agrupar(regs, chave):
 
 
 def _bloco(regs):
-    pago = sum(r["n"] for r in regs if r["origem"] == "pago")
-    org = sum(r["n"] for r in regs if r["origem"] == "organico")
-    return {"total": pago + org, "pago": pago, "organico": org,
+    soma = lambda o: sum(r["n"] for r in regs if r["origem"] == o)
+    pago, org, nt = soma("pago"), soma("organico"), soma("nao_traqueado")
+    return {"total": pago + org + nt, "pago": pago, "organico": org, "nao_traqueado": nt,
             "unicos": sum(r.get("u", r["n"]) for r in regs)}
 
 

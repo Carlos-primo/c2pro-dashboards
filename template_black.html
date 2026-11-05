@@ -16,7 +16,7 @@
   --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
   --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
   --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
-  --pos:#23D18B; --neg:#FF4D5E; --org:#B48CFF;
+  --pos:#23D18B; --neg:#FF4D5E; --org:#B48CFF; --nt:#7C8799;
   --grid:rgba(255,255,255,.07);
   --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
   --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
@@ -161,6 +161,7 @@ td.hl{color:var(--acc-h)}
 .legenda{display:flex;gap:6px 18px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
 .legenda span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
 .tile.org{border-color:rgba(180,140,255,.4)}
+.tile.nt{border-color:rgba(124,135,153,.45)}
 .barra-tb{display:inline-block;height:6px;border-radius:3px;background:var(--c);vertical-align:middle;margin-right:10px}
 td.nome,th.nome{text-align:left;white-space:normal;font-family:Inter,sans-serif}
 .aviso{margin-top:12px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,77,94,.35);background:rgba(255,77,94,.08);font-size:13px;color:var(--t-body)}
@@ -536,7 +537,8 @@ function desenhar(){
 }
 
 // ---------- aba Origem dos leads (planilha de UTM) ----------
-const COR_PAGO = "var(--acc)", COR_ORG = "var(--org)";
+const COR_PAGO = "var(--acc)", COR_ORG = "var(--org)", COR_NT = "var(--nt)";
+const corCanal = x => x.nome === "Meta Ads" ? COR_PAGO : x.nome.startsWith("Não traqueado") ? COR_NT : COR_ORG;
 const pctDe = (n, t) => t ? n * 100 / t : null;
 
 function tabelaSimples(lista, total, cor, rotulo, vazio){
@@ -551,7 +553,8 @@ function tabelaSimples(lista, total, cor, rotulo, vazio){
 function desenharOrigem(){
   const O = D.origem, P = O.periodos[PER], PM = D.visoes.todas.periodos[PER];
   const a = P.atual, b = P.anterior;
-  const pp = pctDe(a.pago, a.total), po = pctDe(a.organico, a.total);
+  const nt = a.nao_traqueado || 0;
+  const pp = pctDe(a.pago, a.total), po = pctDe(a.organico, a.total), pn = pctDe(nt, a.total);
   const cplReal = div(PM.atual.gasto, a.pago), cplRealAnt = div(PM.anterior.gasto, b.pago);
   const DD = O.diario, fora = O.fora || {};
   const atrasada = O.ate && O.ate < PM.fim;
@@ -567,14 +570,17 @@ function desenharOrigem(){
       ${tile("Tráfego pago", fmtInt(a.pago), delta(a.pago,b.pago,"sobe"), `${pctOu(pp)} dos leads`)}
       <div class="card tile org"><div class="lbl">Orgânico</div><div class="val">${fmtInt(a.organico)}</div>
         <div class="extra">${pctOu(po)} dos leads</div>${delta(a.organico,b.organico,"sobe")}</div>
+      <div class="card tile nt"><div class="lbl">Não traqueado</div><div class="val">${fmtInt(nt)}</div>
+        <div class="extra">${pctOu(pn)} dos leads, sem UTM: não dá pra saber a origem</div>${delta(nt,b.nao_traqueado||0,"desce")}</div>
       ${tile("Custo por lead pago (planilha)", moedaOu(cplReal), delta(cplReal,cplRealAnt,"desce"), "investimento Meta ÷ leads pagos da planilha")}
       ${tile("Leads no gerenciador", fmtInt(PM.atual.leads), delta(PM.atual.leads,PM.anterior.leads,"sobe"), "o que a Meta registrou (ver conciliação abaixo)")}
     </div>
     <div class="card" style="padding:18px 20px;margin-top:16px">
-      <div class="split" role="img" aria-label="Pago ${pctOu(pp)}, orgânico ${pctOu(po)}">
-        ${a.pago ? `<i style="flex:${a.pago};background:${COR_PAGO}"></i>` : ""}${a.organico ? `<i style="flex:${a.organico};background:${COR_ORG}"></i>` : ""}</div>
+      <div class="split" role="img" aria-label="Pago ${pctOu(pp)}, orgânico ${pctOu(po)}, não traqueado ${pctOu(pn)}">
+        ${a.pago ? `<i style="flex:${a.pago};background:${COR_PAGO}"></i>` : ""}${a.organico ? `<i style="flex:${a.organico};background:${COR_ORG}"></i>` : ""}${nt ? `<i style="flex:${nt};background:${COR_NT}"></i>` : ""}</div>
       <div class="legenda"><span style="--c:${COR_PAGO}">Tráfego pago: ${fmtInt(a.pago)} (${pctOu(pp)})</span>
-        <span style="--c:${COR_ORG}">Orgânico: ${fmtInt(a.organico)} (${pctOu(po)})</span></div>
+        <span style="--c:${COR_ORG}">Orgânico: ${fmtInt(a.organico)} (${pctOu(po)})</span>
+        <span style="--c:${COR_NT}">Não traqueado: ${fmtInt(nt)} (${pctOu(pn)})</span></div>
     </div>
   </section>
 
@@ -596,21 +602,21 @@ function desenharOrigem(){
 
   <section>
     <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Leads por dia nos últimos 30 dias, independente do período selecionado.</p></div>
-      <div class="legenda"><span style="--c:${COR_PAGO}">Pago</span><span style="--c:${COR_ORG}">Orgânico</span></div></div>
-    <div class="card chart"><h3>Leads por dia: pago e orgânico</h3>
-      <div class="tot">Total: ${fmtInt(soma("total"))} leads (${fmtInt(soma("pago"))} pago, ${fmtInt(soma("organico"))} orgânico)</div>
+      <div class="legenda"><span style="--c:${COR_PAGO}">Pago</span><span style="--c:${COR_ORG}">Orgânico</span><span style="--c:${COR_NT}">Não traqueado</span></div></div>
+    <div class="card chart"><h3>Leads por dia: pago, orgânico e não traqueado</h3>
+      <div class="tot">Total: ${fmtInt(soma("total"))} leads (${fmtInt(soma("pago"))} pago, ${fmtInt(soma("organico"))} orgânico, ${fmtInt(soma("nao_traqueado"))} não traqueado)</div>
       <svg id="o-dia"></svg></div>
     <details><summary>Ver cada dia em tabela</summary>
       <div class="card tbl-wrap" style="margin-top:12px"><table>
-        <thead><tr><th>Dia</th><th>Leads</th><th>Pago</th><th>Orgânico</th><th>% pago</th></tr></thead>
+        <thead><tr><th>Dia</th><th>Leads</th><th>Pago</th><th>Orgânico</th><th>Não traqueado</th><th>% pago</th></tr></thead>
         <tbody>${DD.slice().reverse().filter(d => d.total).map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtInt(d.total)}</td>
-          <td>${fmtInt(d.pago)}</td><td>${fmtInt(d.organico)}</td><td>${pctOu(pctDe(d.pago,d.total))}</td></tr>`).join("")}</tbody>
+          <td>${fmtInt(d.pago)}</td><td>${fmtInt(d.organico)}</td><td>${fmtInt(d.nao_traqueado||0)}</td><td>${pctOu(pctDe(d.pago,d.total))}</td></tr>`).join("")}</tbody>
       </table></div></details>
   </section>
 
   <section>
     <div class="sec-head"><div><h2>De onde veio cada lead</h2><p class="sub">Todos os canais no período, pelas UTMs do cadastro.</p></div></div>
-    ${tabelaSimples(P.canais, a.total, x => x.nome === "Meta Ads" ? COR_PAGO : COR_ORG, "Canal", "Nenhum lead na planilha nesse período.")}
+    ${tabelaSimples(P.canais, a.total, corCanal, "Canal", "Nenhum lead na planilha nesse período.")}
   </section>
 
   <section>
@@ -622,7 +628,8 @@ function desenharOrigem(){
 
   <footer>
     <div class="defs"><b>Tráfego pago:</b> cadastros com UTM de anúncio da Meta (utm_source ig, fb ou an, campanhas C2PRO).
-      <b>Orgânico:</b> todo o resto: link da bio do Instagram, disparos de WhatsApp, e-mail (RD Station) e quem chegou sem UTM.
+      <b>Orgânico:</b> cadastros com UTM dos canais próprios: link da bio do Instagram, disparos de WhatsApp e e-mail (RD Station).
+      <b>Não traqueado:</b> cadastros que chegaram sem UTM nenhuma (link sem parâmetro, acesso direto ou UTM perdida no caminho), então não dá pra saber de onde vieram.
       <b>Custo por lead pago (planilha):</b> investimento das campanhas "${esc(D.filtro)}" na Meta ÷ leads pagos contados na planilha.
       <b>Leads no gerenciador:</b> o que a Meta registrou, com a atribuição padrão (7 dias após o clique ou 1 dia após ver o anúncio).</div>
     <div style="margin-top:12px">Fonte: planilha de captura de UTM da página (${O.fonte === "planilha" ? "lida na atualização" : "resumo salvo da planilha"}).
@@ -634,8 +641,8 @@ function desenharOrigem(){
   </div>`;
 
   eventos();
-  graficoEmpilhado(document.getElementById("o-dia"), DD.map(d => ({x:d.data, y:d.total, p:d.pago, o:d.organico})),
-    p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Pago: ${fmtInt(p.p)} (${pctOu(pctDe(p.p,p.y))})<br>Orgânico: ${fmtInt(p.o)}`);
+  graficoEmpilhado(document.getElementById("o-dia"), DD.map(d => ({x:d.data, y:d.total, partes:[[d.pago,COR_PAGO],[d.organico,COR_ORG],[d.nao_traqueado||0,COR_NT]]})),
+    p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Pago: ${fmtInt(p.partes[0][0])} (${pctOu(pctDe(p.partes[0][0],p.y))})<br>Orgânico: ${fmtInt(p.partes[1][0])}<br>Não traqueado: ${fmtInt(p.partes[2][0])}`);
 }
 
 function graficoEmpilhado(svg, pts, tooltip){
@@ -643,9 +650,15 @@ function graficoEmpilhado(svg, pts, tooltip){
   const bw = Math.max(2, geo.pw - 2), y0 = geo.y(0);
   let g = "";
   pts.forEach((p,i) => {
-    const x0 = geo.x(i) - bw/2, yP = geo.y(p.p), yT = geo.y(p.y);
-    if (p.p) g += `<rect data-i="${i}" x="${x0}" y="${yP}" width="${bw}" height="${y0-yP}" fill="${COR_PAGO}"/>`;
-    if (p.o) g += `<rect data-i="${i}" x="${x0}" y="${yT}" width="${bw}" height="${Math.max(1, yP-yT-(p.p?2:0))}" rx="2" fill="${COR_ORG}"/>`;
+    const x0 = geo.x(i) - bw/2;
+    let acum = 0, primeiro = true;
+    p.partes.forEach(([n, cor]) => {
+      if (!n) return;
+      const yb = geo.y(acum), yt = geo.y(acum + n);
+      const h = Math.max(1, yb - yt - (primeiro ? 0 : 2));  // 2px de respiro entre as partes
+      g += `<rect data-i="${i}" x="${x0}" y="${yt}" width="${bw}" height="${h}" fill="${cor}"/>`;
+      acum += n; primeiro = false;
+    });
   });
   svg.insertAdjacentHTML("beforeend", g);
   const barras = [...svg.querySelectorAll("rect[data-i]")];

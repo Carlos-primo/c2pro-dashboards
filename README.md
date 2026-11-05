@@ -91,7 +91,7 @@ Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black"
 
 **Origem dos leads (pago x orgânico)**, com `origem_leads` no config (hoje: Vita Hair): aba que lê a planilha de captura
 de UTM da página e separa os leads em **tráfego pago** (UTM de anúncio da Meta: source ig/fb/an, campanhas C2PRO) e
-**orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station, sem UTM). Mostra pago x orgânico nos mesmos períodos da
+**orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station), além de **não traqueado** (cadastro sem UTM nenhuma). Mostra pago x orgânico nos mesmos períodos da
 aba Meta, dia a dia empilhado, os canais, os anúncios que trouxeram lead pago e o custo por lead pago real (investimento
 Meta ÷ leads pagos da planilha). Todo cadastro conta, como no gerenciador (inclusive os que chegaram com a UTM mas
 e-mail "null"); só os testes ficam de fora, e "pessoas diferentes" aparece à parte. O quadro "Gerenciador x planilha"
