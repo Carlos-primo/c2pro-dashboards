@@ -13,6 +13,9 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
   "filtros_extra": ["LOWTICKET"]  aceita tambem campanhas com esse trecho no nome (excecao a regra do VENDAS)
   "desde": "2026-09-18"           periodo a mais, do dia indicado ate ontem
   "hotmart": {"produtos": {"<id>": "<nome>"}}  vendas reais da Hotmart x compras do pixel (ver gerar_hotmart.py)
+  "excluir": ["BLACK"]            tira campanhas com esse trecho no nome, mesmo tendo VENDAS (Vita Hair: a Black
+                                  da Debora tem dashboard proprio)
+  "so_dados": true                dashboard so com numeros: sem alerta, sugestao nem textos explicativos
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional) e, com Hotmart,
 HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET.
@@ -60,8 +63,13 @@ def filtros():
     return [FILTRO] + [sem_acento(f) for f in CFG.get("filtros_extra", [])]
 
 
+def excluidos():
+    return [sem_acento(f) for f in CFG.get("excluir", [])]
+
+
 def eh_vendas(nome_campanha):
-    return any(f in sem_acento(nome_campanha) for f in filtros())
+    nome = sem_acento(nome_campanha)
+    return any(f in nome for f in filtros()) and not any(e in nome for e in excluidos())
 
 
 def temperatura(nome_campanha):
@@ -86,6 +94,7 @@ def insights(nivel, inicio, fim, campos, ids=None, **extra):
         filtro = []
     else:
         filtro = [{"field": "campaign.name", "operator": "CONTAIN", "value": FILTRO}]
+        filtro += [{"field": "campaign.name", "operator": "NOT_CONTAIN", "value": e} for e in excluidos()]
     if ids is not None:
         filtro.append({"field": "campaign.id", "operator": "IN", "value": ids})
     return api(
@@ -257,6 +266,8 @@ def gerar_cliente(slug):
         "moeda": conta.get("currency", "BRL"),
         "filtro": FILTRO,
         "filtros": filtros(),
+        "excluir": excluidos(),
+        "so_dados": bool(CFG.get("so_dados")),
         "hotmart": hotmart,
         "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],

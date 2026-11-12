@@ -98,6 +98,8 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:20p
 .alerta{margin-top:16px;display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:12px;border:1px solid var(--b-def);background:var(--s1);font-size:14px;color:var(--t-body)}
 .alerta svg{flex:none;width:16px;height:16px;margin-top:3px;color:var(--neg)}
 .alerta b{color:var(--t-strong)}
+/* so_dados: dashboard só com números, sem textos explicativos nem sugestões */
+.so-dados .sub,.so-dados .fn-nome .d,.so-dados .alerta,.so-dados footer{display:none}
 
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
 .chart{padding:20px 20px 12px;position:relative}
@@ -332,7 +334,7 @@ function forma(i){
 function funil(a, b){
   // Etapa com a maior queda de taxa em relação ao período anterior.
   let pior = null;
-  TAXAS.forEach((t, i) => {
+  if (!D.so_dados) TAXAS.forEach((t, i) => {
     if (a[t.k] == null || b[t.k] == null || !b[t.k]) return;
     const rel = (a[t.k] - b[t.k]) / b[t.k];
     if (rel < -0.1 && (!pior || rel < pior.rel)) pior = {i, rel};
@@ -350,7 +352,7 @@ function funil(a, b){
     const t = TAXAS[i];
     if (t) html += `<div class="fn-conn">
       <div class="chip${pior && pior.i === i ? " pior" : ""}">${ICO_DOWN}<span class="k">${t.nome}</span><b>${pctOu(a[t.k])}</b>${deltaPP(a[t.k], b[t.k])}</div>
-      <div class="nota">${t.formula}<br>antes: ${pctOu(b[t.k])}</div></div>`;
+      <div class="nota">${D.so_dados ? "" : `${t.formula}<br>`}antes: ${pctOu(b[t.k])}</div></div>`;
   });
   html += `<div class="fn-rodape">
       <div>Da visita à compra: <b>${pctOu(a.tx_total)}</b></div>
@@ -391,7 +393,7 @@ function desenhar(){
   const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
   const DD = (seg === "todos" ? D.diario : D.diario_segmentos[seg]).map(d => derivadas(d));
 
-  app.innerHTML = `<div class="wrap">
+  app.innerHTML = `<div class="wrap${D.so_dados ? " so-dados" : ""}">
   <header>
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Campanhas de vendas")}</div><h1>${esc(D.nome)}</h1></div></div>
@@ -415,7 +417,7 @@ function desenhar(){
       ${tile("Compras", fmtInt(a.compras), delta(a.compras,b.compras,"sobe"))}
       ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
       ${tile("Faturamento", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe"))}
-      ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), delta(a.roas,b.roas,"sobe"), "faturamento ÷ investimento")}
+      ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), delta(a.roas,b.roas,"sobe"), D.so_dados ? "" : "faturamento ÷ investimento")}
       ${tile("Ticket médio", moedaOu(a.ticket), delta(a.ticket,b.ticket,"sobe"))}
     </div>
   </section>
@@ -475,8 +477,8 @@ function desenhar(){
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    ${D.hotmart ? `<div style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
-    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    ${D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
+    <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
