@@ -1,0 +1,44 @@
+{
+  "nome": "BJJ Protech",
+  "subtitulo": "Tráfego pago: Meta e Google",
+  "conta_anuncio": "act_1439156336846241",
+  "criativos_gasto_minimo": 10,
+  "senha_obrigatoria": true,
+  "mes_atual": true,
+  "regua_roas": 6,
+  "paginas": [
+    {"nome": "Black", "contem": ["BLACK26"]},
+    {"nome": "Planos", "contem": ["PLANOS"]},
+    {"nome": "Remarketing", "contem": ["PLATAFORMA_RMK"]},
+    {"nome": "Instrucionais", "contem": ["INSTRUCIONAIS"]},
+    {"nome": "Catálogo", "contem": ["CATALOGO"]},
+    {"nome": "ERP", "contem": ["VENDAS_ERP"]}
+  ],
+  "distribuicao": true,
+  "frentes": [
+    {"nome": "Black: remarketing", "contem": ["BLACK26", "RMK"]},
+    {"nome": "Black: professor", "contem": ["BLACK26", "PROFESSOR"]},
+    {"nome": "Black: aluno", "contem": ["BLACK26"]},
+    {"nome": "Planos: professor", "contem": ["PROFESSOR_PLANOS"]},
+    {"nome": "Planos: aluno", "contem": ["ALUNO_PLANOS"]},
+    {"nome": "Remarketing da plataforma", "contem": ["PLATAFORMA_RMK"]},
+    {"nome": "Instrucionais (atletas)", "contem": ["INSTRUCIONAIS"]},
+    {"nome": "Catálogo", "contem": ["CATALOGO"]},
+    {"nome": "ERP", "contem": ["VENDAS_ERP"]}
+  ],
+  "destinos": [
+    {"nome": "Catálogo (página de cada curso)", "campanha": "CATALOGO"},
+    {"nome": "Site: página do curso", "campanha": "INSTRUCIONAIS"},
+    {"nome": "Landing pages (lp.bjjprotech.com)", "prefixo": "lp.bjjprotech.com"},
+    {"nome": "Site: página de planos", "prefixo": "bjjprotech.com/planos"},
+    {"nome": "Site: página do curso", "prefixo": "bjjprotech.com/instrucionais"},
+    {"nome": "ERP (erp.bjjprotech.com)", "prefixo": "erp.bjjprotech.com"},
+    {"nome": "Site: página inicial", "prefixo": "bjjprotech.com"}
+  ],
+  "atletas": {
+    "campanha": "INSTRUCIONAIS", "dias": 90, "repasse": 0.5,
+    "limpar": ["00_INSTAGRAM_F_Interesses_", "Interesses_Jiu_Jitsu_Compradores_Envolvidos_", "00_AUTO_F_Aberto_Adv_", "ADV_HOMENS_"]
+  },
+  "google": {"customer_id": "8756808672", "nome": "GADS - BJJ Protech", "acao_compra": "purchase"},
+  "faturamento_real": {"fonte": "Asaas"}
+}

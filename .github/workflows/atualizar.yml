@@ -123,6 +123,11 @@ jobs:
           HOTMART_ROCHA_MAZZO_CLIENT_ID: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_ID }}
           HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
           SENHA_VENDAS_ROCHA_MAZZO: ${{ secrets.SENHA_LEADS_ROCHA_MAZZO }}   # mesma senha do dashboard de leads
+          SENHA_VENDAS_BJJ_PROTECH: ${{ secrets.SENHA_VENDAS_BJJ_PROTECH }}  # criar o secret antes de publicar
+          GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}          # secao Google (config "google")
+          GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+          GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+          GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
           ALVO: ${{ steps.alvo.outputs.vendas }}
         run: if [ "$ALVO" = todos ]; then python gerar_vendas.py; else python gerar_vendas.py "$ALVO"; fi
 

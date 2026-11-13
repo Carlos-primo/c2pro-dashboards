@@ -125,6 +125,16 @@ td.dia{min-width:0;white-space:nowrap;font-family:var(--mono)}
 tr:last-child td{border-bottom:0}
 tbody tr:hover td{background:var(--s1)}
 td.hl{color:var(--acc-h)}
+td.pos{color:var(--pos)} td.neg{color:var(--neg)}
+/* Abas (Geral, tipos de campanha, Google, Distribuição): só aparecem com "paginas" no config */
+.abas{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:4px;margin:0 0 16px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.abas::-webkit-scrollbar{display:none}
+.abas button{all:unset;flex:none;cursor:pointer;white-space:nowrap;padding:9px 16px;border-radius:999px;font:600 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.abas button:hover{color:var(--t-strong)}
+.abas button[aria-selected="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.abas button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+iframe.dist{display:block;width:100%;min-height:60vh;border:0;background:transparent}
+tr.link{cursor:pointer} tr.link:hover td{color:var(--t-strong)}
 .badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);letter-spacing:.06em;border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px}
 .badge.on{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
 
@@ -198,6 +208,8 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:4
 (() => {
 const app = document.getElementById("app");
 const payload = JSON.parse(document.getElementById("payload").textContent);
+// Aba Distribuição: o template de distribuição vem como texto (sem dados) e os dados vêm do payload decifrado.
+const TEMPLATE_DIST = __TEMPLATE_DIST__;
 const CHAVE_SENHA = "c2pro-vendas-senha";
 
 // ---------- formatação pt-BR ----------
@@ -206,6 +218,7 @@ const fmtMoeda = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:M
 const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
 const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"%";
 const fmtX = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"x";
+const fmtConv = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v||0);
 const fmtCompacto = v => new Intl.NumberFormat("pt-BR",{notation:"compact",maximumFractionDigits:1}).format(v||0);
 const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
 const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
@@ -272,7 +285,12 @@ function render(dados){ D = dados; MOEDA = D.moeda || "BRL";
   if (D.periodos.desde) NOMES_PER.desde = `Desde ${dataBR(D.periodos.desde.inicio)}`;
   // Com o periodo "desde" (campanhas que pararam), quem nunca escolheu um periodo abre nele.
   if (D.periodos.desde && !PER_SALVO) PER = "desde";
-  if (!D.periodos[PER]) PER = "7"; desenhar(); }
+  // Com "Este mês" (mes_atual no config), quem nunca escolheu um período abre no mês.
+  if (D.periodos.mes && !PER_SALVO) PER = "mes";
+  if (!D.periodos[PER]) PER = "7";
+  ABA = decodeURIComponent(location.hash.slice(1)) || "geral";
+  window.addEventListener("hashchange", () => { const h = decodeURIComponent(location.hash.slice(1)) || "geral"; if (h !== ABA) { ABA = h; desenhar(); } });
+  desenhar(); }
 
 // Variação relativa (custos, volumes).
 function delta(atual, anterior, melhorQuando){
@@ -377,34 +395,78 @@ const ORDENS = {
 let ORDEM = "cpa";
 try { ORDEM = localStorage.getItem("c2pro-vendas-ordem") || "cpa"; if (!ORDENS[ORDEM]) ORDEM = "cpa"; } catch(_){}
 
-const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias"};
+const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias","mes":"Este mês"};
 
 const NOMES_SEG = {todos:"Todas as campanhas", quente:"Público quente", frio:"Público frio"};
 
+// ---------- abas (só com "paginas", "google" ou "distribuicao" no config) ----------
+let ABA = "geral";
+const slugAba = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+function abasDisponiveis(){
+  const l = [{k:"geral", nome:"Geral"}];
+  (D.paginas || []).forEach(n => {
+    // "Outras" só vira aba se alguma campanha caiu nela em algum período.
+    if (n !== "Outras" || Object.values(D.periodos).some(p => p.paginas && p.paginas[n].atual.gasto > 0))
+      l.push({k:slugAba(n), nome:n, pagina:n});
+  });
+  if (D.google) l.push({k:"google", nome:"Google Ads"});
+  if (D.distribuicao) l.push({k:"distribuicao", nome:"Distribuição"});
+  return l;
+}
+
 function desenhar(){
+  const ABAS = abasDisponiveis();
+  if (!ABAS.some(x => x.k === ABA)) ABA = "geral";
+  const aba = ABAS.find(x => x.k === ABA), pg = aba.pagina;
+  const geral = ABA === "geral", google = ABA === "google", dist = ABA === "distribuicao";
   const P0 = D.periodos[PER];
-  // Filtro quente/frio: só existe quando o gerador achou campanhas com Q (quente) ou ASP/F (frio) no nome.
-  const segs = Object.keys(P0.segmentos || {});
+  // Filtro quente/frio: só na aba Geral, e só quando o gerador achou campanhas com Q (quente) ou ASP/F (frio) no nome.
+  const segs = geral ? Object.keys(P0.segmentos || {}) : [];
   const seg = segs.includes(SEG) ? SEG : "todos";
-  const P = seg === "todos" ? P0 : {...P0, atual: P0.segmentos[seg].atual, anterior: P0.segmentos[seg].anterior,
-    campanhas: P0.campanhas.filter(c => c.temp === seg), anuncios: P0.anuncios.filter(x => x.temp === seg)};
+  const P = pg ? {...P0, atual: P0.paginas[pg].atual, anterior: P0.paginas[pg].anterior,
+      campanhas: P0.campanhas.filter(c => c.pagina === pg), anuncios: P0.anuncios.filter(x => x.pagina === pg),
+      conjuntos: (P0.conjuntos || []).filter(x => x.pagina === pg)}
+    : seg === "todos" ? P0 : {...P0, atual: P0.segmentos[seg].atual, anterior: P0.segmentos[seg].anterior,
+      campanhas: P0.campanhas.filter(c => c.temp === seg), anuncios: P0.anuncios.filter(x => x.temp === seg),
+      conjuntos: (P0.conjuntos || []).filter(x => x.temp === seg)};
   const a = derivadas(P.atual), b = derivadas(P.anterior);
   const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
   const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
-  const DD = (seg === "todos" ? D.diario : D.diario_segmentos[seg]).map(d => derivadas(d));
+  const DD = (pg ? D.diario_paginas[pg] : seg === "todos" ? D.diario : D.diario_segmentos[seg]).map(d => derivadas(d));
 
-  app.innerHTML = `<div class="wrap${D.so_dados ? " so-dados" : ""}">
-  <header>
+  const topo = `<header>
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Campanhas de vendas")}</div><h1>${esc(D.nome)}</h1></div></div>
-    <div class="pills" role="group" aria-label="Período">
+    ${dist ? "" : `<div class="pills" role="group" aria-label="Período">
       ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${NOMES_PER[k] || k+" dias"}</button>`).join("")}
-    </div>
+    </div>`}
   </header>
+  ${ABAS.length > 1 ? `<nav class="abas" role="tablist" aria-label="Tipo de campanha">
+      ${ABAS.map(x => `<button role="tab" data-a="${x.k}" aria-selected="${ABA===x.k}">${esc(x.nome)}</button>`).join("")}
+    </nav>` : ""}`;
+
+  if (dist || google) {
+    const GP = google ? D.google.periodos[PER] : null;
+    app.innerHTML = `<div class="wrap">${topo}
+    ${google ? `<div class="meta"><span>Período: ${faixa(GP.inicio || P0.inicio, GP.fim || P0.fim)}</span>
+      <span>Comparado com: ${faixa(P0.ant_inicio, P0.ant_fim)}</span><span>Atualizado em ${quando}</span></div>
+      ${secaoGoogle()}
+      <footer><div class="explica">Dados puxados direto da API do Google Ads, só campanhas com "${esc(D.filtro)}" no nome. O Google pode ajustar conversões dos últimos dias depois que elas acontecem. O dia de hoje não entra, os períodos terminam ontem.</div></footer>`
+    : `<iframe class="dist" id="dist" title="Campanhas de distribuição"></iframe>`}
+    </div>`;
+    ligarEventos();
+    if (dist) montarDistribuicao();
+    return;
+  }
+
+  const nomeAba = pg ? `campanhas de ${pg}` : "campanhas de vendas";
+  app.innerHTML = `<div class="wrap${D.so_dados ? " so-dados" : ""}">
+  ${topo}
   ${segs.length ? `<div class="pills" role="group" aria-label="Público" style="margin-bottom:12px">
       ${["todos", ...segs].map(k => `<button data-s="${k}" aria-pressed="${seg===k}">${NOMES_SEG[k]}</button>`).join("")}
     </div>` : ""}
   <div class="meta">
+    ${pg ? `<span>Só as ${esc(nomeAba)}</span>` : ""}
     ${seg !== "todos" ? `<span>Filtro: ${NOMES_SEG[seg].toLowerCase()} (${seg === "quente" ? "campanhas com Q no nome" : "campanhas com ASP ou F no nome"})</span>` : ""}
     <span>Período: ${faixa(P.inicio, P.fim)}</span>
     <span>Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}</span>
@@ -422,7 +484,12 @@ function desenhar(){
     </div>
   </section>
 
-  ${P0.hotmart ? hotmartSecao(P0.hotmart, a) : ""}
+  ${geral && P0.hotmart ? hotmartSecao(P0.hotmart, a) : ""}
+  ${geral && (D.google || D.faturamento_real) ? secaoPlataformas(P0) : ""}
+  ${geral && P0.paginas ? secaoTipos(P0) : ""}
+  ${P0.conjuntos && (geral || new Set(P.conjuntos.map(c => c.frente)).size > 1) ? secaoFrentes(P) : ""}
+  ${P0.anuncios.some(x => x.destino) && (geral || new Set(P.anuncios.map(x => x.destino)).size > 1) ? secaoDestinos(P) : ""}
+  ${geral && D.google && !D.paginas ? secaoGoogle() : ""}
 
   <section>
     <div class="sec-head"><div><h2>Funil de vendas</h2><p class="sub">Do anúncio até a compra: quantas pessoas passam em cada etapa e quanto custa cada uma.</p></div></div>
@@ -430,11 +497,11 @@ function desenhar(){
   </section>
 
   <section>
-    <div class="sec-head"><div><h2>Entrega</h2><p class="sub">Verba e alcance das campanhas de vendas.</p></div></div>
+    <div class="sec-head"><div><h2>Entrega</h2><p class="sub">Verba e alcance das ${esc(nomeAba)}.</p></div></div>
     <div class="tiles">
-      ${tile("Alcance", fmtInt(a.alcance), delta(a.alcance,b.alcance,"sobe"))}
+      ${pg ? "" : tile("Alcance", fmtInt(a.alcance), delta(a.alcance,b.alcance,"sobe"))}
       ${tile("Impressões", fmtInt(a.impressoes), delta(a.impressoes,b.impressoes,"sobe"))}
-      ${tile("Frequência", a.freq==null?"-":fmtX(a.freq).replace("x",""), delta(a.freq,b.freq,null))}
+      ${pg ? "" : tile("Frequência", a.freq==null?"-":fmtX(a.freq).replace("x",""), delta(a.freq,b.freq,null))}
       ${tile("CPM", moedaOu(a.cpm), delta(a.cpm,b.cpm,"desce"))}
       ${tile("CPC", moedaOu(a.cpc), delta(a.cpc,b.cpc,"desce"))}
     </div>
@@ -458,9 +525,11 @@ function desenhar(){
   </section>
 
   <section>
-    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">Campanhas de vendas com investimento no período.</p></div></div>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">${pg ? `Campanhas de ${esc(pg)}` : "Campanhas de vendas"} com investimento no período.</p></div></div>
     ${tabelaCampanhas(P.campanhas)}
   </section>
+
+  ${D.atletas && (pg ? abaDosAtletas(pg) : !D.paginas) ? secaoAtletas() : ""}
 
   <section>
     <div class="sec-head">
@@ -478,13 +547,29 @@ function desenhar(){
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
     ${D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
+    ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação). Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
     <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
+  ligarEventos();
+  graficoBarras(document.getElementById("c-compras"), DD.map(d => ({x:d.data, y:d.compras, g:d.gasto})),
+    p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
+  graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
+    p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+}
+
+function irPara(k){
+  ABA = k; history.replaceState(null, "", k === "geral" ? location.pathname + location.search : "#" + encodeURIComponent(k));
+  desenhar(); window.scrollTo(0, 0);
+}
+
+function ligarEventos(){
+  app.querySelectorAll("[data-a]").forEach(bt => bt.addEventListener("click", () => irPara(bt.dataset.a)));
+  app.querySelectorAll("tr[data-ir]").forEach(tr => tr.addEventListener("click", () => irPara(tr.dataset.ir)));
   app.querySelectorAll("[data-p]").forEach(bt => bt.addEventListener("click", () => {
     PER = bt.dataset.p; try { localStorage.setItem("c2pro-vendas-periodo", PER); } catch(_){}
-    desenhar();
+    const y = window.scrollY; desenhar(); window.scrollTo(0, y);
   }));
   app.querySelectorAll("[data-s]").forEach(bt => bt.addEventListener("click", () => {
     SEG = bt.dataset.s; try { localStorage.setItem("c2pro-vendas-publico", SEG); } catch(_){}
@@ -494,10 +579,45 @@ function desenhar(){
     ORDEM = bt.dataset.o; try { localStorage.setItem("c2pro-vendas-ordem", ORDEM); } catch(_){}
     const y = window.scrollY; desenhar(); window.scrollTo(0, y);
   }));
-  graficoBarras(document.getElementById("c-compras"), DD.map(d => ({x:d.data, y:d.compras, g:d.gasto})),
-    p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
-  graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
-    p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+}
+
+// Aba Distribuição: o dashboard aprovado de distribuição, montado num iframe com os dados do payload.
+// A altura do iframe acompanha o conteúdo: a rolagem fica só na página de fora.
+function montarDistribuicao(){
+  const f = document.getElementById("dist");
+  if (!f || !TEMPLATE_DIST) return;
+  const dados = JSON.stringify({enc:false, dados:D.distribuicao}).replace(/<\//g, "<\\/");
+  f.addEventListener("load", () => {
+    const d = f.contentDocument;
+    const ajustar = () => { if (d.body) f.style.height = Math.ceil(d.body.getBoundingClientRect().height) + "px"; };
+    new ResizeObserver(ajustar).observe(d.body); ajustar();
+  }, {once:true});
+  // Marcador escrito em duas partes: o gerador troca o marcador literal deste arquivo pelos dados de vendas.
+  f.srcdoc = TEMPLATE_DIST.split("__PAY" + "LOAD__").join(dados);
+}
+
+// Aba dos instrucionais: a que tem a campanha dos atletas no nome ("atletas.campanha" no config).
+function abaDosAtletas(pg){
+  const sem = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  return sem(pg).includes(sem(D.atletas.campanha)) || D.periodos[PER].campanhas.some(c => c.pagina === pg && sem(c.nome).includes(sem(D.atletas.campanha)));
+}
+
+// Geral: uma linha por aba de tipo de campanha, clicável.
+function secaoTipos(P0){
+  const L = D.paginas.map(n => ({nome:n, ...P0.paginas[n].atual})).filter(x => x.gasto > 0 || x.compras > 0);
+  const tg = L.reduce((s,x) => s + x.gasto, 0), tf = L.reduce((s,x) => s + x.faturamento, 0);
+  return `<section>
+    <div class="sec-head"><div><h2>Resultado por tipo de campanha</h2>
+      <p class="sub">Toque numa linha para abrir a página daquele tipo.${notaRegua()}</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Tipo</th><th>Investimento</th><th>% da verba</th><th>Compras</th><th>Custo por compra</th>
+        <th>Faturamento</th><th>% do faturamento</th><th>ROAS</th></tr></thead>
+      <tbody>${L.map(x => { const m = derivadas(x);
+        return `<tr class="link" data-ir="${slugAba(x.nome)}"><td>${esc(x.nome)} ›</td><td>${fmtMoeda(m.gasto)}</td><td>${pctOu(div(m.gasto*100,tg))}</td>
+          <td>${fmtInt(m.compras)}</td><td>${moedaOu(m.cpa)}</td><td>${fmtMoeda(m.faturamento)}</td>
+          <td>${pctOu(div(m.faturamento*100,tf))}</td><td class="${roasCls(m.roas)}">${fmtRoas(m.roas)}</td></tr>`; }).join("")}</tbody>
+    </table></div>
+  </section>`;
 }
 
 // Vendas reais na Hotmart x compras que o pixel registrou, no período escolhido.
@@ -525,8 +645,120 @@ function hotmartSecao(h, a){
   </section>`;
 }
 
+// ---------- visão completa de tráfego (só aparece com os campos opcionais no config) ----------
+const SOMA = ["gasto","impressoes","cliques","visitas","checkouts","compras","faturamento"];
+function somaGrupos(lista, campo){
+  const g = {};
+  lista.forEach(x => { const k = x[campo] || "Outras";
+    const y = g[k] || (g[k] = {nome:k, ...Object.fromEntries(SOMA.map(c => [c,0]))});
+    SOMA.forEach(c => y[c] += x[c] || 0); });
+  return Object.values(g).sort((x,y) => y.gasto - x.gasto);
+}
+const fmtRoas = r => r == null ? "-" : fmtX(r);
+const roasCls = r => D.regua_roas && r != null ? (r >= D.regua_roas ? "pos" : "neg") : "";
+const notaRegua = () => D.regua_roas ? ` ROAS em verde está na régua combinada (${fmtConv(D.regua_roas)} ou mais), em vermelho está abaixo.` : "";
+
+function secaoPlataformas(P0){
+  const m = derivadas(P0.atual);
+  const G = D.google ? D.google.periodos[PER].atual : null;
+  const gf = G ? G.faturamento : 0, gg = G ? G.gasto : 0;
+  const roas = div(m.faturamento + gf, m.gasto + gg);
+  const r = D.regua_roas;
+  const real = D.faturamento_real;
+  return `<section>
+    <div class="sec-head"><div><h2>Faturamento real x plataformas</h2>
+      <p class="sub">O que cada plataforma diz que vendeu, separado, ao lado do que entrou de verdade.</p></div></div>
+    <div class="tiles">
+      ${tile("Meta (pixel)", fmtMoeda(m.faturamento), "", `investido ${fmtMoeda(m.gasto)}, ROAS ${fmtRoas(m.roas)}`)}
+      ${D.google ? tile("Google Ads", fmtMoeda(gf), "", gg ? `investido ${fmtMoeda(gg)}, ROAS ${fmtRoas(div(gf,gg))}` : `nenhuma campanha com "${esc(D.filtro)}" no nome`) : ""}
+      ${D.google ? tile("Soma das plataformas", fmtMoeda(m.faturamento + gf), "", "a mesma venda pode contar nas duas") : ""}
+      ${tile(r ? "ROAS Meta + Google" : "ROAS", fmtRoas(roas), "", r ? (roas == null ? `régua: ${fmtConv(r)}` : roas >= r ? `na régua (${fmtConv(r)} ou mais)` : `abaixo da régua de ${fmtConv(r)}`) : "faturamento ÷ investimento")}
+      ${real ? tile(`Faturamento real (${esc(real.fonte)})`, real.valor == null ? "Aguardando" : fmtMoeda(real.valor), "", real.valor == null ? `falta o acesso ao ${esc(real.fonte)}` : `ROAS real ${fmtRoas(div(real.valor, m.gasto + gg))}`, true) : ""}
+    </div>
+  </section>`;
+}
+
+function tabelaGrupos(L, rotulo, extraCol){
+  const tg = L.reduce((s,x) => s + x.gasto, 0), tf = L.reduce((s,x) => s + x.faturamento, 0);
+  return `<div class="card tbl-wrap"><table>
+    <thead><tr><th>${rotulo}</th><th>Investimento</th><th>% da verba</th><th>Compras</th><th>Custo por compra</th>
+      <th>Faturamento</th><th>% do faturamento</th><th>ROAS</th></tr></thead>
+    <tbody>${L.map(f => { const m = derivadas(f);
+      return `<tr><td>${esc(f.nome)}</td><td>${fmtMoeda(m.gasto)}</td><td>${pctOu(div(m.gasto*100,tg))}</td>
+        <td>${fmtInt(m.compras)}</td><td>${moedaOu(m.cpa)}</td><td>${fmtMoeda(m.faturamento)}</td>
+        <td>${pctOu(div(m.faturamento*100,tf))}</td><td class="${roasCls(m.roas)}">${fmtRoas(m.roas)}</td></tr>`; }).join("")}</tbody>
+  </table></div>`;
+}
+
+function secaoFrentes(P){
+  const L = somaGrupos(P.conjuntos, "frente");
+  return `<section>
+    <div class="sec-head"><div><h2>Resultado por frente</h2>
+      <p class="sub">Cada frente de venda separada pelo nome da campanha e do conjunto.${notaRegua()}</p></div></div>
+    ${L.length ? tabelaGrupos(L, "Frente") : `<div class="card empty">Nenhuma campanha com investimento no período.</div>`}
+  </section>`;
+}
+
+function secaoDestinos(P){
+  const L = somaGrupos(P.anuncios, "destino");
+  return `<section>
+    <div class="sec-head"><div><h2>Qual página vende mais</h2>
+      <p class="sub">Vendas do pixel separadas pela página para onde o anúncio leva.</p></div></div>
+    ${L.length ? tabelaGrupos(L, "Página de destino") : `<div class="card empty">Nenhuma campanha com investimento no período.</div>`}
+    <div class="explica" style="margin-top:12px">A compra conta para a página do anúncio que trouxe a pessoa, mesmo que ela tenha pago em outra página depois. Aqui a conta é por anúncio, e a Meta às vezes credita a mesma compra a um anúncio de outra campanha: o total bate, mas a divisão pode diferir um pouco da tabela de frentes. Se cada página recebe uma oferta diferente (ex.: a Black na landing page e o perpétuo no site), a comparação mistura página e oferta.</div>
+  </section>`;
+}
+
+function secaoGoogle(){
+  const G = D.google, P = G.periodos[PER], a = P.atual, b = P.anterior;
+  const conta = G.conta.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+  const roas = x => div(x.faturamento, x.gasto), cpa = x => div(x.gasto, x.compras);
+  const head = `<div class="sec-head"><div><h2>Google Ads</h2>
+    <p class="sub">Separado da Meta e nunca somado a ela. Conta ${esc(G.nome)} (${conta}), só campanhas com "${esc(D.filtro)}" no nome. Compras e faturamento contam só a conversão de compra.</p></div></div>`;
+  if (!P.campanhas.length) return `<section>${head}<div class="card empty">Nenhuma campanha com "${esc(D.filtro)}" no nome rodou no Google nesse período.</div></section>`;
+  return `<section>${head}
+    <div class="tiles">
+      ${tile("Custo por compra", moedaOu(cpa(a)), delta(cpa(a), cpa(b), "desce"), `${fmtConv(a.compras)} compras`, true)}
+      ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto, b.gasto, null))}
+      ${tile("Faturamento", fmtMoeda(a.faturamento), delta(a.faturamento, b.faturamento, "sobe"))}
+      ${tile("ROAS", fmtRoas(roas(a)), delta(roas(a), roas(b), "sobe"))}
+      ${tile("Cliques", fmtInt(a.cliques), delta(a.cliques, b.cliques, "sobe"), `CPC ${moedaOu(div(a.gasto, a.cliques))}`)}
+    </div>
+    <div class="card tbl-wrap" style="margin-top:16px"><table>
+      <thead><tr><th>Campanha</th><th>Tipo</th><th>Investimento</th><th>Cliques</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th></tr></thead>
+      <tbody>${P.campanhas.map(c => `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${esc(c.tipo)}</td><td>${fmtMoeda(c.gasto)}</td>
+        <td>${fmtInt(c.cliques)}</td><td>${fmtConv(c.compras)}</td><td class="hl">${moedaOu(cpa(c))}</td><td>${fmtMoeda(c.faturamento)}</td>
+        <td class="${roasCls(roas(c))}">${fmtRoas(roas(c))}</td></tr>`).join("")}</tbody></table></div>
+    ${P.destinos.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Página de destino no Google</h2></div></div>
+      <div class="card tbl-wrap"><table><thead><tr><th>Página</th><th>Investimento</th><th>Faturamento</th><th>ROAS</th></tr></thead>
+      <tbody>${P.destinos.map(d => `<tr><td>${esc(d.nome)}</td><td>${fmtMoeda(d.gasto)}</td><td>${fmtMoeda(d.faturamento)}</td><td>${fmtRoas(roas(d))}</td></tr>`).join("")}</tbody></table></div>` : ""}
+    ${P.termos.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Pesquisas que converteram</h2>
+      <p class="sub">O que a pessoa digitou antes de converter. Busca pelo nome da marca é quem já conhece ${esc(D.nome)}.</p></div></div>
+      <div class="card tbl-wrap"><table><thead><tr><th>Pesquisa</th><th>Cliques</th><th>Investimento</th><th>Conversões</th></tr></thead>
+      <tbody>${P.termos.map(t => `<tr><td>${esc(t.t)}</td><td>${fmtInt(t.cli)}</td><td>${fmtMoeda(t.custo)}</td><td>${fmtConv(t.conv)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+  </section>`;
+}
+
+function secaoAtletas(){
+  const A = D.atletas;
+  if (!A.lista.length) return "";
+  const rep = Math.round(A.repasse * 100);
+  return `<section>
+    <div class="sec-head"><div><h2>Instrucionais por atleta</h2>
+      <p class="sub">Últimos ${A.dias} dias (${dataBR(A.inicio)} a ${dataBR(A.fim)}), fixo, porque cada atleta roda poucas semanas. Do que mais sobra para o que menos sobra.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Atleta e curso</th><th>Investimento</th><th>Compras</th><th>Faturamento</th><th>ROAS</th><th>Sobra depois do repasse</th></tr></thead>
+      <tbody>${A.lista.map(x => `<tr><td>${esc(x.atleta)}${x.rodando ? `<span class="badge on">rodando</span>` : ""}</td>
+        <td>${fmtMoeda(x.gasto)}</td><td>${fmtInt(x.compras)}</td><td>${fmtMoeda(x.faturamento)}</td>
+        <td>${fmtRoas(div(x.faturamento, x.gasto))}</td><td class="${x.sobra >= 0 ? "pos" : "neg"}">${fmtMoeda(x.sobra)}</td></tr>`).join("")}</tbody>
+    </table></div>
+    <div class="explica" style="margin-top:12px"><b>Sobra depois do repasse:</b> faturamento × ${100 - rep}% (a parte da plataforma, tirando ${rep}% de coprodução) menos o investimento. Positivo: o curso do atleta se paga no anúncio. É estimativa: não desconta imposto nem taxa de pagamento.</div>
+  </section>`;
+}
+
 function statusBadge(s){
   if (!s) return "";
+  if (s === "ENABLED") s = "ACTIVE"; // Google Ads
   const map = {ACTIVE:"ativa",PAUSED:"pausada",CAMPAIGN_PAUSED:"campanha pausada",ADSET_PAUSED:"conjunto pausado",ARCHIVED:"arquivada",DELETED:"excluída",WITH_ISSUES:"com problema",IN_PROCESS:"em análise",PENDING_REVIEW:"em revisão",DISAPPROVED:"reprovada"};
   return `<span class="badge${s==="ACTIVE"?" on":""}">${esc(map[s]||s.toLowerCase())}</span>`;
 }

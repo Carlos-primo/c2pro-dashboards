@@ -58,6 +58,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 | Ordus System | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
 | Vita Hair | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
 | Rocha Mazzo Advogados (Raio-X da MP 1.376) | https://carlos-primo.github.io/c2pro-dashboards/vendas/rocha-mazzo/ |
+| BJJ Protech (tráfego completo: abas por tipo, Google e distribuição; com senha) | https://carlos-primo.github.io/c2pro-dashboards/vendas/bjj-protech/ |
 
 - **Resumo:** custo por compra, compras, investimento, faturamento, ROAS e ticket médio
 - **Funil visual:** impressões (CPM) > cliques no link (CTR, CPC) > visitas à página (connect rate, custo por visita) > checkouts (página para checkout, custo por checkout) > compras (checkout para compra, custo por compra), com variação em pontos percentuais e alerta na etapa que mais caiu
@@ -71,6 +72,13 @@ Exceções por cliente no `config.json`, só com pedido do Carlos (hoje só a Ro
 trecho no nome além de VENDAS, ex. `LOWTICKET`), `desde` (período a mais, de uma data até ontem) e `hotmart` (vendas
 reais da Hotmart comparadas com as compras do pixel, com custo por venda e ROAS reais; credencial nos secrets
 `HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET`).
+
+**Visão completa de tráfego** (BJJ Protech, só com pedido do Carlos): `mes_atual` (período "Este mês"), `frentes`
+(resultado por frente, pelo nome da campanha e do conjunto), `destinos` (qual página vende mais: LP x site), `atletas`
+(cursos de coprodução por atleta, 90 dias, com a sobra depois do repasse), `google` (seção Google Ads separada, só
+campanhas com VENDAS), `regua_roas`, `faturamento_real`, `paginas` (abas Geral + uma por tipo de campanha, mais a
+aba Google) e `distribuicao` (aba com o dashboard de distribuição da mesma conta, na mesma senha). Detalhes no topo do `gerar_vendas.py` e na skill
+`c2pro-dashboard-vendas`. Com Google, o workflow precisa das variáveis `GOOGLE_ADS_*` no passo de vendas.
 
 ## Dashboards da Black Friday
 
