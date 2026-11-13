@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Funis C2Pro</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --bg-deep:#030507; --solid:#0A0E14;
+  --s1:rgba(255,255,255,.028); --s2:rgba(255,255,255,.048);
+  --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
+  --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
+  --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
+  --pos:#23D18B; --neg:#FF4D5E;
+  --grid:rgba(255,255,255,.07);
+  --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
+  --glow:0 0 24px -4px rgba(0,216,245,.5),0 0 60px -12px rgba(0,216,245,.3);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 85% -10%,rgba(0,74,173,.22),transparent 60%),
+             radial-gradient(700px 400px at 0% 0%,rgba(0,216,245,.07),transparent 60%),var(--bg);
+  background-attachment:fixed;
+  color:var(--t-body);font:400 15px/1.55 Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 16px 64px}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+h1{margin:10px 0 6px;font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.035em;line-height:1.1;
+  background:linear-gradient(180deg,#F2F6FA,#9AA6B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 4px;font-weight:700;font-size:20px;letter-spacing:-.022em;color:var(--t-strong)}
+.sub{color:var(--t-muted);font-size:14px;margin:0}
+section{margin-top:40px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.brand{display:flex;gap:16px;align-items:center}
+.brand img{width:52px;height:52px;object-fit:contain}
+.pills{display:inline-flex;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px;border:1px solid var(--b-def);border-radius:999px;background:var(--s1)}
+.pills button{all:unset;cursor:pointer;white-space:nowrap;flex:none;padding:8px 16px;border-radius:999px;font:500 13px/1 Inter,sans-serif;color:var(--t-muted);transition:.15s}
+.pills button:hover{color:var(--t-strong)}
+.pills button[aria-pressed="true"]{background:var(--acc);color:var(--on-acc);box-shadow:0 0 12px -2px rgba(0,216,245,.45)}
+.pills button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.meta{margin-top:14px;display:flex;gap:8px 20px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-faint)}
+
+.card{background:var(--card);border:1px solid var(--b-sub);border-radius:18px;box-shadow:var(--elev)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.tile{padding:20px;container-type:inline-size;min-width:0}
+.tile.hero{border-color:var(--b-acc);box-shadow:var(--elev),var(--glow)}
+.tile .lbl{font-size:13px;color:var(--t-muted);margin-bottom:10px}
+.tile .val{font:600 clamp(14px,calc(100cqi / (var(--n,8) * .62)),24px)/1.1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em;white-space:nowrap}
+.tile.hero .val{color:var(--acc-h)}
+.tile .extra{margin-top:8px;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.delta{display:inline-block;margin-top:10px;font:500 12px/1 var(--mono);color:var(--t-faint)}
+.delta.pos{color:var(--pos)} .delta.neg{color:var(--neg)}
+.delta span{color:var(--t-faint);font-weight:400}
+
+/* ---------- funil ---------- */
+.funil{padding:28px 24px 24px}
+.fn-cols{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:0 24px;margin-bottom:10px;
+  font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--t-faint)}
+.fn-cols div:last-child{text-align:right}
+.fn-row{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;grid-template-areas:"nome forma custo";gap:0 24px;align-items:center}
+.fn-nome{grid-area:nome}
+.fn-nome .n{color:var(--t-strong);font-weight:600;font-size:15px;line-height:1.3}
+.fn-nome .d{color:var(--t-faint);font-size:12px;line-height:1.4;margin-top:2px}
+.fn-forma{grid-area:forma;position:relative;height:72px}
+.fn-forma svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fn-forma .q{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.fn-forma .q b{font:600 24px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);letter-spacing:-.02em}
+.fn-forma .q span{font:400 11px/1.2 var(--mono);color:var(--t-muted)}
+.fn-row.fim .fn-forma .q b{color:var(--acc-h);text-shadow:0 0 18px rgba(0,216,245,.45)}
+.fn-custo{grid-area:custo;text-align:right}
+.fn-custo .l{font-size:12px;color:var(--t-muted)}
+.fn-custo .v{font:600 18px/1.2 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong);margin-top:2px}
+.fn-row.fim .fn-custo .v{color:var(--acc-h)}
+.fn-custo .delta{margin-top:4px}
+.fn-conn{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:0 24px;align-items:center;min-height:52px}
+.fn-conn .chip{grid-column:2;justify-self:center;display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+  padding:6px 14px;border-radius:999px;border:1px solid var(--b-def);background:var(--solid);font:400 12px/1.3 var(--mono);color:var(--t-muted)}
+.fn-conn .chip b{color:var(--t-strong);font-weight:600;font-size:14px}
+.fn-conn .chip .k{font-family:Inter,sans-serif;font-weight:500;color:var(--t-body)}
+.fn-conn .chip .delta{margin:0}
+.fn-conn .chip svg{width:14px;height:14px;color:var(--acc)}
+.fn-conn .chip.pior{border-color:rgba(255,77,94,.45)}
+.fn-conn .nota{grid-column:3;text-align:right;font:400 11px/1.4 var(--mono);color:var(--t-faint)}
+.fn-rodape{margin-top:24px;padding-top:18px;border-top:1px solid var(--b-sub);display:flex;flex-wrap:wrap;gap:12px 32px;font:400 12px/1.5 var(--mono);color:var(--t-muted)}
+.fn-rodape b{color:var(--t-strong);font-weight:600}
+.alerta{margin-top:16px;display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:12px;border:1px solid var(--b-def);background:var(--s1);font-size:14px;color:var(--t-body)}
+.alerta svg{flex:none;width:16px;height:16px;margin-top:3px;color:var(--neg)}
+.alerta b{color:var(--t-strong)}
+/* so_dados: dashboard só com números, sem textos explicativos nem sugestões */
+.so-dados .sub,.so-dados .fn-nome .d,.so-dados .alerta,.so-dados footer{display:none}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.chart{padding:20px 20px 12px;position:relative}
+.chart h3{margin:0;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+.chart .tot{font:400 12px/1.4 var(--mono);color:var(--t-muted);margin:4px 0 12px}
+.chart svg{display:block;width:100%;height:200px;overflow:visible}
+.axis{font:400 10px var(--mono);fill:var(--t-faint)}
+.tip{position:absolute;pointer-events:none;background:var(--solid);border:1px solid var(--b-def);border-radius:10px;
+  padding:8px 10px;font:400 12px/1.45 var(--mono);color:var(--t-body);white-space:nowrap;box-shadow:0 4px 16px -4px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .1s;z-index:5}
+.tip b{color:var(--t-strong);font-weight:600}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--t-muted);font-size:13px}
+summary:hover{color:var(--acc-h)}
+
+.tbl-wrap{overflow-x:auto;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-faint);text-align:right;padding:14px 10px;border-bottom:1px solid var(--b-def);white-space:nowrap}
+td{padding:12px 10px;border-bottom:1px solid var(--b-sub);text-align:right;white-space:nowrap;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--t-body)}
+th:first-child,td:first-child{text-align:left}
+td:first-child{font-family:Inter,sans-serif;color:var(--t-strong);white-space:normal;min-width:200px;padding-left:16px}
+td.dia{min-width:0;white-space:nowrap;font-family:var(--mono)}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--s1)}
+td.hl{color:var(--acc-h)}
+.badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font:500 10px/1.6 var(--mono);letter-spacing:.06em;border:1px solid var(--b-def);color:var(--t-muted);vertical-align:1px}
+.badge.on{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+
+.ads{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.ad{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:16px;align-items:start}
+.ad .thumb{position:relative;display:block;width:96px;height:128px;border-radius:12px;overflow:hidden;background:var(--s2);border:1px solid var(--b-sub)}
+.ad .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ad .rank{position:absolute;top:6px;left:6px;min-width:24px;padding:2px 6px;border-radius:999px;background:rgba(5,7,10,.8);
+  border:1px solid var(--b-def);font:600 11px/1.4 var(--mono);color:var(--t-strong);text-align:center}
+.ad .nm{color:var(--t-strong);font-weight:600;font-size:14px;line-height:1.3;word-break:break-word}
+.ad .cp{color:var(--t-faint);font-size:12px;margin:2px 0 10px;word-break:break-word}
+.ad .kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font:400 12px/1.35 var(--mono);color:var(--t-muted)}
+.ad .kpis b{display:block;color:var(--t-strong);font-weight:500;font-size:13px}
+.ad .kpis .sel b{color:var(--acc-h)}
+.mini{grid-column:1/-1;margin-top:6px}
+.mini-bar{display:flex;gap:3px;height:6px;margin-top:6px}
+.mini-bar i{flex:1;border-radius:3px;background:var(--s2);position:relative;overflow:hidden}
+.mini-bar i::after{content:"";position:absolute;inset:0;width:var(--w);background:var(--acc);border-radius:3px}
+.mini-lbl{display:flex;justify-content:space-between;gap:3px;font:400 10px/1.3 var(--mono);color:var(--t-faint);margin-top:4px}
+.mini-lbl span{flex:1;text-align:center}
+.ad .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lnk{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--b-def);
+  color:var(--t-body);font:500 12px/1.2 Inter,sans-serif;text-decoration:none;transition:.15s}
+.lnk:hover{border-color:var(--b-acc);color:var(--acc-h);background:var(--acc-soft)}
+.lnk svg{width:14px;height:14px}
+.lnk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.empty{padding:24px;color:var(--t-muted);font-size:14px}
+
+/* ---------- Hotmart ---------- */
+.origens{padding:8px 20px}
+.origem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--b-sub)}
+.origem:last-child{border-bottom:0}
+.origem .nm{color:var(--t-strong);font-weight:500;font-size:14px;word-break:break-word}
+.origem .q{font:600 16px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong)}
+.origem .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--s2);overflow:hidden}
+.origem .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
+.defs b{color:var(--t-muted);font-weight:500}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:400 12px/1.6 var(--mono);color:var(--t-faint)}
+
+.lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+.lock form{width:100%;max-width:380px;padding:32px;text-align:center}
+.lock img{width:64px;margin-bottom:16px}
+.lock input[type=password]{width:100%;margin:20px 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--b-def);
+  background:rgba(0,0,0,.35);color:var(--t-strong);font:400 15px Inter,sans-serif}
+.lock input:focus{outline:2px solid var(--acc);outline-offset:1px;border-color:transparent}
+.lock .row{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--t-muted);margin-bottom:16px}
+.btn{all:unset;cursor:pointer;display:block;width:100%;padding:12px 0;border-radius:12px;background:var(--acc);color:var(--on-acc);
+  font:600 15px Inter,sans-serif;box-shadow:0 0 12px -2px rgba(0,216,245,.45);transition:.15s;text-align:center}
+.btn:hover{background:var(--acc-h);transform:translateY(-2px);box-shadow:var(--glow)}
+.btn:active{transform:scale(.975)}
+.err{color:var(--neg);font-size:13px;min-height:20px;margin-top:12px}
+
+@media (max-width:760px){
+  .funil{padding:20px 16px}
+  .fn-cols{display:none}
+  .fn-row{grid-template-columns:1fr auto;grid-template-areas:"forma forma" "nome custo";gap:10px 12px}
+  .fn-forma{height:64px}
+  .fn-conn{grid-template-columns:1fr;min-height:0;padding:14px 0}
+  .fn-conn .chip{grid-column:1}
+  .fn-conn .nota{grid-column:1;text-align:center;margin-top:6px}
+}
+/* ---------- abas por funil ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:28px;padding-bottom:2px;border-bottom:1px solid var(--b-sub)}
+.tabs button{all:unset;cursor:pointer;padding:12px 18px;font:600 14px/1 Inter,sans-serif;color:var(--t-muted);border-bottom:2px solid transparent;margin-bottom:-3px;transition:.15s}
+.tabs button:hover{color:var(--t-strong)}
+.tabs button[aria-pressed="true"]{color:var(--acc-h);border-bottom-color:var(--acc)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+.tabs .g{font:400 11px/1 var(--mono);color:var(--t-faint);margin-left:6px}
+.filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:20px}
+.filtros .rot{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--t-faint)}
+.desc{margin-top:14px;color:var(--t-muted);font-size:14px}
+.pills.sm button{padding:6px 12px;font-size:12px}
+select{background:var(--solid);color:var(--t-body);border:1px solid var(--b-def);border-radius:999px;padding:7px 12px;font:500 12px Inter,sans-serif}
+td .url{font-family:var(--mono);font-size:12px;word-break:break-all;color:var(--t-strong)}
+td .st{display:block;font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-top:2px}
+.leg{display:flex;gap:16px;font:400 11px/1 var(--mono);color:var(--t-muted);margin-bottom:8px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ad .pg{font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-top:8px;word-break:break-all}
+@media (max-width:760px){ .tabs button{padding:10px 12px;font-size:13px} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="tip" id="tip"></div>
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(() => {
+const app = document.getElementById("app");
+const tip = document.getElementById("tip");
+const payload = JSON.parse(document.getElementById("payload").textContent);
+const CHAVE_SENHA = "c2pro-funis-senha";
+const mem = { get(k){ try { return localStorage.getItem(k); } catch(_) { return null; } },
+              set(k,v){ try { localStorage.setItem(k,v); } catch(_){} } };
+
+// ---------- formatação pt-BR ----------
+let MOEDA = "BRL";
+const fmtMoeda = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:MOEDA}).format(v||0);
+const fmtInt = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(v||0);
+const fmtPct = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1}).format(v||0)+"%";
+const fmtX = v => new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v||0)+"x";
+const dataBR = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}`; };
+const dataBRano = iso => { const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const div = (a,b) => b ? a/b : null;
+const moedaOu = v => v == null ? "-" : fmtMoeda(v);
+const pctOu = v => v == null ? "-" : fmtPct(v);
+const xOu = v => v == null ? "-" : fmtX(v);
+
+// Tipo de resultado de cada campanha (o evento que os conjuntos otimizam).
+const RES = {
+  compras:   {grupo:"Vendas",       un:"Compras",           cu:"Custo por compra",    conv:"visitas"},
+  leads:     {grupo:"Leads",        un:"Leads",             cu:"Custo por lead",      conv:"visitas"},
+  cadastros: {grupo:"Cadastros",    un:"Cadastros",         cu:"Custo por cadastro",  conv:"visitas"},
+  checkouts: {grupo:"Checkouts",    un:"Checkouts",         cu:"Custo por checkout",  conv:"visitas"},
+  conversas: {grupo:"WhatsApp",     un:"Conversas",         cu:"Custo por conversa",  conv:"cliques"},
+  thruplay:  {grupo:"Distribuição", un:"ThruPlays",         cu:"Custo por ThruPlay",  conv:null},
+  alcance:   {grupo:"Lembrete",     un:"Pessoas alcançadas",cu:"Custo por mil pessoas",conv:null, mil:true},
+  visitas:   {grupo:"Visitas",      un:"Visitas à página",  cu:"Custo por visita",    conv:null},
+  cliques:   {grupo:"Cliques",      un:"Cliques no link",   cu:"Custo por clique",    conv:null},
+};
+const ORDEM_RES = ["compras","leads","cadastros","checkouts","conversas","thruplay","alcance","visitas","cliques"];
+const SOMA = ["gasto","impressoes","alcance","cliques","thruplay","faturamento","visitas","checkouts","compras","leads","cadastros","conversas"];
+const vazio = () => Object.fromEntries(SOMA.map(k => [k,0]));
+function somar(lista){ const t = vazio(); lista.forEach(m => SOMA.forEach(k => t[k] += m[k]||0)); return t; }
+function deriv(m, r){
+  const R = RES[r], res = m[r] || 0;
+  return { ...m, res,
+    cpr: R && R.mil ? div(m.gasto*1000, res) : div(m.gasto, res),
+    carreg: div(m.visitas*100, m.cliques),
+    conv: R && R.conv ? div(res*100, m[R.conv]) : null,
+    roas: div(m.faturamento, m.gasto), ctr: div(m.cliques*100, m.impressoes), cpm: div(m.gasto*1000, m.impressoes) };
+}
+
+// ---------- tela de senha ----------
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decifrar(senha){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha), "PBKDF2", false, ["deriveKey"]);
+  const chave = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(payload.sal), iterations:payload.iter, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const txt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(payload.iv)}, chave, b64(payload.ct));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
+function telaSenha(){
+  app.innerHTML = `<div class="lock"><form class="card" id="f">
+    <img src="logo.png" alt="C2Pro">
+    <div class="eyebrow" style="justify-content:center">Dashboard protegido</div>
+    <input type="password" id="s" placeholder="Senha" autocomplete="current-password" aria-label="Senha" autofocus>
+    <label class="row"><input type="checkbox" id="lembrar" checked> Lembrar neste navegador</label>
+    <button class="btn" type="submit">Abrir dashboard</button>
+    <div class="err" id="err"></div></form></div>`;
+  document.getElementById("f").addEventListener("submit", async e => {
+    e.preventDefault();
+    const senha = document.getElementById("s").value;
+    try { const dados = await decifrar(senha);
+      if (document.getElementById("lembrar").checked) mem.set(CHAVE_SENHA, senha);
+      render(dados);
+    } catch(_) { document.getElementById("err").textContent = "Senha incorreta."; }
+  });
+}
+async function iniciar(){
+  if (!payload.enc) return render(payload.dados);
+  const salva = mem.get(CHAVE_SENHA);
+  if (salva) { try { return render(await decifrar(salva)); } catch(_){} }
+  telaSenha();
+}
+
+// ---------- estado ----------
+let D, PER = mem.get("c2pro-funis-periodo") || "7", ABA = decodeURIComponent(location.hash.slice(1)) || mem.get("c2pro-funis-aba") || "geral";
+let TIPO = {}, PUB = "todos", ORD = "res";
+
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7"; desenhar(); }
+
+function delta(atual, anterior, melhor){
+  if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
+  if (!anterior) return `<div class="delta"><span>${atual ? "sem base anterior" : "sem dados"}</span></div>`;
+  const p = (atual - anterior) / anterior * 100;
+  const txt = (p > 0 ? "+" : "") + new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(p) + "%";
+  let cls = ""; if (melhor && Math.abs(p) >= 0.5) cls = (p > 0) === (melhor === "sobe") ? "pos" : "neg";
+  return `<div class="delta ${cls}">${txt} <span>vs anterior</span></div>`;
+}
+function deltaPP(atual, anterior){
+  if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
+  const p = atual - anterior;
+  const txt = (p > 0 ? "+" : "") + new Intl.NumberFormat("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1}).format(p) + " p.p.";
+  return `<div class="delta ${Math.abs(p) >= 0.05 ? (p > 0 ? "pos" : "neg") : ""}">${txt} <span>vs anterior</span></div>`;
+}
+function tile(lbl, val, dHtml, extra, hero){
+  return `<div class="card tile${hero?" hero":""}"><div class="lbl">${esc(lbl)}</div>
+    <div class="val" style="--n:${String(val).length}">${val}</div>${extra?`<div class="extra">${extra}</div>`:""}${dHtml||""}</div>`;
+}
+const ICO_IG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`;
+const ICO_EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const STATUS = {ACTIVE:"Ativa", PAUSED:"Pausada", CAMPAIGN_PAUSED:"Campanha pausada", ADSET_PAUSED:"Conjunto pausado",
+  DELETED:"Excluída", ARCHIVED:"Arquivada", IN_PROCESS:"Processando", WITH_ISSUES:"Com problema", DISAPPROVED:"Reprovado"};
+const badge = s => `<span class="badge${s==="ACTIVE"?" on":""}">${esc(STATUS[s]||s||"-")}</span>`;
+
+// ---------- dados filtrados ----------
+const camp = id => D.campanhas[id] || {aba:"outras", resultado:"compras", nome:id, publico:""};
+function idsDaAba(aba, P){
+  const ids = new Set([...Object.keys(P.campanhas), ...Object.keys(P.anterior)]);
+  return [...ids].filter(id => camp(id).aba === aba);
+}
+function gastoAba(aba, P){ return idsDaAba(aba, P).reduce((s,id) => s + (P.campanhas[id]?.gasto||0), 0); }
+
+function desenhar(){
+  const P = D.periodos[PER];
+  const abasVisiveis = D.abas.filter(a => a.id !== "outras" || gastoAba("outras", P) > 0);
+  if (ABA !== "geral" && !abasVisiveis.some(a => a.id === ABA)) ABA = "geral";
+  const faixa = (i,f) => `${dataBR(i)} a ${dataBR(f)}`;
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+
+  app.innerHTML = `<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.png" alt="C2Pro">
+      <div><div class="eyebrow">${esc(D.subtitulo || "Acompanhamento por funil")}</div><h1>${esc(D.nome)}</h1></div></div>
+    <div class="pills" role="group" aria-label="Período">
+      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">Últimos ${k} dias</button>`).join("")}
+    </div>
+  </header>
+  <div class="meta">
+    <span>Período: ${faixa(P.inicio, P.fim)}</span>
+    <span>Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}</span>
+    <span>Atualizado em ${quando}</span>
+  </div>
+  <nav class="tabs" role="group" aria-label="Funil">
+    <button data-a="geral" aria-pressed="${ABA==="geral"}">Visão geral</button>
+    ${abasVisiveis.map(a => `<button data-a="${a.id}" aria-pressed="${ABA===a.id}">${esc(a.nome)}<span class="g">${fmtMoeda(gastoAba(a.id,P))}</span></button>`).join("")}
+  </nav>
+  <div id="conteudo">${ABA === "geral" ? visaoGeral(P, abasVisiveis) : abaFunil(P, D.abas.find(a => a.id === ABA))}</div>
+  <footer>Dados da Meta Ads (atribuição padrão da conta), atualizados todo dia de madrugada.
+    Resultado = o evento que cada campanha otimiza (compra, lead, conversa, ThruPlay...).
+    Taxa de carregamento = visitas à página ÷ cliques no link. Taxa de conversão = resultado ÷ visitas à página
+    (nas campanhas de WhatsApp, conversas ÷ cliques). Os períodos terminam ontem.</footer>
+  </div>`;
+
+  app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { PER = b.dataset.p; mem.set("c2pro-funis-periodo", PER); desenhar(); });
+  app.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { ABA = b.dataset.a; PUB = "todos"; mem.set("c2pro-funis-aba", ABA); history.replaceState(null, "", "#" + ABA); desenhar(); });
+  app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { TIPO[ABA] = b.dataset.t; desenhar(); });
+  app.querySelectorAll("[data-pub]").forEach(b => b.onclick = () => { PUB = b.dataset.pub; desenhar(); });
+  const sel = app.querySelector("#ord"); if (sel) sel.onchange = () => { ORD = sel.value; desenhar(); };
+  ligarGrafico();
+}
+
+// ---------- visão geral ----------
+function visaoGeral(P, abas){
+  const linhas = abas.map(a => {
+    const ids = idsDaAba(a.id, P);
+    const at = somar(ids.map(id => P.campanhas[id] || vazio())), an = somar(ids.map(id => P.anterior[id] || vazio()));
+    return {a, at: deriv(at,"compras"), an: deriv(an,"compras")};
+  });
+  const tot = deriv(somar(Object.values(P.campanhas)),"compras"), totAnt = deriv(somar(Object.values(P.anterior)),"compras");
+  return `<section>
+    <div class="tiles">
+      ${tile("Valor usado", fmtMoeda(tot.gasto), delta(tot.gasto,totAnt.gasto,null), "todas as campanhas", true)}
+      ${tile("Compras", fmtInt(tot.compras), delta(tot.compras,totAnt.compras,"sobe"))}
+      ${tile("Faturamento (pixel)", fmtMoeda(tot.faturamento), delta(tot.faturamento,totAnt.faturamento,"sobe"))}
+      ${tile("ROAS", xOu(tot.roas), delta(tot.roas,totAnt.roas,"sobe"), "faturamento ÷ valor usado")}
+      ${tile("Leads", fmtInt(tot.leads), delta(tot.leads,totAnt.leads,"sobe"))}
+      ${tile("Taxa de carregamento", pctOu(tot.carreg), deltaPP(tot.carreg,totAnt.carreg))}
+    </div>
+  </section>
+  <section>
+    <div class="sec-head"><div><h2>Por funil</h2><p class="sub">Clique na aba de cada funil para ver campanhas, páginas e criativos.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Funil</th><th>Valor usado</th><th>% do total</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th><th>Leads</th><th>Custo por lead</th><th>Carregamento</th></tr></thead>
+      <tbody>${linhas.map(({a,at,an}) => `<tr>
+        <td>${esc(a.nome)}<span class="st">${esc(a.descricao||"")}</span></td>
+        <td>${fmtMoeda(at.gasto)}</td><td>${pctOu(div(at.gasto*100, tot.gasto))}</td>
+        <td>${fmtInt(at.compras)}</td><td>${moedaOu(div(at.gasto, at.compras))}</td>
+        <td>${fmtMoeda(at.faturamento)}</td><td class="hl">${xOu(at.roas)}</td>
+        <td>${fmtInt(at.leads)}</td><td>${moedaOu(div(at.gasto, at.leads))}</td><td>${pctOu(at.carreg)}</td></tr>`).join("")}
+      </tbody></table></div>
+    <p class="defs">Compras e faturamento são os que a Meta atribui ao pixel; podem diferir das vendas reais do Asaas.
+      Custo por compra e custo por lead aqui dividem o valor usado de todo o funil; o custo por resultado de cada tipo de campanha está dentro da aba.</p>
+  </section>`;
+}
+
+// ---------- aba de um funil ----------
+function abaFunil(P, aba){
+  let ids = idsDaAba(aba.id, P);
+  const pubs = [...new Set(ids.map(id => camp(id).publico).filter(Boolean))];
+  if (pubs.length > 1 && PUB !== "todos") ids = ids.filter(id => camp(id).publico === PUB);
+  // tipos de resultado presentes, do que mais gastou para o que menos
+  const gastoTipo = {};
+  ids.forEach(id => { const r = camp(id).resultado; gastoTipo[r] = (gastoTipo[r]||0) + (P.campanhas[id]?.gasto||0); });
+  const tipos = Object.keys(gastoTipo).filter(t => gastoTipo[t] > 0)
+    .sort((a,b) => gastoTipo[b]-gastoTipo[a] || ORDEM_RES.indexOf(a)-ORDEM_RES.indexOf(b));
+  if (!tipos.length) return `<p class="desc">${esc(aba.descricao||"")}</p><div class="card empty" style="margin-top:20px">Nenhuma campanha deste funil gastou no período.</div>`;
+  let r = TIPO[aba.id]; if (!tipos.includes(r)) r = tipos.includes("compras") ? "compras" : tipos[0];
+  const R = RES[r];
+  const idsT = ids.filter(id => camp(id).resultado === r);
+  const a = deriv(somar(idsT.map(id => P.campanhas[id] || vazio())), r);
+  const b = deriv(somar(idsT.map(id => P.anterior[id] || vazio())), r);
+  const ehVenda = r === "compras";
+
+  // campanhas
+  const campanhas = idsT.filter(id => P.campanhas[id]).map(id => ({c: camp(id), m: deriv(P.campanhas[id], r)}))
+    .sort((x,y) => y.m.gasto - x.m.gasto);
+  // anúncios e páginas
+  const anuncios = P.anuncios.filter(x => idsT.includes(x.campanha_id)).map(x => ({...deriv(x, r), x}));
+  const pags = {};
+  anuncios.forEach(x => { (pags[x.x.url] = pags[x.x.url] || []).push(x.x); });
+  const paginas = Object.entries(pags).map(([u, l]) => ({u, m: deriv(somar(l), r), n: l.length})).sort((x,y) => y.m.gasto - x.m.gasto);
+  const minimo = D.gasto_minimo_criativo || 0;
+  const ords = {res:"Mais resultado", cpr:"Menor custo por resultado", gasto:"Maior valor usado", ...(ehVenda ? {roas:"Maior ROAS"} : {}), conv:"Maior taxa de conversão"};
+  if (!ords[ORD]) ORD = "res";
+  const crit = anuncios.filter(x => x.gasto >= minimo).sort((x,y) => {
+    if (ORD === "cpr") return (x.cpr ?? 1e12) - (y.cpr ?? 1e12) || y.res - x.res;
+    if (ORD === "gasto") return y.gasto - x.gasto;
+    if (ORD === "roas") return (y.roas||0) - (x.roas||0);
+    if (ORD === "conv") return (y.conv||0) - (x.conv||0);
+    return y.res - x.res || (x.cpr ?? 1e12) - (y.cpr ?? 1e12);
+  });
+
+  const colVenda = ehVenda ? `<th>Faturamento</th><th>ROAS</th>` : "";
+  const celVenda = m => ehVenda ? `<td>${fmtMoeda(m.faturamento)}</td><td class="hl">${xOu(m.roas)}</td>` : "";
+  const convTxt = R.conv === "cliques" ? "conversas ÷ cliques" : "resultado ÷ visitas";
+
+  return `<p class="desc">${esc(aba.descricao||"")}</p>
+  <div class="filtros">
+    <span class="rot">Tipo de campanha</span>
+    <div class="pills sm" role="group" aria-label="Tipo de campanha">
+      ${tipos.map(t => `<button data-t="${t}" aria-pressed="${t===r}">${RES[t].grupo} · ${fmtMoeda(gastoTipo[t])}</button>`).join("")}
+    </div>
+    ${pubs.length > 1 ? `<span class="rot">Público</span><div class="pills sm" role="group" aria-label="Público">
+      ${["todos", ...pubs.sort()].map(p => `<button data-pub="${p}" aria-pressed="${PUB===p}">${p==="todos"?"Todos":p==="aluno"?"Aluno":"Professor"}</button>`).join("")}</div>` : ""}
+  </div>
+
+  <section style="margin-top:24px">
+    <div class="tiles">
+      ${tile(R.un, fmtInt(a.res), delta(a.res,b.res,"sobe"), "", true)}
+      ${tile(R.cu, moedaOu(a.cpr), delta(a.cpr,b.cpr,"desce"))}
+      ${tile("Valor usado", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
+      ${tile("Taxa de carregamento", pctOu(a.carreg), deltaPP(a.carreg,b.carreg), "visitas ÷ cliques")}
+      ${R.conv ? tile("Taxa de conversão", pctOu(a.conv), deltaPP(a.conv,b.conv), convTxt) : tile("CTR", pctOu(a.ctr), deltaPP(a.ctr,b.ctr), "cliques ÷ impressões")}
+      ${ehVenda ? tile("Faturamento (pixel)", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe")) : ""}
+      ${ehVenda ? tile("ROAS", xOu(a.roas), delta(a.roas,b.roas,"sobe"), "faturamento ÷ valor usado") : ""}
+      ${tile("Cliques no link", fmtInt(a.cliques), delta(a.cliques,b.cliques,"sobe"), `CTR ${pctOu(a.ctr)}`)}
+      ${tile("Visitas à página", fmtInt(a.visitas), delta(a.visitas,b.visitas,"sobe"), `CPM ${moedaOu(a.cpm)}`)}
+    </div>
+  </section>
+
+  <section>
+    <div class="card chart" id="graf">${grafico(idsT, r)}</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">${campanhas.length} campanha${campanhas.length===1?"":"s"} de ${R.grupo.toLowerCase()} com gasto no período</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Valor usado</th><th>${R.un}</th><th>${R.cu}</th><th>Cliques</th><th>Visitas</th><th>Carregamento</th>${R.conv?"<th>Conversão</th>":""}${colVenda}</tr></thead>
+      <tbody>${campanhas.map(({c,m}) => `<tr>
+        <td>${esc(c.nome)} ${badge(c.status)}${c.publico ? `<span class="st">Público: ${c.publico}</span>` : ""}</td>
+        <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(m.res)}</td><td>${moedaOu(m.cpr)}</td>
+        <td>${fmtInt(m.cliques)}</td><td>${fmtInt(m.visitas)}</td><td>${pctOu(m.carreg)}</td>
+        ${R.conv?`<td>${pctOu(m.conv)}</td>`:""}${celVenda(m)}</tr>`).join("")}
+      </tbody></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Páginas</h2><p class="sub">Resultado por página de destino dos anúncios</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Página</th><th>Anúncios</th><th>Valor usado</th><th>Cliques</th><th>Visitas</th><th>Carregamento</th><th>${R.un}</th>${R.conv?"<th>Conversão</th>":""}<th>${R.cu}</th>${colVenda}</tr></thead>
+      <tbody>${paginas.map(({u,m,n}) => `<tr>
+        <td><span class="url">${esc(u)}</span></td><td>${n}</td>
+        <td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.cliques)}</td><td>${fmtInt(m.visitas)}</td><td>${pctOu(m.carreg)}</td>
+        <td class="hl">${fmtInt(m.res)}</td>${R.conv?`<td>${pctOu(m.conv)}</td>`:""}<td>${moedaOu(m.cpr)}</td>${celVenda(m)}</tr>`).join("")}
+      </tbody></table></div>
+    <p class="defs">Página = link de destino do criativo, sem os parâmetros de UTM. Anúncio de catálogo leva para a página de cada produto do feed.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Criativos</h2><p class="sub">${crit.length} anúncio${crit.length===1?"":"s"} com pelo menos ${fmtMoeda(minimo)} de valor usado</p></div>
+      <label class="sub">Ordenar por <select id="ord" aria-label="Ordenar criativos">${Object.entries(ords).map(([k,v]) => `<option value="${k}"${ORD===k?" selected":""}>${v}</option>`).join("")}</select></label></div>
+    ${crit.length ? `<div class="ads">${crit.map((x,i) => `<div class="card ad">
+      <a class="thumb" ${x.x.instagram?`href="${esc(x.x.instagram)}" target="_blank" rel="noopener"`:""}>${x.x.thumb?`<img src="${esc(x.x.thumb)}" alt="" loading="lazy">`:""}<span class="rank">${i+1}</span></a>
+      <div><div class="nm">${esc(x.x.nome)} ${badge(x.x.status)}</div>
+        <div class="cp">${esc(camp(x.x.campanha_id).nome)}</div>
+        <div class="kpis">
+          <div class="${ORD==="res"?"sel":""}">${R.un}<b>${fmtInt(x.res)}</b></div>
+          <div class="${ORD==="cpr"?"sel":""}">${R.cu}<b>${moedaOu(x.cpr)}</b></div>
+          <div class="${ORD==="gasto"?"sel":""}">Valor usado<b>${fmtMoeda(x.gasto)}</b></div>
+          <div>Carregamento<b>${pctOu(x.carreg)}</b></div>
+          ${R.conv?`<div class="${ORD==="conv"?"sel":""}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div>CTR<b>${pctOu(x.ctr)}</b></div>`}
+          ${ehVenda?`<div class="${ORD==="roas"?"sel":""}">ROAS<b>${xOu(x.roas)}</b></div>`:`<div>Cliques<b>${fmtInt(x.cliques)}</b></div>`}
+        </div>
+        <div class="pg">${esc(x.x.url)}</div>
+        <div class="links">
+          ${x.x.instagram?`<a class="lnk" href="${esc(x.x.instagram)}" target="_blank" rel="noopener">${ICO_IG} Instagram</a>`:""}
+          ${x.x.previa?`<a class="lnk" href="${esc(x.x.previa)}" target="_blank" rel="noopener">${ICO_EYE} Prévia</a>`:""}
+        </div></div></div>`).join("")}</div>` : `<div class="card empty">Nenhum criativo passou do gasto mínimo no período.</div>`}
+  </section>`;
+}
+
+// ---------- gráfico dia a dia (30 dias) ----------
+let GDADOS = null;
+function grafico(ids, r){
+  const R = RES[r];
+  const dias = D.dias.map(d => { const t = vazio(); ids.forEach(id => { const x = (D.diario[id]||{})[d]; if (x) SOMA.forEach(k => t[k] += x[k]||0); }); return {d, g:t.gasto, v:t[r]||0}; });
+  GDADOS = {dias, R};
+  const W = 1000, H = 200, pad = 28, n = dias.length, bw = (W - pad) / n;
+  const maxG = Math.max(1, ...dias.map(x => x.g)), maxV = Math.max(1, ...dias.map(x => x.v));
+  const barras = dias.map((x,i) => { const h = x.g / maxG * (H - 30);
+    return `<rect x="${pad + i*bw + 2}" y="${H - 20 - h}" width="${Math.max(1,bw-4)}" height="${h}" rx="2" fill="rgba(0,216,245,.28)"/>`; }).join("");
+  const pts = dias.map((x,i) => `${pad + i*bw + bw/2},${H - 20 - x.v / maxV * (H - 30)}`).join(" ");
+  const eixo = dias.map((x,i) => i % 5 === 0 ? `<text class="axis" x="${pad + i*bw + bw/2}" y="${H-4}" text-anchor="middle">${dataBR(x.d)}</text>` : "").join("");
+  const totG = dias.reduce((s,x) => s + x.g, 0), totV = dias.reduce((s,x) => s + x.v, 0);
+  return `<h3>Dia a dia · últimos 30 dias</h3>
+    <div class="tot">${fmtMoeda(totG)} usados · ${fmtInt(totV)} ${R.un.toLowerCase()}</div>
+    <div class="leg"><span><i style="background:rgba(0,216,245,.45)"></i>Valor usado</span><span><i style="background:#F2F6FA"></i>${esc(R.un)}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Valor usado e ${esc(R.un)} por dia">
+      <line x1="${pad}" x2="${W}" y1="${H-20}" y2="${H-20}" stroke="var(--grid)"/>
+      ${barras}<polyline points="${pts}" fill="none" stroke="#F2F6FA" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      ${eixo}<rect id="gh" x="${pad}" y="0" width="${W-pad}" height="${H}" fill="transparent"/></svg>`;
+}
+function ligarGrafico(){
+  const caixa = document.getElementById("graf"); if (!caixa || !GDADOS) return;
+  const svg = caixa.querySelector("svg");
+  svg.addEventListener("mousemove", e => {
+    const r = svg.getBoundingClientRect(), pad = 28 / 1000 * r.width;
+    const i = Math.min(GDADOS.dias.length - 1, Math.max(0, Math.floor((e.clientX - r.left - pad) / ((r.width - pad) / GDADOS.dias.length))));
+    const x = GDADOS.dias[i];
+    tip.innerHTML = `<b>${dataBRano(x.d)}</b><br>Valor usado: ${fmtMoeda(x.g)}<br>${esc(GDADOS.R.un)}: ${fmtInt(x.v)}`;
+    tip.style.opacity = 1; tip.style.left = (e.pageX + 14) + "px"; tip.style.top = (e.pageY - 10) + "px";
+  });
+  svg.addEventListener("mouseleave", () => tip.style.opacity = 0);
+}
+
+iniciar();
+})();
+</script>
+</body>
+</html>

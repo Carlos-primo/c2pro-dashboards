@@ -1,6 +1,6 @@
 # Atualiza os dashboards todo dia de madrugada (Brasilia) e publica no GitHub Pages, em tres grupos
 # separados por 1 hora pra nao dividir o limite de chamadas da Meta (janela movel de 1 hora):
-#   02:00 distribuicao | 03:00 vendas e Black | 04:00 leads, lancamento e Google Ads
+#   02:00 distribuicao | 03:00 vendas, Black e funis | 04:00 leads, lancamento e Google Ads
 # Nao usa Claude: e so o gerar*.py chamando a API da Meta (e a do Google Ads, no gerar_google.py).
 #
 # Na hora (botao "Run workflow" no GitHub, ou gh workflow run atualizar.yml -f dashboard=...):
@@ -12,6 +12,7 @@
 # Opcional por cliente: SENHA_<SLUG> (ex: SENHA_C2PRO) pra proteger aquele dashboard com senha.
 # Dashboards de vendas: SENHA_VENDAS_<SLUG>, no bloco env do passo "Gerar dashboards de vendas".
 # Dashboards da Black: SENHA_BLACK_<SLUG>, no bloco env do passo "Gerar dashboards da Black".
+# Dashboards por funil: SENHA_FUNIS_<SLUG>, no bloco env do passo "Gerar dashboards por funil".
 # Dashboards de leads: SENHA_LEADS_<SLUG>, no bloco env do passo "Gerar dashboards de leads".
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 # Hotmart (campo "hotmart" no config.json): HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET,
@@ -56,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     # Um gerador com erro nao trava os outros (continue-on-error); o job publicar marca a execucao como falha no fim.
     outputs:
-      falhou: ${{ steps.distribuicao.outcome == 'failure' || steps.vendas.outcome == 'failure' || steps.black.outcome == 'failure' || steps.leads.outcome == 'failure' || steps.lancamento.outcome == 'failure' || steps.google.outcome == 'failure' }}
+      falhou: ${{ steps.distribuicao.outcome == 'failure' || steps.vendas.outcome == 'failure' || steps.black.outcome == 'failure' || steps.funis.outcome == 'failure' || steps.leads.outcome == 'failure' || steps.lancamento.outcome == 'failure' || steps.google.outcome == 'failure' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -73,11 +74,11 @@ jobs:
             "0 6 * * *") GRUPO=vendas ;;
             "0 7 * * *") GRUPO=leads ;;
           esac
-          declare -A tipo=([distribuicao]= [vendas]= [black]= [leads]= [lancamento]= [google]=)
+          declare -A tipo=([distribuicao]= [vendas]= [black]= [funis]= [leads]= [lancamento]= [google]=)
           if [ -n "$DASHBOARD" ]; then
             caminho="${DASHBOARD#/}"; caminho="${caminho%/}"
             case "$caminho" in */*) ;; *) caminho="clientes/$caminho" ;; esac
-            if ! [[ "$caminho" =~ ^(clientes|vendas|black|leads|lancamento|google)/[a-z0-9-]+$ ]] || [ ! -f "$caminho/config.json" ]; then
+            if ! [[ "$caminho" =~ ^(clientes|vendas|black|funis|leads|lancamento|google)/[a-z0-9-]+$ ]] || [ ! -f "$caminho/config.json" ]; then
               echo "::error::dashboard '$DASHBOARD' nao existe"; exit 1
             fi
             pasta="${caminho%%/*}"; [ "$pasta" = clientes ] && pasta=distribuicao
@@ -85,7 +86,7 @@ jobs:
           else
             case "${GRUPO:-todos}" in
               distribuicao) tipo[distribuicao]=todos ;;
-              vendas) tipo[vendas]=todos; tipo[black]=todos ;;
+              vendas) tipo[vendas]=todos; tipo[black]=todos; tipo[funis]=todos ;;
               leads) tipo[leads]=todos; tipo[lancamento]=todos; tipo[google]=todos ;;
               *) for t in "${!tipo[@]}"; do tipo[$t]=todos; done ;;
             esac
@@ -138,6 +139,15 @@ jobs:
           ALVO: ${{ steps.alvo.outputs.black }}
         run: if [ "$ALVO" = todos ]; then python gerar_black.py; else python gerar_black.py "$ALVO"; fi
 
+      - name: Gerar dashboards por funil
+        id: funis
+        if: steps.alvo.outputs.funis != ''
+        continue-on-error: true
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          ALVO: ${{ steps.alvo.outputs.funis }}
+        run: if [ "$ALVO" = todos ]; then python gerar_funis.py; else python gerar_funis.py "$ALVO"; fi
+
       - name: Gerar dashboards de leads
         id: leads
         if: steps.alvo.outputs.leads != ''
@@ -180,11 +190,12 @@ jobs:
           ALVO_DISTRIBUICAO: ${{ steps.alvo.outputs.distribuicao }}
           ALVO_VENDAS: ${{ steps.alvo.outputs.vendas }}
           ALVO_BLACK: ${{ steps.alvo.outputs.black }}
+          ALVO_FUNIS: ${{ steps.alvo.outputs.funis }}
           ALVO_LEADS: ${{ steps.alvo.outputs.leads }}
           ALVO_LANCAMENTO: ${{ steps.alvo.outputs.lancamento }}
           ALVO_GOOGLE: ${{ steps.alvo.outputs.google }}
         run: |
-          for cfg in clientes/*/config.json vendas/*/config.json black/*/config.json leads/*/config.json lancamento/*/config.json google/*/config.json; do
+          for cfg in clientes/*/config.json vendas/*/config.json black/*/config.json funis/*/config.json leads/*/config.json lancamento/*/config.json google/*/config.json; do
             dir=$(dirname "$cfg"); slug=$(basename "$dir"); tipo=$(dirname "$dir")
             if [ "$tipo" = clientes ]; then destino="$slug"; var=ALVO_DISTRIBUICAO; else destino="$tipo/$slug"; var="ALVO_${tipo^^}"; fi
             [ -f "site/$destino/index.html" ] && continue

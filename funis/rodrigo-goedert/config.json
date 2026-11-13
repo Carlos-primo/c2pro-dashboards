@@ -1,0 +1,11 @@
+{
+  "nome": "BJJ Protech",
+  "subtitulo": "Acompanhamento das campanhas por funil",
+  "conta_anuncio": "act_1439156336846241",
+  "criativos_gasto_minimo": 10,
+  "abas": [
+    {"id": "black", "nome": "Black Friday", "descricao": "Campanhas da Black 2026: esquenta (leads), vendas pós-live, distribuição e lembretes.", "contem": ["BLACK"]},
+    {"id": "estudos", "nome": "Estudos", "descricao": "Plataforma de estudos (B2C): planos de aluno e de professor, instrucionais, catálogo, remarketing e distribuição.", "tokens": ["ESTUDO", "ESTUDOS"]},
+    {"id": "erp", "nome": "ERP", "descricao": "Sistema de gestão para academias (B2B), voltado para professores e donos de academia.", "tokens": ["ERP"]}
+  ]
+}
