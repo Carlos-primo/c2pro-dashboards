@@ -43,7 +43,7 @@ AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "funis"
 CFG = {}
 
-PERIODOS = [7, 30]
+PERIODOS = [7, 30]  # mais o "mes" (este mes), montado em gerar_cliente()
 CAMPOS = "spend,impressions,reach,inline_link_clicks,actions,action_values,video_thruplay_watched_actions"
 
 # A Meta devolve o mesmo evento com nomes diferentes conforme a origem; usa o primeiro que existir.
@@ -201,11 +201,24 @@ def campanhas_do_periodo(inicio, fim):
     return saida
 
 
-def periodo(dias, ontem):
-    fim = ontem
-    inicio = fim - dt.timedelta(days=dias - 1)
+def ultimos(dias, ontem):
+    """Ultimos N dias ate ontem, comparados com os N dias anteriores."""
+    inicio = ontem - dt.timedelta(days=dias - 1)
     ant_fim = inicio - dt.timedelta(days=1)
-    ant_inicio = ant_fim - dt.timedelta(days=dias - 1)
+    return inicio, ontem, ant_fim - dt.timedelta(days=dias - 1), ant_fim
+
+
+def este_mes(ontem):
+    """Do dia 1 do mes ate ontem, comparado com os mesmos dias do mes anterior (1 a 12/10 contra 1 a 12/11).
+    Usa o mes de ontem: na rodada das 3h do dia 1 ainda mostra o mes que acabou de fechar, inteiro."""
+    inicio = ontem.replace(day=1)
+    ant_inicio = (inicio - dt.timedelta(days=1)).replace(day=1)
+    ant_fim = min(ant_inicio + dt.timedelta(days=(ontem - inicio).days), inicio - dt.timedelta(days=1))
+    return inicio, ontem, ant_inicio, ant_fim
+
+
+def periodo(inicio, fim, ant_inicio, ant_fim):
+    dias = f"{inicio}..{fim}"
 
     camp = campanhas_do_periodo(inicio, fim)
     total = insights("account", inicio, fim, CAMPOS)
@@ -242,7 +255,8 @@ def gerar_cliente(slug):
                            "aba": aba_da(c["name"]), "publico": publico_do(c["name"]),
                            "resultado": resultado[c["id"]]} for c in todas}
 
-    periodos = {str(d): periodo(d, ontem) for d in PERIODOS}
+    periodos = {str(d): periodo(*ultimos(d, ontem)) for d in PERIODOS}
+    periodos["mes"] = periodo(*este_mes(ontem))
 
     ids_ads = {a["id"] for p in periodos.values() for a in p["anuncios"]}
     det = detalhes_anuncios(ids_ads)

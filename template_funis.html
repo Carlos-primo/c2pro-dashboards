@@ -343,7 +343,7 @@ function desenhar(){
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Acompanhamento por funil")}</div><h1>${esc(D.nome)}</h1></div></div>
     <div class="pills" role="group" aria-label="Período">
-      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">Últimos ${k} dias</button>`).join("")}
+      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${k === "mes" ? "Este mês" : `Últimos ${k} dias`}</button>`).join("")}
     </div>
   </header>
   <div class="meta">
