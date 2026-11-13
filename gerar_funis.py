@@ -22,7 +22,9 @@ tipo de resultado pra nao somar compra com lead.
 
 Paginas: URL de destino de cada anuncio (link do criativo, sem parametros), com as metricas somadas.
 
-Variaveis de ambiente: META_ADS_TOKEN e, opcional, SENHA_FUNIS_<SLUG> pra proteger com senha.
+Opcional: "google_customer_id": "8756808672" cria a aba Google Ads (campanhas, paginas e dia a dia).
+
+Variaveis de ambiente: META_ADS_TOKEN, as GOOGLE_ADS_* (se tiver Google) e, opcional, SENHA_FUNIS_<SLUG>.
 """
 
 import datetime as dt
@@ -239,6 +241,65 @@ def periodo(inicio, fim, ant_inicio, ant_fim):
             "campanhas": camp, "anterior": campanhas_do_periodo(ant_inicio, ant_fim), "anuncios": anuncios}
 
 
+def vazio_google(m):
+    """Metricas do Google no mesmo formato das da Meta. Conversao do Google = compra (Purchase - GTM)."""
+    base = {k: 0.0 for k in ("gasto", "impressoes", "alcance", "cliques", "thruplay", "faturamento", "visitas",
+                             "checkouts", "compras", "leads", "cadastros", "conversas")}
+    base.update({"gasto": int(m.get("costMicros", 0)) / 1e6, "impressoes": int(m.get("impressions", 0)),
+                 "cliques": float(m.get("clicks", 0)), "compras": float(m.get("conversions", 0)),
+                 "faturamento": float(m.get("conversionsValue", 0))})
+    return base
+
+
+def juntar_google(periodos, campanhas, diario, dias):
+    """Aba "Google Ads": campanhas, paginas (landing_page_view) e dia a dia da conta Google do cliente.
+    Se a credencial falhar, o dashboard sai so com a Meta (aviso no log), como no gerar_funil.py."""
+    import gerar_google
+    try:
+        g = gerar_google.Google(CFG["google_customer_id"])
+        entre = gerar_google.entre
+        campos = "campaign.id, campaign.name, campaign.status, metrics.cost_micros, metrics.impressions, "                  "metrics.clicks, metrics.conversions, metrics.conversions_value"
+        def camp(a, b):
+            saida = {}
+            for r in g.q(f"SELECT {campos} FROM campaign WHERE {entre(a, b)}"):
+                m = vazio_google(r["metrics"])
+                if m["gasto"] > 0:
+                    cid = "g" + r["campaign"]["id"]
+                    saida[cid] = m
+                    campanhas[cid] = {"id": cid, "nome": r["campaign"]["name"], "status": r["campaign"]["status"],
+                                      "aba": "google", "publico": "", "resultado": "compras", "plataforma": "google"}
+            return saida
+        novos = {}
+        for k, p in periodos.items():
+            atual, ant = camp(p["inicio"], p["fim"]), camp(p["ant_inicio"], p["ant_fim"])
+            paginas = {}
+            for r in g.q("SELECT landing_page_view.unexpanded_final_url, metrics.cost_micros, metrics.impressions, "
+                         "metrics.clicks, metrics.conversions, metrics.conversions_value FROM landing_page_view "
+                         f"WHERE {entre(p['inicio'], p['fim'])}"):
+                m = vazio_google(r["metrics"])
+                if m["gasto"] > 0:
+                    u = url_limpa(r["landingPageView"].get("unexpandedFinalUrl", "")) or "Sem link identificado"
+                    t = paginas.setdefault(u, {"url": u, **{x: 0.0 for x in m}})
+                    for x in m:
+                        t[x] += m[x]
+            novos[k] = (atual, ant, list(paginas.values()))
+        d = {}
+        for r in g.q(f"SELECT campaign.id, segments.date, metrics.cost_micros, metrics.impressions, metrics.clicks, "
+                     f"metrics.conversions, metrics.conversions_value FROM campaign WHERE {entre(dias[0], dias[-1])}"):
+            m = vazio_google(r["metrics"])
+            if m["gasto"] > 0:
+                d.setdefault("g" + r["campaign"]["id"], {})[r["segments"]["date"]] = m
+    except SystemExit as erro:
+        print(f"::warning::{CFG['nome']} saiu sem o Google Ads: {erro}")
+        return False
+    for k, (atual, ant, paginas) in novos.items():
+        periodos[k]["campanhas"].update(atual)
+        periodos[k]["anterior"].update(ant)
+        periodos[k]["paginas_google"] = paginas
+    diario.update(d)
+    return True
+
+
 def gerar_cliente(slug):
     CFG.clear()
     CFG.update(json.loads((AQUI / "funis" / slug / "config.json").read_text(encoding="utf-8")))
@@ -280,12 +341,20 @@ def gerar_cliente(slug):
     soma_30 = sum(m["gasto"] for m in periodos["30"]["campanhas"].values())
     conferir(abs(soma_diaria - soma_30) < 0.05, "serie diaria nao bate com o total de 30 dias")
 
+    dias30 = [(inicio30 + dt.timedelta(days=n)).isoformat() for n in range(30)]
+    tem_google = bool(CFG.get("google_customer_id")) and juntar_google(periodos, campanhas, diario, dias30)
+
     usadas = {cid for p in periodos.values() for cid in list(p["campanhas"]) + list(p["anterior"])} | set(diario)
     for cid in usadas - set(campanhas):  # campanha apagada: ainda aparece com o que gastou
         campanhas[cid] = {"id": cid, "nome": cid, "status": "DELETED", "aba": "outras", "publico": "",
                           "resultado": "compras"}
 
     abas = [{k: a.get(k, "") for k in ("id", "nome", "descricao")} for a in CFG["abas"]]
+    if tem_google:
+        abas.append({"id": "google", "nome": "Google Ads",
+                     "descricao": "Campanhas do Google Ads (pesquisa, geração de demanda e PMax). Conversão = compra "
+                                  "registrada pela tag do Google; não tem visita à página, então a conversão é "
+                                  "compras ÷ cliques."})
     abas.append({"id": "outras", "nome": "Outras", "descricao": "Campanhas que não entram em nenhum funil acima."})
 
     dados = {
@@ -295,7 +364,7 @@ def gerar_cliente(slug):
         "abas": abas,
         "campanhas": {cid: campanhas[cid] for cid in usadas},
         "periodos": periodos,
-        "dias": [(inicio30 + dt.timedelta(days=n)).isoformat() for n in range(30)],
+        "dias": dias30,
         "diario": diario,
     }
 

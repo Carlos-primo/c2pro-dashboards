@@ -2,6 +2,7 @@
   "nome": "BJJ Protech",
   "subtitulo": "Acompanhamento das campanhas por funil",
   "conta_anuncio": "act_1439156336846241",
+  "google_customer_id": "8756808672",
   "criativos_gasto_minimo": 10,
   "abas": [
     {"id": "black", "nome": "Black Friday", "descricao": "Campanhas da Black 2026: esquenta (leads), vendas pós-live, distribuição e lembretes.", "contem": ["BLACK"]},
