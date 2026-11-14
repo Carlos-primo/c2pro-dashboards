@@ -408,7 +408,9 @@ def periodo(dias, ontem, status_camp, segmentos, inicio=None):
     for l in insights("campaign", inicio, fim, "campaign_id,campaign_name," + CAMPOS_METRICAS):
         conferir(eh_vendas(l["campaign_name"]), f"campanha fora do filtro: {l['campaign_name']}")
         m = metricas(l)
-        if m["gasto"] > 0:
+        # Campanha sem gasto no periodo mas com compra (clique de dias antes) entra, igual aos conjuntos e anuncios:
+        # senao o faturamento das frentes nao bate com o das campanhas (BJJ, Esquenta RMK, 14/11/2026).
+        if m["gasto"] > 0 or m["compras"] > 0:
             campanhas.append({"id": l["campaign_id"], "nome": l["campaign_name"],
                               "temp": temperatura(l["campaign_name"]),
                               "status": status_camp.get(l["campaign_id"], ""), **m})
