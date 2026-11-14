@@ -3,19 +3,24 @@
   "subtitulo": "Tráfego pago: Meta e Google",
   "conta_anuncio": "act_1439156336846241",
   "criativos_gasto_minimo": 10,
-  "senha_obrigatoria": true,
+  "senha_obrigatoria": false,
+  "filtros_extra": ["LEADS_", "WHATSAPP", "LEMBRETE", "POST DO INSTAGRAM"],
   "mes_atual": true,
   "regua_roas": 6,
   "paginas": [
+    {"nome": "Esquenta", "contem": ["ESQUENTA"]},
     {"nome": "Black", "contem": ["BLACK26"]},
     {"nome": "Planos", "contem": ["PLANOS"]},
     {"nome": "Remarketing", "contem": ["PLATAFORMA_RMK"]},
     {"nome": "Instrucionais", "contem": ["INSTRUCIONAIS"]},
     {"nome": "Catálogo", "contem": ["CATALOGO"]},
-    {"nome": "ERP", "contem": ["VENDAS_ERP"]}
+    {"nome": "ERP", "contem": ["VENDAS_ERP"]},
+    {"nome": "WhatsApp", "contem": ["WHATSAPP"]}
   ],
   "distribuicao": true,
   "frentes": [
+    {"nome": "Esquenta (leads)", "contem": ["ESQUENTA"]},
+    {"nome": "Black: lembrete da live", "contem": ["LEMBRETE"]},
     {"nome": "Black: remarketing", "contem": ["BLACK26", "RMK"]},
     {"nome": "Black: professor", "contem": ["BLACK26", "PROFESSOR"]},
     {"nome": "Black: aluno", "contem": ["BLACK26"]},
@@ -24,7 +29,9 @@
     {"nome": "Remarketing da plataforma", "contem": ["PLATAFORMA_RMK"]},
     {"nome": "Instrucionais (atletas)", "contem": ["INSTRUCIONAIS"]},
     {"nome": "Catálogo", "contem": ["CATALOGO"]},
-    {"nome": "ERP", "contem": ["VENDAS_ERP"]}
+    {"nome": "ERP", "contem": ["VENDAS_ERP"]},
+    {"nome": "WhatsApp (dúvidas)", "contem": ["WHATSAPP"]},
+    {"nome": "Posts impulsionados", "contem": ["POST DO INSTAGRAM"]}
   ],
   "destinos": [
     {"nome": "Catálogo (página de cada curso)", "campanha": "CATALOGO"},
