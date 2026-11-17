@@ -201,6 +201,14 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--b-sub);font:4
 .pills.sm button{padding:6px 12px;font-size:12px}
 select{background:var(--solid);color:var(--t-body);border:1px solid var(--b-def);border-radius:999px;padding:7px 12px;font:500 12px Inter,sans-serif}
 td .url{font-family:var(--mono);font-size:12px;word-break:break-all;color:var(--t-strong)}
+.funil{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.funil .et{padding:16px;position:relative;min-width:0}
+.funil .et .lbl{font-size:13px;color:var(--t-muted)}
+.funil .et .val{font:600 22px/1.2 var(--mono);color:var(--t-strong);margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.funil .et .bar{height:6px;border-radius:3px;background:var(--s2);overflow:hidden;margin:8px 0}
+.funil .et .bar i{display:block;height:100%;background:var(--acc-h, #00D8F5);border-radius:3px}
+.funil .et .tx{font:400 12px/1.5 var(--mono);color:var(--t-muted)}
+.funil .et .tx b{color:var(--t-strong);font-weight:600}
 td .st{display:block;font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-top:2px}
 .leg{display:flex;gap:16px;font:400 11px/1 var(--mono);color:var(--t-muted);margin-bottom:8px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
@@ -298,7 +306,10 @@ async function iniciar(){
 let D, PER = mem.get("c2pro-funis-periodo") || "7", ABA = decodeURIComponent(location.hash.slice(1)) || mem.get("c2pro-funis-aba") || "geral";
 let TIPO = {}, PUB = "todos", ORD = "res";
 
-function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7"; desenhar(); }
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7";
+  if (!location.hash.slice(1) && D.aba_inicial && D.aba_inicial !== "geral") ABA = D.aba_inicial;
+  if (ABA !== "geral" && !D.abas.some(a => a.id === ABA)) ABA = D.aba_inicial || "geral";
+  desenhar(); }
 
 function delta(atual, anterior, melhor){
   if (atual == null || anterior == null) return `<div class="delta"><span>sem comparação</span></div>`;
@@ -344,7 +355,7 @@ function desenhar(){
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Acompanhamento por funil")}</div><h1>${esc(D.nome)}</h1></div></div>
     <div class="pills" role="group" aria-label="Período">
-      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${k === "mes" ? "Este mês" : `Últimos ${k} dias`}</button>`).join("")}
+      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${k === "mes" ? "Este mês" : k === "1" ? "Ontem" : `Últimos ${k} dias`}</button>`).join("")}
     </div>
   </header>
   <div class="meta">
@@ -382,6 +393,7 @@ function visaoGeral(P, abas){
   const soMeta = o => Object.entries(o).filter(([id]) => camp(id).plataforma !== "google").map(([,m]) => m);
   const meta = deriv(somar(soMeta(P.campanhas)),"compras"), metaAnt = deriv(somar(soMeta(P.anterior)),"compras");
   const temG = abas.some(a => a.id === "google");
+  const temConv = tot.conversas > 0 || totAnt.conversas > 0;
   return `<section>
     <div class="tiles">
       ${tile("Valor usado", fmtMoeda(tot.gasto), delta(tot.gasto,totAnt.gasto,null), temG ? "Meta + Google" : "todas as campanhas", true)}
@@ -389,21 +401,22 @@ function visaoGeral(P, abas){
       ${tile("Faturamento atribuído", fmtMoeda(tot.faturamento), delta(tot.faturamento,totAnt.faturamento,"sobe"), temG ? `Meta ${fmtMoeda(meta.faturamento)} · Google ${fmtMoeda(tot.faturamento-meta.faturamento)}` : "pixel da Meta")}
       ${tile("ROAS", xOu(tot.roas), delta(tot.roas,totAnt.roas,"sobe"), "faturamento ÷ valor usado")}
       ${tile("Leads", fmtInt(tot.leads), delta(tot.leads,totAnt.leads,"sobe"))}
+      ${temConv ? tile("Conversas no WhatsApp", fmtInt(tot.conversas), delta(tot.conversas,totAnt.conversas,"sobe"), `custo por conversa ${moedaOu(div(tot.gasto, tot.conversas))}`) : ""}
       ${tile("Taxa de carregamento", pctOu(meta.carreg), deltaPP(meta.carreg,metaAnt.carreg), "Meta (visitas ÷ cliques)")}
     </div>
   </section>
   <section>
     <div class="sec-head"><div><h2>Por funil</h2><p class="sub">Clique na aba de cada funil para ver campanhas, páginas e criativos.</p></div></div>
     <div class="card tbl-wrap"><table>
-      <thead><tr><th>Funil</th><th>Valor usado</th><th>% do total</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th><th>Leads</th><th>Custo por lead</th><th>Carregamento</th></tr></thead>
+      <thead><tr><th>Funil</th><th>Valor usado</th><th>% do total</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th><th>Leads</th><th>Custo por lead</th>${temConv?"<th>Conversas</th><th>Custo por conversa</th>":""}<th>Carregamento</th></tr></thead>
       <tbody>${linhas.map(({a,at,an}) => `<tr>
         <td>${esc(a.nome)}<span class="st">${esc(a.descricao||"")}</span></td>
         <td>${fmtMoeda(at.gasto)}</td><td>${pctOu(div(at.gasto*100, tot.gasto))}</td>
         <td>${fmtInt(at.compras)}</td><td>${moedaOu(div(at.gasto, at.compras))}</td>
         <td>${fmtMoeda(at.faturamento)}</td><td class="hl">${xOu(at.roas)}</td>
-        <td>${fmtInt(at.leads)}</td><td>${moedaOu(div(at.gasto, at.leads))}</td><td>${pctOu(at.carreg)}</td></tr>`).join("")}
+        <td>${fmtInt(at.leads)}</td><td>${moedaOu(div(at.gasto, at.leads))}</td>${temConv?`<td>${fmtInt(at.conversas)}</td><td>${moedaOu(div(at.gasto, at.conversas))}</td>`:""}<td>${pctOu(at.carreg)}</td></tr>`).join("")}
       </tbody></table></div>
-    <p class="defs">Compras e faturamento são os atribuídos pelas plataformas (pixel da Meta e tag do Google) e podem diferir das vendas reais do Asaas:
+    <p class="defs">Compras e faturamento são os atribuídos pelas plataformas (pixel da Meta e tag do Google) e podem diferir das vendas reais:
       quem vê o anúncio na Meta e depois pesquisa no Google pode ser contado nas duas, então a soma tende a ficar acima do real.
       Custo por compra e custo por lead aqui dividem o valor usado de todo o funil; o custo por resultado de cada tipo de campanha está dentro da aba.</p>
   </section>`;
@@ -426,6 +439,7 @@ function abaFunil(P, aba){
   const a = deriv(somar(idsT.map(id => P.campanhas[id] || vazio())), r, G);
   const b = deriv(somar(idsT.map(id => P.anterior[id] || vazio())), r, G);
   const ehVenda = r === "compras";
+  const SP = G || r === "conversas";  // sem página: Google (tem outro relatório) ou anúncio que abre o WhatsApp
 
   // campanhas
   const campanhas = idsT.filter(id => P.campanhas[id]).map(id => ({c: camp(id), m: deriv(P.campanhas[id], r, G)}))
@@ -450,8 +464,8 @@ function abaFunil(P, aba){
   const colVenda = ehVenda ? `<th>Faturamento</th><th>ROAS</th>` : "";
   const celVenda = m => ehVenda ? `<td>${fmtMoeda(m.faturamento)}</td><td class="hl">${xOu(m.roas)}</td>` : "";
   const convTxt = G ? "compras ÷ cliques" : R.conv === "cliques" ? "conversas ÷ cliques" : "resultado ÷ visitas";
-  const colVis = G ? "" : "<th>Visitas</th><th>Carregamento</th>";
-  const celVis = m => G ? "" : `<td>${fmtInt(m.visitas)}</td><td>${pctOu(m.carreg)}</td>`;
+  const colVis = SP ? "" : "<th>Visitas</th><th>Carregamento</th>";
+  const celVis = m => SP ? "" : `<td>${fmtInt(m.visitas)}</td><td>${pctOu(m.carreg)}</td>`;
 
   return `<p class="desc">${esc(aba.descricao||"")}</p>
   <div class="filtros">
@@ -468,14 +482,16 @@ function abaFunil(P, aba){
       ${tile(R.un, fmtInt(a.res), delta(a.res,b.res,"sobe"), "", true)}
       ${tile(R.cu, moedaOu(a.cpr), delta(a.cpr,b.cpr,"desce"))}
       ${tile("Valor usado", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
-      ${G ? tile("Custo por clique", moedaOu(div(a.gasto,a.cliques)), delta(div(a.gasto,a.cliques),div(b.gasto,b.cliques),"desce")) : tile("Taxa de carregamento", pctOu(a.carreg), deltaPP(a.carreg,b.carreg), "visitas ÷ cliques")}
+      ${SP ? tile("Custo por clique", moedaOu(div(a.gasto,a.cliques)), delta(div(a.gasto,a.cliques),div(b.gasto,b.cliques),"desce")) : tile("Taxa de carregamento", pctOu(a.carreg), deltaPP(a.carreg,b.carreg), "visitas ÷ cliques")}
       ${R.conv ? tile("Taxa de conversão", pctOu(a.conv), deltaPP(a.conv,b.conv), convTxt) : tile("CTR", pctOu(a.ctr), deltaPP(a.ctr,b.ctr), "cliques ÷ impressões")}
       ${ehVenda ? tile(G ? "Faturamento (tag do Google)" : "Faturamento (pixel)", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe")) : ""}
       ${ehVenda ? tile("ROAS", xOu(a.roas), delta(a.roas,b.roas,"sobe"), "faturamento ÷ valor usado") : ""}
       ${tile("Cliques no link", fmtInt(a.cliques), delta(a.cliques,b.cliques,"sobe"), `CTR ${pctOu(a.ctr)}`)}
-      ${G ? tile("Impressões", fmtInt(a.impressoes), delta(a.impressoes,b.impressoes,"sobe"), `CPM ${moedaOu(a.cpm)}`) : tile("Visitas à página", fmtInt(a.visitas), delta(a.visitas,b.visitas,"sobe"), `CPM ${moedaOu(a.cpm)}`)}
+      ${SP ? tile("Impressões", fmtInt(a.impressoes), delta(a.impressoes,b.impressoes,"sobe"), `CPM ${moedaOu(a.cpm)}`) : tile("Visitas à página", fmtInt(a.visitas), delta(a.visitas,b.visitas,"sobe"), `CPM ${moedaOu(a.cpm)}`)}
     </div>
   </section>
+
+  ${G ? "" : funilVisual(a, b, r)}
 
   <section>
     <div class="card chart" id="graf">${grafico(idsT, r)}</div>
@@ -516,7 +532,7 @@ function abaFunil(P, aba){
           <div class="${ORD==="res"?"sel":""}">${R.un}<b>${fmtInt(x.res)}</b></div>
           <div class="${ORD==="cpr"?"sel":""}">${R.cu}<b>${moedaOu(x.cpr)}</b></div>
           <div class="${ORD==="gasto"?"sel":""}">Valor usado<b>${fmtMoeda(x.gasto)}</b></div>
-          <div>Carregamento<b>${pctOu(x.carreg)}</b></div>
+          ${SP ? `<div>CTR<b>${pctOu(x.ctr)}</b></div>` : `<div>Carregamento<b>${pctOu(x.carreg)}</b></div>`}
           ${R.conv?`<div class="${ORD==="conv"?"sel":""}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div>CTR<b>${pctOu(x.ctr)}</b></div>`}
           ${ehVenda?`<div class="${ORD==="roas"?"sel":""}">ROAS<b>${xOu(x.roas)}</b></div>`:`<div>Cliques<b>${fmtInt(x.cliques)}</b></div>`}
         </div>
@@ -526,6 +542,26 @@ function abaFunil(P, aba){
           ${x.x.previa?`<a class="lnk" href="${esc(x.x.previa)}" target="_blank" rel="noopener">${ICO_EYE} Prévia</a>`:""}
         </div></div></div>`).join("")}</div>` : `<div class="card empty">Nenhum criativo passou do gasto mínimo no período.</div>`}
   </section>`}`;
+}
+
+// ---------- funil visual da aba (impressões > cliques > visitas > checkout > resultado) ----------
+function funilVisual(a, b, r){
+  if (!a.impressoes) return "";
+  const R = RES[r];
+  const et = [{lbl:"Impressões", v:a.impressoes, vb:b.impressoes, tx:`CPM <b>${moedaOu(a.cpm)}</b>`}];
+  et.push({lbl:"Cliques no link", v:a.cliques, vb:b.cliques, tx:`CTR <b>${pctOu(a.ctr)}</b> · CPC <b>${moedaOu(div(a.gasto,a.cliques))}</b>`});
+  if (R.conv === "visitas" || a.visitas) et.push({lbl:"Visitas à página", v:a.visitas, vb:b.visitas, tx:`Carregamento <b>${pctOu(a.carreg)}</b> · custo <b>${moedaOu(div(a.gasto,a.visitas))}</b>`});
+  if (r === "compras") et.push({lbl:"Checkouts", v:a.checkouts, vb:b.checkouts, tx:`Página → checkout <b>${pctOu(div(a.checkouts*100,a.visitas))}</b> · custo <b>${moedaOu(div(a.gasto,a.checkouts))}</b>`});
+  if (["compras","leads","cadastros","conversas","checkouts"].includes(r) && r !== "checkouts")
+    et.push({lbl:R.un, v:a.res, vb:b.res, tx:`${r==="compras" ? `Checkout → compra <b>${pctOu(div(a.res*100,a.checkouts))}</b>` : `Conversão <b>${pctOu(a.conv)}</b>`} · ${R.cu.toLowerCase()} <b>${moedaOu(a.cpr)}</b>`});
+  const max = et[0].v || 1;
+  return `<section>
+    <div class="sec-head"><div><h2>Funil</h2><p class="sub">Do anúncio visto até o resultado, com a taxa de passagem de cada etapa</p></div></div>
+    <div class="funil">${et.map(e => `<div class="card et">
+      <div class="lbl">${esc(e.lbl)}</div><div class="val">${fmtInt(e.v)}</div>
+      <div class="bar"><i style="width:${Math.max(2, Math.sqrt(e.v / max) * 100)}%"></i></div>
+      <div class="tx">${e.tx}</div>${delta(e.v, e.vb, "sobe")}</div>`).join("")}</div>
+  </section>`;
 }
 
 // ---------- gráfico dia a dia (30 dias) ----------

@@ -55,7 +55,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 
 | Cliente | Link |
 |---|---|
-| Ordus System | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
+| Ordus System (acompanhamento: todas as campanhas, por funil; ontem, 3, 7, 14 e 30 dias) | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
 | Vita Hair | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
 | Rocha Mazzo Advogados (Raio-X da MP 1.376) | https://carlos-primo.github.io/c2pro-dashboards/vendas/rocha-mazzo/ |
 | BJJ Protech (tráfego completo: abas por tipo, Google e distribuição; com senha) | https://carlos-primo.github.io/c2pro-dashboards/vendas/bjj-protech/ |

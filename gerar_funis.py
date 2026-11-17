@@ -23,6 +23,12 @@ tipo de resultado pra nao somar compra com lead.
 Paginas: URL de destino de cada anuncio (link do criativo, sem parametros), com as metricas somadas.
 
 Opcional: "google_customer_id": "8756808672" cria a aba Google Ads (campanhas, paginas e dia a dia).
+Opcional: "periodos": [1, 3, 7, 14, 30]  troca os botoes de periodo (padrao 7, 30 e "mes"; 30 e obrigatorio,
+          e a base do dia a dia). "mes" = este mes. 1 aparece como "Ontem".
+Opcional: "aba_inicial": "<id da aba>"  o dashboard abre nessa aba em vez da visao geral.
+
+Tambem e o motor do vendas/<slug> com "modelo": "acompanhamento" no config (Ordus, 17/11/2026): o gerar_vendas.py
+chama gerar_cliente(slug, pasta="vendas") e o link de vendas continua o mesmo, com senha SENHA_VENDAS_<SLUG>.
 
 Variaveis de ambiente: META_ADS_TOKEN, as GOOGLE_ADS_* (se tiver Google) e, opcional, SENHA_FUNIS_<SLUG>.
 """
@@ -45,7 +51,7 @@ AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "funis"
 CFG = {}
 
-PERIODOS = [7, 30]  # mais o "mes" (este mes), montado em gerar_cliente()
+PERIODOS = [7, 30, "mes"]  # padrao; o config pode trocar com "periodos"
 CAMPOS = "spend,impressions,reach,inline_link_clicks,actions,action_values,video_thruplay_watched_actions"
 
 # A Meta devolve o mesmo evento com nomes diferentes conforme a origem; usa o primeiro que existir.
@@ -163,6 +169,10 @@ def url_limpa(url):
 
 def url_do_criativo(cr):
     oss = cr.get("object_story_spec") or {}
+    for chave in ("link_data", "video_data", "photo_data"):
+        cta = (oss.get(chave) or {}).get("call_to_action") or {}
+        if cta.get("type") == "WHATSAPP_MESSAGE" or (cta.get("value") or {}).get("app_destination") == "WHATSAPP":
+            return "WhatsApp (conversa direto pelo anúncio)"
     if oss.get("template_data", {}).get("link"):
         return url_limpa(oss["template_data"]["link"]) + " (catálogo)"
     for chave in ("link_data", "video_data", "photo_data"):
@@ -300,10 +310,10 @@ def juntar_google(periodos, campanhas, diario, dias):
     return True
 
 
-def gerar_cliente(slug):
+def gerar_cliente(slug, pasta="funis"):
     CFG.clear()
-    CFG.update(json.loads((AQUI / "funis" / slug / "config.json").read_text(encoding="utf-8")))
-    saida = SITE / slug
+    CFG.update(json.loads((AQUI / pasta / slug / "config.json").read_text(encoding="utf-8")))
+    saida = AQUI / "site" / pasta / slug
 
     conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
     fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
@@ -316,8 +326,9 @@ def gerar_cliente(slug):
                            "aba": aba_da(c["name"]), "publico": publico_do(c["name"]),
                            "resultado": resultado[c["id"]]} for c in todas}
 
-    periodos = {str(d): periodo(*ultimos(d, ontem)) for d in PERIODOS}
-    periodos["mes"] = periodo(*este_mes(ontem))
+    lista = CFG.get("periodos", PERIODOS)
+    conferir(30 in lista, "periodos precisa ter 30 (base do dia a dia)")
+    periodos = {str(d): periodo(*(este_mes(ontem) if d == "mes" else ultimos(int(d), ontem))) for d in lista}
 
     ids_ads = {a["id"] for p in periodos.values() for a in p["anuncios"]}
     det = detalhes_anuncios(ids_ads)
@@ -361,7 +372,7 @@ def gerar_cliente(slug):
         "nome": CFG["nome"], "subtitulo": CFG.get("subtitulo", ""), "conta": conta.get("name", ""),
         "moeda": conta.get("currency", "BRL"), "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG.get("criativos_gasto_minimo", 10),
-        "abas": abas,
+        "abas": abas, "aba_inicial": CFG.get("aba_inicial", "geral"),
         "campanhas": {cid: campanhas[cid] for cid in usadas},
         "periodos": periodos,
         "dias": dias30,
@@ -369,7 +380,8 @@ def gerar_cliente(slug):
     }
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    senha = os.environ.get(f"SENHA_FUNIS_{slug.upper().replace('-', '_')}", "")
+    prefixo = "SENHA_VENDAS_" if pasta == "vendas" else "SENHA_FUNIS_"
+    senha = os.environ.get(prefixo + slug.upper().replace('-', '_'), "")
     payload = criptografar(json_dados, senha) if senha else {"enc": False, "dados": dados}
 
     saida.mkdir(parents=True, exist_ok=True)
@@ -382,7 +394,7 @@ def gerar_cliente(slug):
     for cid, m in periodos["30"]["campanhas"].items():
         por_aba[campanhas[cid]["aba"]] += m["gasto"]
     resumo = ", ".join(f"{k} R$ {v:.0f}" for k, v in por_aba.most_common())
-    print(f"OK funis/{slug}: 30d {resumo} | {len(ids_ads)} anuncios | "
+    print(f"OK {pasta}/{slug}: 30d {resumo} | {len(ids_ads)} anuncios | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")
 
 

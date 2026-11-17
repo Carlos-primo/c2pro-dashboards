@@ -16,6 +16,10 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
   "excluir": ["BLACK"]            tira campanhas com esse trecho no nome, mesmo tendo VENDAS (Vita Hair: a Black
                                   da Debora tem dashboard proprio)
   "so_dados": true                dashboard so com numeros: sem alerta, sugestao nem textos explicativos
+  "modelo": "acompanhamento"      troca o dashboard pelo de acompanhamento (gerar_funis.py): todas as campanhas
+                                  da conta, em abas, com o resultado de cada uma (conversa, lead, compra), paginas e
+                                  criativos. Mesmo link. Config igual ao de funis/ (abas, periodos, aba_inicial).
+                                  Ordus (17/11/2026), pedido do Carlos: a campanha ativa e de WhatsApp, nao VENDAS
 
 Visao completa de trafego (BJJ Protech, 13/11/2026). Tudo opcional e so com pedido do Carlos; sempre dentro do
 filtro VENDAS (as frentes so separam o que ja passou nele):
@@ -503,6 +507,10 @@ def serie_diaria(ontem, ids=None):
 def gerar_cliente(slug):
     CFG.clear()
     CFG.update(json.loads((AQUI / "vendas" / slug / "config.json").read_text(encoding="utf-8")))
+    if CFG.get("modelo") == "acompanhamento":
+        # Dashboard de acompanhamento (todas as campanhas, por funil) no mesmo link de vendas. Ver gerar_funis.py.
+        import gerar_funis
+        return gerar_funis.gerar_cliente(slug, pasta="vendas")
     saida = SITE / slug
 
     conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")

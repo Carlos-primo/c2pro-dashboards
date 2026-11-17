@@ -1,6 +1,14 @@
 {
   "nome": "Ordus System",
-  "subtitulo": "Campanhas de vendas",
+  "subtitulo": "Acompanhamento das campanhas",
   "conta_anuncio": "act_390130512860698",
-  "criativos_gasto_minimo": 10
+  "criativos_gasto_minimo": 5,
+  "modelo": "acompanhamento",
+  "periodos": [1, 3, 7, 14, 30],
+  "aba_inicial": "black-whatsapp",
+  "abas": [
+    {"id": "black-whatsapp", "nome": "Black: WhatsApp", "descricao": "Campanha ativa da Black Friday: anúncio que leva direto para a conversa no WhatsApp, oferecendo a API Oficial do WhatsApp.", "contem": ["WHATSAPP_BLACK"]},
+    {"id": "vendas-crm", "nome": "Vendas do CRM", "descricao": "Venda do plano do Ordus CRM, com compra no checkout do site.", "contem": ["VENDAS"]},
+    {"id": "live", "nome": "Live (grupo)", "descricao": "Captação para a live semanal, com entrada no grupo de WhatsApp.", "contem": ["GRUPO_WP"]}
+  ]
 }
