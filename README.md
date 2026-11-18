@@ -14,7 +14,7 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 | Evaldit Rafaela | https://carlos-primo.github.io/c2pro-dashboards/evaldit-rafaela-ibama/ |
 | Método NeuroappAvalia | https://carlos-primo.github.io/c2pro-dashboards/metodo-neuroapp-avalia-cartao/ |
 | Amanda Elia Advogada (período fixo: 22/12/2025 a 18/02/2026) | https://carlos-primo.github.io/c2pro-dashboards/amanda-elia/ |
-| Ingrid Villarraso (contatos + distribuição) | https://carlos-primo.github.io/c2pro-dashboards/ingrid-villarraso/ |
+| Ingrid Villarraso (acompanhamento: todas as campanhas; hoje, 3, 7, 14 e 30 dias) | https://carlos-primo.github.io/c2pro-dashboards/ingrid-villarraso/ |
 
 ## O que cada dashboard de distribuição mostra
 
@@ -30,6 +30,14 @@ https://carlos-primo.github.io/c2pro-dashboards/<cliente>/
 **Regra fixa:** só entram campanhas com `DISTRIBUICAO` no nome. O filtro está no código (`FILTRO` em `gerar.py`), não é configurável, e o gerador aborta se algum dado fugir da regra.
 
 **Definições:** hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
+
+## Acompanhamento de todas as campanhas no link de distribuição
+
+Com `"modelo": "acompanhamento"` no `clientes/<slug>/config.json` (hoje: Ingrid Villarraso, desde 18/11/2026), o link de
+distribuição vira o dashboard de acompanhamento do `gerar_funis.py`: todas as campanhas da conta, ativas e pausadas que
+gastaram no período, uma aba por funil (`abas` no config), criativos filtráveis por campanha e as métricas do objetivo de
+cada uma (cliques no link do grupo, conversas, ThruPlays com hook rate e retenção). Período `0` = "Hoje" (parcial).
+A Ingrid roda também às 9h, 12h, 15h, 18h e 21h para o "Hoje" ficar atual.
 
 ## Contatos e distribuição no mesmo link
 

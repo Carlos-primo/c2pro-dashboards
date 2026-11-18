@@ -310,6 +310,9 @@ def gerar_cliente(slug):
     if CFG.get("modelo") == "funil":
         import gerar_funil  # topo/meio/fundo com abas Meta e Google, so para quem pede no config
         return gerar_funil.gerar(slug)
+    if CFG.get("modelo") == "acompanhamento":
+        import gerar_funis  # todas as campanhas da conta, uma aba por campanha/funil (Ingrid, 18/11/2026)
+        return gerar_funis.gerar_cliente(slug, pasta="clientes")
     if CFG.get("modelo") == "contatos_distribuicao":
         import gerar_contatos_distribuicao  # abas de contatos e de distribuicao no mesmo link
         return gerar_contatos_distribuicao.gerar(slug)

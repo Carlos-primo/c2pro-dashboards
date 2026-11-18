@@ -26,6 +26,10 @@ Opcional: "google_customer_id": "8756808672" cria a aba Google Ads (campanhas, p
 Opcional: "periodos": [1, 3, 7, 14, 30]  troca os botoes de periodo (padrao 7, 30 e "mes"; 30 e obrigatorio,
           e a base do dia a dia). "mes" = este mes. 1 aparece como "Ontem".
 Opcional: "aba_inicial": "<id da aba>"  o dashboard abre nessa aba em vez da visao geral.
+          0 nos periodos = "Hoje": parcial, da meia-noite ate a hora da rodada, comparado com ontem inteiro.
+
+Tambem e o motor do clientes/<slug> com "modelo": "acompanhamento" (Ingrid Villarraso, 18/11/2026): o gerar.py
+chama gerar_cliente(slug, pasta="clientes"), sai em site/<slug>/ (link de distribuicao de sempre), senha SENHA_<SLUG>.
 
 Tambem e o motor do vendas/<slug> com "modelo": "acompanhamento" no config (Ordus, 17/11/2026): o gerar_vendas.py
 chama gerar_cliente(slug, pasta="vendas") e o link de vendas continua o mesmo, com senha SENHA_VENDAS_<SLUG>.
@@ -63,11 +67,16 @@ EVENTOS = {
     "cadastros": ["complete_registration", "omni_complete_registration",
                   "offsite_conversion.fb_pixel_complete_registration"],
     "conversas": ["onsite_conversion.messaging_conversation_started_7d"],
+    "views": ["video_view"],              # views de 3s (hook rate = views / impressoes)
+    "engajamento": ["post_engagement"],
 }
 
 # Evento otimizado no conjunto -> metrica de resultado
 POR_EVENTO = {"PURCHASE": "compras", "LEAD": "leads", "COMPLETE_REGISTRATION": "cadastros",
-              "INITIATED_CHECKOUT": "checkouts"}
+              "INITIATED_CHECKOUT": "checkouts",
+              # CONTACT no pixel com link de grupo de WhatsApp (Ingrid, GRUPO_VIP_BLACK_26): o pixel nao ve a entrada
+              # no grupo, entao o numero que conta e o clique no link do grupo.
+              "CONTACT": "cliques"}
 POR_OTIMIZACAO = {"THRUPLAY": "thruplay", "VIDEO_VIEWS": "thruplay", "CONVERSATIONS": "conversas",
                   "REACH": "alcance", "IMPRESSIONS": "alcance", "LEAD_GENERATION": "leads",
                   "QUALITY_LEAD": "leads", "LANDING_PAGE_VIEWS": "visitas", "LINK_CLICKS": "cliques",
@@ -229,13 +238,21 @@ def este_mes(ontem):
     return inicio, ontem, ant_inicio, ant_fim
 
 
+def hoje(dia):
+    """Hoje (parcial, ate a hora da rodada) comparado com ontem inteiro."""
+    ontem = dia - dt.timedelta(days=1)
+    return dia, dia, ontem, ontem
+
+
 def periodo(inicio, fim, ant_inicio, ant_fim):
     dias = f"{inicio}..{fim}"
+    # Hoje ainda esta gastando: entre a chamada da conta e a dos anuncios o valor pode andar alguns centavos.
+    tol = 1.0 if fim == CFG.get("_hoje") else 0.05
 
     camp = campanhas_do_periodo(inicio, fim)
     total = insights("account", inicio, fim, CAMPOS)
     total_gasto = float(total[0]["spend"]) if total else 0.0
-    conferir(abs(sum(m["gasto"] for m in camp.values()) - total_gasto) < 0.05,
+    conferir(abs(sum(m["gasto"] for m in camp.values()) - total_gasto) < tol,
              f"{dias}d: soma das campanhas difere do total da conta")
 
     anuncios = []
@@ -243,7 +260,7 @@ def periodo(inicio, fim, ant_inicio, ant_fim):
         m = metricas(l)
         if m["gasto"] > 0:
             anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha_id": l["campaign_id"], **m})
-    conferir(abs(sum(a["gasto"] for a in anuncios) - total_gasto) < 0.05,
+    conferir(abs(sum(a["gasto"] for a in anuncios) - total_gasto) < tol,
              f"{dias}d: soma dos anuncios difere do total da conta")
 
     return {"inicio": inicio.isoformat(), "fim": fim.isoformat(),
@@ -313,12 +330,13 @@ def juntar_google(periodos, campanhas, diario, dias):
 def gerar_cliente(slug, pasta="funis"):
     CFG.clear()
     CFG.update(json.loads((AQUI / pasta / slug / "config.json").read_text(encoding="utf-8")))
-    saida = AQUI / "site" / pasta / slug
+    saida = AQUI / "site" / slug if pasta == "clientes" else AQUI / "site" / pasta / slug
 
     conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
     fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
     agora = dt.datetime.now(fuso)
     ontem = agora.date() - dt.timedelta(days=1)
+    CFG["_hoje"] = agora.date()
 
     todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name,effective_status", limit=500)
     resultado = resultados_das_campanhas(todas)
@@ -328,7 +346,8 @@ def gerar_cliente(slug, pasta="funis"):
 
     lista = CFG.get("periodos", PERIODOS)
     conferir(30 in lista, "periodos precisa ter 30 (base do dia a dia)")
-    periodos = {str(d): periodo(*(este_mes(ontem) if d == "mes" else ultimos(int(d), ontem))) for d in lista}
+    periodos = {str(d): periodo(*(este_mes(ontem) if d == "mes" else hoje(agora.date()) if d == 0
+                                  else ultimos(int(d), ontem))) for d in lista}
 
     ids_ads = {a["id"] for p in periodos.values() for a in p["anuncios"]}
     det = detalhes_anuncios(ids_ads)
@@ -341,13 +360,13 @@ def gerar_cliente(slug, pasta="funis"):
     inicio30 = ontem - dt.timedelta(days=29)
     diario = {}
     for l in diario_seguro(lambda c, i, f, **e: insights("campaign", i, f, c, **e),
-                           "campaign_id,spend,actions,action_values,video_thruplay_watched_actions,reach",
+                           "campaign_id,spend,inline_link_clicks,actions,action_values,video_thruplay_watched_actions,reach",
                            inicio30, ontem):
         m = metricas(l)
         if m["gasto"] > 0:
             diario.setdefault(l["campaign_id"], {})[l["date_start"]] = {
                 k: m[k] for k in ("gasto", "compras", "faturamento", "leads", "cadastros", "conversas", "thruplay",
-                                  "alcance", "visitas", "cliques", "checkouts")}
+                                  "alcance", "visitas", "cliques", "checkouts", "views", "engajamento")}
     soma_diaria = sum(d["gasto"] for c in diario.values() for d in c.values())
     soma_30 = sum(m["gasto"] for m in periodos["30"]["campanhas"].values())
     conferir(abs(soma_diaria - soma_30) < 0.05, "serie diaria nao bate com o total de 30 dias")
@@ -373,6 +392,7 @@ def gerar_cliente(slug, pasta="funis"):
         "moeda": conta.get("currency", "BRL"), "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG.get("criativos_gasto_minimo", 10),
         "abas": abas, "aba_inicial": CFG.get("aba_inicial", "geral"),
+        "periodo_inicial": str(CFG.get("periodo_inicial", "7")),
         "campanhas": {cid: campanhas[cid] for cid in usadas},
         "periodos": periodos,
         "dias": dias30,
@@ -380,7 +400,7 @@ def gerar_cliente(slug, pasta="funis"):
     }
 
     json_dados = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    prefixo = "SENHA_VENDAS_" if pasta == "vendas" else "SENHA_FUNIS_"
+    prefixo = {"vendas": "SENHA_VENDAS_", "clientes": "SENHA_"}.get(pasta, "SENHA_FUNIS_")
     senha = os.environ.get(prefixo + slug.upper().replace('-', '_'), "")
     payload = criptografar(json_dados, senha) if senha else {"enc": False, "dados": dados}
 

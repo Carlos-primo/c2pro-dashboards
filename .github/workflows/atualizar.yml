@@ -1,6 +1,7 @@
 # Atualiza os dashboards todo dia de madrugada (Brasilia) e publica no GitHub Pages, em tres grupos
 # separados por 1 hora pra nao dividir o limite de chamadas da Meta (janela movel de 1 hora):
 #   02:00 distribuicao | 03:00 vendas, Black e funis | 04:00 leads, lancamento e Google Ads
+# E a Ingrid (clientes/ingrid-villarraso, periodo "Hoje") de novo as 9h, 12h, 15h, 18h e 21h.
 # Nao usa Claude: e so o gerar*.py chamando a API da Meta (e a do Google Ads, no gerar_google.py).
 #
 # Na hora (botao "Run workflow" no GitHub, ou gh workflow run atualizar.yml -f dashboard=...):
@@ -28,6 +29,7 @@ on:
     - cron: "0 5 * * *"   # 02:00 em Brasilia: distribuicao
     - cron: "0 6 * * *"   # 03:00 em Brasilia: vendas e Black
     - cron: "0 7 * * *"   # 04:00 em Brasilia: leads e lancamento
+    - cron: "0 0,12,15,18,21 * * *"   # 9h, 12h, 15h, 18h e 21h em Brasilia: so a Ingrid (tem o periodo "Hoje")
   workflow_dispatch:
     inputs:
       dashboard:
@@ -73,6 +75,7 @@ jobs:
             "0 5 * * *") GRUPO=distribuicao ;;
             "0 6 * * *") GRUPO=vendas ;;
             "0 7 * * *") GRUPO=leads ;;
+            "0 0,12,15,18,21 * * *") DASHBOARD=clientes/ingrid-villarraso ;;
           esac
           declare -A tipo=([distribuicao]= [vendas]= [black]= [funis]= [leads]= [lancamento]= [google]=)
           if [ -n "$DASHBOARD" ]; then

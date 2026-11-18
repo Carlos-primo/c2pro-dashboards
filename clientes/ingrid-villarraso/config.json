@@ -1,7 +1,14 @@
 {
   "nome": "Ingrid Villarraso",
-  "subtitulo": "Contatos e distribuição",
+  "subtitulo": "Acompanhamento das campanhas",
   "conta_anuncio": "act_1608895763053596",
   "criativos_gasto_minimo": 5,
-  "modelo": "contatos_distribuicao"
+  "modelo": "acompanhamento",
+  "periodos": [0, 3, 7, 14, 30],
+  "periodo_inicial": "7",
+  "abas": [
+    {"id": "grupo-vip", "nome": "Grupo VIP Black", "descricao": "Tráfego para o grupo VIP da Black: anúncio que leva para o link de entrada no grupo. Resultado = cliques no link.", "contem": ["GRUPO_VIP"]},
+    {"id": "contatos", "nome": "Contatos", "descricao": "Anúncio que abre a conversa no WhatsApp. Resultado = conversas iniciadas.", "contem": ["CONTATOS"]},
+    {"id": "distribuicao", "nome": "Distribuição", "descricao": "Distribuição de conteúdo (topo, meio e fundo): vídeos para aquecer o público. Resultado = ThruPlays e engajamento.", "contem": ["DISTRIBUICAO"]}
+  ]
 }

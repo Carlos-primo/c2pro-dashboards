@@ -256,7 +256,7 @@ const RES = {
   cliques:   {grupo:"Cliques",      un:"Cliques no link",   cu:"Custo por clique",    conv:null},
 };
 const ORDEM_RES = ["compras","leads","cadastros","checkouts","conversas","thruplay","alcance","visitas","cliques"];
-const SOMA = ["gasto","impressoes","alcance","cliques","thruplay","faturamento","visitas","checkouts","compras","leads","cadastros","conversas"];
+const SOMA = ["gasto","impressoes","alcance","cliques","thruplay","faturamento","visitas","checkouts","compras","leads","cadastros","conversas","views","engajamento"];
 const vazio = () => Object.fromEntries(SOMA.map(k => [k,0]));
 function somar(lista){ const t = vazio(); lista.forEach(m => SOMA.forEach(k => t[k] += m[k]||0)); return t; }
 // g = Google Ads: nao tem visita a pagina, entao nao tem carregamento e a conversao e compras / cliques.
@@ -266,7 +266,10 @@ function deriv(m, r, g){
     cpr: R && R.mil ? div(m.gasto*1000, res) : div(m.gasto, res),
     carreg: g ? null : div(m.visitas*100, m.cliques),
     conv: g ? div(res*100, m.cliques) : R && R.conv ? div(res*100, m[R.conv]) : null,
-    roas: div(m.faturamento, m.gasto), ctr: div(m.cliques*100, m.impressoes), cpm: div(m.gasto*1000, m.impressoes) };
+    roas: div(m.faturamento, m.gasto), ctr: div(m.cliques*100, m.impressoes), cpm: div(m.gasto*1000, m.impressoes),
+    hook: m.views ? div(m.views*100, m.impressoes) : null, ret: m.views ? div(m.thruplay*100, m.views) : null,
+    cpv: m.views ? div(m.gasto, m.views) : null, cpe: m.engajamento ? div(m.gasto, m.engajamento) : null,
+    freq: div(m.impressoes, m.alcance) };
 }
 
 // ---------- tela de senha ----------
@@ -304,9 +307,10 @@ async function iniciar(){
 
 // ---------- estado ----------
 let D, PER = mem.get("c2pro-funis-periodo") || "7", ABA = decodeURIComponent(location.hash.slice(1)) || mem.get("c2pro-funis-aba") || "geral";
-let TIPO = {}, PUB = "todos", ORD = "res";
+let TIPO = {}, PUB = "todos", ORD = "res", CAMPF = "todas", STF = "todas";
+const nomePer = k => k === "mes" ? "Este mês" : k === "0" ? "Hoje" : k === "1" ? "Ontem" : `Últimos ${k} dias`;
 
-function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = "7";
+function render(dados){ D = dados; MOEDA = D.moeda || "BRL"; if (!D.periodos[PER]) PER = D.periodos[D.periodo_inicial] ? D.periodo_inicial : "7";
   if (!location.hash.slice(1) && D.aba_inicial && D.aba_inicial !== "geral") ABA = D.aba_inicial;
   if (ABA !== "geral" && !D.abas.some(a => a.id === ABA)) ABA = D.aba_inicial || "geral";
   desenhar(); }
@@ -355,12 +359,12 @@ function desenhar(){
     <div class="brand"><img src="logo.png" alt="C2Pro">
       <div><div class="eyebrow">${esc(D.subtitulo || "Acompanhamento por funil")}</div><h1>${esc(D.nome)}</h1></div></div>
     <div class="pills" role="group" aria-label="Período">
-      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${k === "mes" ? "Este mês" : k === "1" ? "Ontem" : `Últimos ${k} dias`}</button>`).join("")}
+      ${Object.keys(D.periodos).map(k => `<button data-p="${k}" aria-pressed="${PER===k}">${nomePer(k)}</button>`).join("")}
     </div>
   </header>
   <div class="meta">
-    <span>Período: ${faixa(P.inicio, P.fim)}</span>
-    <span>Comparado com: ${faixa(P.ant_inicio, P.ant_fim)}</span>
+    <span>Período: ${PER === "0" ? `hoje (${dataBR(P.inicio)}), parcial até ${D.gerado_em.slice(11,16)}` : faixa(P.inicio, P.fim)}</span>
+    <span>Comparado com: ${P.ant_inicio === P.ant_fim ? `${dataBR(P.ant_inicio)} (dia inteiro)` : faixa(P.ant_inicio, P.ant_fim)}</span>
     <span>Atualizado em ${quando}</span>
   </div>
   <nav class="tabs" role="group" aria-label="Funil">
@@ -371,18 +375,26 @@ function desenhar(){
   <footer>Dados da Meta Ads (atribuição padrão da conta) e do Google Ads, atualizados todo dia de madrugada.
     Resultado = o evento que cada campanha otimiza (compra, lead, conversa, ThruPlay...).
     Taxa de carregamento = visitas à página ÷ cliques no link. Taxa de conversão = resultado ÷ visitas à página
-    (nas campanhas de WhatsApp, conversas ÷ cliques). Os períodos terminam ontem.</footer>
+    (nas campanhas de WhatsApp, conversas ÷ cliques). Hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
+    Os períodos terminam ontem${D.periodos["0"] ? `; "Hoje" é parcial, da meia-noite até a última atualização` : ""}.</footer>
   </div>`;
 
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { PER = b.dataset.p; mem.set("c2pro-funis-periodo", PER); desenhar(); });
-  app.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { ABA = b.dataset.a; PUB = "todos"; mem.set("c2pro-funis-aba", ABA); history.replaceState(null, "", "#" + ABA); desenhar(); });
-  app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { TIPO[ABA] = b.dataset.t; desenhar(); });
+  app.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { ABA = b.dataset.a; PUB = "todos"; CAMPF = "todas"; mem.set("c2pro-funis-aba", ABA); history.replaceState(null, "", "#" + ABA); desenhar(); });
+  app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { TIPO[ABA] = b.dataset.t; CAMPF = "todas"; desenhar(); });
   app.querySelectorAll("[data-pub]").forEach(b => b.onclick = () => { PUB = b.dataset.pub; desenhar(); });
   const sel = app.querySelector("#ord"); if (sel) sel.onchange = () => { ORD = sel.value; desenhar(); };
+  const sc = app.querySelector("#campf"); if (sc) sc.onchange = () => { CAMPF = sc.value; desenhar(); };
+  app.querySelectorAll("[data-st]").forEach(b => b.onclick = () => { STF = b.dataset.st; desenhar(); });
   ligarGrafico();
 }
 
 // ---------- visão geral ----------
+// Resultado principal de cada campanha, no formato curto da tabela
+function resCurto(c, m){
+  const R = RES[c.resultado] || RES.compras, d = deriv(m, c.resultado);
+  return {un: R.un, res: d.res, cpr: d.cpr};
+}
 function visaoGeral(P, abas){
   const linhas = abas.map(a => {
     const ids = idsDaAba(a.id, P);
@@ -394,31 +406,62 @@ function visaoGeral(P, abas){
   const meta = deriv(somar(soMeta(P.campanhas)),"compras"), metaAnt = deriv(somar(soMeta(P.anterior)),"compras");
   const temG = abas.some(a => a.id === "google");
   const temConv = tot.conversas > 0 || totAnt.conversas > 0;
+  // Conta sem venda (contatos, grupo, distribuição): esconde compras, faturamento e ROAS.
+  const temVenda = tot.compras > 0 || totAnt.compras > 0 || tot.faturamento > 0;
+  const temLead = tot.leads > 0 || totAnt.leads > 0;
+  const temVideo = tot.thruplay > 0 || totAnt.thruplay > 0;
+
+  // campanhas com gasto no período (ativas e não ativas)
+  const ativa = id => ["ACTIVE","ENABLED"].includes(camp(id).status);
+  const todas = Object.keys(P.campanhas).map(id => ({id, c: camp(id), m: deriv(P.campanhas[id], camp(id).resultado)}))
+    .sort((x,y) => (ativa(y.id) - ativa(x.id)) || y.m.gasto - x.m.gasto);
+  const nAt = todas.filter(x => ativa(x.id)).length;
+  const lista = todas.filter(x => STF === "todas" || (STF === "ativas") === ativa(x.id));
+  const nomeAba = id => (D.abas.find(a => a.id === id) || {}).nome || "Outras";
+
   return `<section>
     <div class="tiles">
       ${tile("Valor usado", fmtMoeda(tot.gasto), delta(tot.gasto,totAnt.gasto,null), temG ? "Meta + Google" : "todas as campanhas", true)}
-      ${tile("Compras", fmtInt(tot.compras), delta(tot.compras,totAnt.compras,"sobe"), temG ? "atribuídas (Meta + Google)" : "")}
-      ${tile("Faturamento atribuído", fmtMoeda(tot.faturamento), delta(tot.faturamento,totAnt.faturamento,"sobe"), temG ? `Meta ${fmtMoeda(meta.faturamento)} · Google ${fmtMoeda(tot.faturamento-meta.faturamento)}` : "pixel da Meta")}
-      ${tile("ROAS", xOu(tot.roas), delta(tot.roas,totAnt.roas,"sobe"), "faturamento ÷ valor usado")}
-      ${tile("Leads", fmtInt(tot.leads), delta(tot.leads,totAnt.leads,"sobe"))}
+      ${temVenda ? tile("Compras", fmtInt(tot.compras), delta(tot.compras,totAnt.compras,"sobe"), temG ? "atribuídas (Meta + Google)" : "") : ""}
+      ${temVenda ? tile("Faturamento atribuído", fmtMoeda(tot.faturamento), delta(tot.faturamento,totAnt.faturamento,"sobe"), temG ? `Meta ${fmtMoeda(meta.faturamento)} · Google ${fmtMoeda(tot.faturamento-meta.faturamento)}` : "pixel da Meta") : ""}
+      ${temVenda ? tile("ROAS", xOu(tot.roas), delta(tot.roas,totAnt.roas,"sobe"), "faturamento ÷ valor usado") : ""}
+      ${temVenda || temLead ? tile("Leads", fmtInt(tot.leads), delta(tot.leads,totAnt.leads,"sobe")) : ""}
       ${temConv ? tile("Conversas no WhatsApp", fmtInt(tot.conversas), delta(tot.conversas,totAnt.conversas,"sobe"), `custo por conversa ${moedaOu(div(tot.gasto, tot.conversas))}`) : ""}
-      ${tile("Taxa de carregamento", pctOu(meta.carreg), deltaPP(meta.carreg,metaAnt.carreg), "Meta (visitas ÷ cliques)")}
+      ${tile("Cliques no link", fmtInt(tot.cliques), delta(tot.cliques,totAnt.cliques,"sobe"), `CTR ${pctOu(tot.ctr)} · CPC ${moedaOu(div(tot.gasto,tot.cliques))}`)}
+      ${temVideo ? tile("ThruPlays", fmtInt(tot.thruplay), delta(tot.thruplay,totAnt.thruplay,"sobe"), `views de 3s ${fmtInt(tot.views)}`) : ""}
+      ${tile("Impressões", fmtInt(tot.impressoes), delta(tot.impressoes,totAnt.impressoes,"sobe"), `CPM ${moedaOu(tot.cpm)}`)}
+      ${temVenda ? tile("Taxa de carregamento", pctOu(meta.carreg), deltaPP(meta.carreg,metaAnt.carreg), "Meta (visitas ÷ cliques)") : ""}
     </div>
+  </section>
+  <section>
+    <div class="sec-head"><div><h2>Campanhas no período</h2><p class="sub">${todas.length} campanha${todas.length===1?"":"s"} com gasto no período · ${nAt} ativa${nAt===1?"":"s"} agora</p></div>
+      <div class="pills sm" role="group" aria-label="Status">
+        ${[["todas","Todas"],["ativas","Ativas"],["inativas","Não ativas"]].map(([k,v]) => `<button data-st="${k}" aria-pressed="${STF===k}">${v}</button>`).join("")}
+      </div></div>
+    ${lista.length ? `<div class="card tbl-wrap"><table>
+      <thead><tr><th>Campanha</th><th>Valor usado</th><th>Resultado</th><th>Custo por resultado</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th>${temConv?"<th>Conversas</th>":""}${temVideo?"<th>ThruPlays</th><th>Hook rate</th>":""}</tr></thead>
+      <tbody>${lista.map(({id,c,m}) => { const r = resCurto(c, P.campanhas[id]); return `<tr>
+        <td>${esc(c.nome)} ${badge(c.status)}<span class="st">${esc(nomeAba(c.aba))}</span></td>
+        <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(r.res)}<span class="st">${esc(r.un.toLowerCase())}</span></td><td>${moedaOu(r.cpr)}</td>
+        <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>
+        ${temConv?`<td>${fmtInt(m.conversas)}</td>`:""}${temVideo?`<td>${fmtInt(m.thruplay)}</td><td>${pctOu(m.hook)}</td>`:""}</tr>`; }).join("")}
+      </tbody></table></div>` : `<div class="card empty">Nenhuma campanha ${STF==="ativas"?"ativa":"não ativa"} gastou no período.</div>`}
+    <p class="defs">Entram todas as campanhas que gastaram no período, inclusive as que já foram pausadas. O status é o de agora (na hora da atualização).</p>
   </section>
   <section>
     <div class="sec-head"><div><h2>Por funil</h2><p class="sub">Clique na aba de cada funil para ver campanhas, páginas e criativos.</p></div></div>
     <div class="card tbl-wrap"><table>
-      <thead><tr><th>Funil</th><th>Valor usado</th><th>% do total</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th><th>Leads</th><th>Custo por lead</th>${temConv?"<th>Conversas</th><th>Custo por conversa</th>":""}<th>Carregamento</th></tr></thead>
-      <tbody>${linhas.map(({a,at,an}) => `<tr>
+      <thead><tr><th>Funil</th><th>Valor usado</th><th>% do total</th>${temVenda?"<th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th>":""}${temVenda||temLead?"<th>Leads</th><th>Custo por lead</th>":""}${temConv?"<th>Conversas</th><th>Custo por conversa</th>":""}<th>Cliques</th><th>CPC</th>${temVenda?"<th>Carregamento</th>":""}</tr></thead>
+      <tbody>${linhas.map(({a,at}) => `<tr>
         <td>${esc(a.nome)}<span class="st">${esc(a.descricao||"")}</span></td>
         <td>${fmtMoeda(at.gasto)}</td><td>${pctOu(div(at.gasto*100, tot.gasto))}</td>
-        <td>${fmtInt(at.compras)}</td><td>${moedaOu(div(at.gasto, at.compras))}</td>
-        <td>${fmtMoeda(at.faturamento)}</td><td class="hl">${xOu(at.roas)}</td>
-        <td>${fmtInt(at.leads)}</td><td>${moedaOu(div(at.gasto, at.leads))}</td>${temConv?`<td>${fmtInt(at.conversas)}</td><td>${moedaOu(div(at.gasto, at.conversas))}</td>`:""}<td>${pctOu(at.carreg)}</td></tr>`).join("")}
+        ${temVenda?`<td>${fmtInt(at.compras)}</td><td>${moedaOu(div(at.gasto, at.compras))}</td><td>${fmtMoeda(at.faturamento)}</td><td class="hl">${xOu(at.roas)}</td>`:""}
+        ${temVenda||temLead?`<td>${fmtInt(at.leads)}</td><td>${moedaOu(div(at.gasto, at.leads))}</td>`:""}${temConv?`<td>${fmtInt(at.conversas)}</td><td>${moedaOu(div(at.gasto, at.conversas))}</td>`:""}
+        <td>${fmtInt(at.cliques)}</td><td>${moedaOu(div(at.gasto, at.cliques))}</td>${temVenda?`<td>${pctOu(at.carreg)}</td>`:""}</tr>`).join("")}
       </tbody></table></div>
-    <p class="defs">Compras e faturamento são os atribuídos pelas plataformas (pixel da Meta e tag do Google) e podem diferir das vendas reais:
+    ${temVenda ? `<p class="defs">Compras e faturamento são os atribuídos pelas plataformas (pixel da Meta e tag do Google) e podem diferir das vendas reais:
       quem vê o anúncio na Meta e depois pesquisa no Google pode ser contado nas duas, então a soma tende a ficar acima do real.
-      Custo por compra e custo por lead aqui dividem o valor usado de todo o funil; o custo por resultado de cada tipo de campanha está dentro da aba.</p>
+      Custo por compra e custo por lead aqui dividem o valor usado de todo o funil; o custo por resultado de cada tipo de campanha está dentro da aba.</p>` : ""}
   </section>`;
 }
 
@@ -439,25 +482,39 @@ function abaFunil(P, aba){
   const a = deriv(somar(idsT.map(id => P.campanhas[id] || vazio())), r, G);
   const b = deriv(somar(idsT.map(id => P.anterior[id] || vazio())), r, G);
   const ehVenda = r === "compras";
-  const SP = G || r === "conversas";  // sem página: Google (tem outro relatório) ou anúncio que abre o WhatsApp
+  // sem página: Google (tem outro relatório), anúncio que abre o WhatsApp ou distribuição (vídeo no feed)
+  const SP = G || r === "conversas" || r === "thruplay" || r === "alcance";
 
   // campanhas
   const campanhas = idsT.filter(id => P.campanhas[id]).map(id => ({c: camp(id), m: deriv(P.campanhas[id], r, G)}))
     .sort((x,y) => y.m.gasto - x.m.gasto);
   // anúncios e páginas
-  const anuncios = P.anuncios.filter(x => idsT.includes(x.campanha_id)).map(x => ({...deriv(x, r), x}));
+  // filtro de campanha (vale para páginas e criativos)
+  const campsComAd = campanhas.filter(({c}) => P.anuncios.some(x => x.campanha_id === c.id));
+  if (CAMPF !== "todas" && !campsComAd.some(({c}) => c.id === CAMPF)) CAMPF = "todas";
+  const idsF = CAMPF === "todas" ? idsT : [CAMPF];
+  const anuncios = P.anuncios.filter(x => idsF.includes(x.campanha_id)).map(x => ({...deriv(x, r), x}));
+  const VID = r === "thruplay" || r === "alcance";
+  const filtroCamp = campsComAd.length > 1 ? `<label class="sub">Campanha <select id="campf" aria-label="Filtrar por campanha">
+      <option value="todas">Todas (${campsComAd.length})</option>
+      ${campsComAd.map(({c}) => `<option value="${esc(c.id)}"${CAMPF===c.id?" selected":""}>${esc(c.nome)}${["ACTIVE","ENABLED"].includes(c.status)?"":" (não ativa)"}</option>`).join("")}
+    </select></label>` : "";
   const pags = {};
   anuncios.forEach(x => { (pags[x.x.url] = pags[x.x.url] || []).push(x.x); });
   const paginas = (G ? (P.paginas_google || []).map(x => ({u: x.url, m: deriv(x, r, true), n: "-"}))
     : Object.entries(pags).map(([u, l]) => ({u, m: deriv(somar(l), r), n: l.length}))).sort((x,y) => y.m.gasto - x.m.gasto);
   const minimo = D.gasto_minimo_criativo || 0;
-  const ords = {res:"Mais resultado", cpr:"Menor custo por resultado", gasto:"Maior valor usado", ...(ehVenda ? {roas:"Maior ROAS"} : {}), conv:"Maior taxa de conversão"};
+  const ords = {res:"Mais resultado", cpr:"Menor custo por resultado", gasto:"Maior valor usado", ...(ehVenda ? {roas:"Maior ROAS"} : {}),
+    ...(R.conv ? {conv:"Maior taxa de conversão"} : {ctr:"Maior CTR"}), ...(VID ? {hook:"Maior hook rate", ret:"Maior retenção"} : {})};
   if (!ords[ORD]) ORD = "res";
   const crit = anuncios.filter(x => x.gasto >= minimo).sort((x,y) => {
     if (ORD === "cpr") return (x.cpr ?? 1e12) - (y.cpr ?? 1e12) || y.res - x.res;
     if (ORD === "gasto") return y.gasto - x.gasto;
     if (ORD === "roas") return (y.roas||0) - (x.roas||0);
     if (ORD === "conv") return (y.conv||0) - (x.conv||0);
+    if (ORD === "ctr") return (y.ctr||0) - (x.ctr||0);
+    if (ORD === "hook") return (y.hook||0) - (x.hook||0);
+    if (ORD === "ret") return (y.ret||0) - (x.ret||0);
     return y.res - x.res || (x.cpr ?? 1e12) - (y.cpr ?? 1e12);
   });
 
@@ -486,7 +543,12 @@ function abaFunil(P, aba){
       ${R.conv ? tile("Taxa de conversão", pctOu(a.conv), deltaPP(a.conv,b.conv), convTxt) : tile("CTR", pctOu(a.ctr), deltaPP(a.ctr,b.ctr), "cliques ÷ impressões")}
       ${ehVenda ? tile(G ? "Faturamento (tag do Google)" : "Faturamento (pixel)", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe")) : ""}
       ${ehVenda ? tile("ROAS", xOu(a.roas), delta(a.roas,b.roas,"sobe"), "faturamento ÷ valor usado") : ""}
-      ${tile("Cliques no link", fmtInt(a.cliques), delta(a.cliques,b.cliques,"sobe"), `CTR ${pctOu(a.ctr)}`)}
+      ${r === "cliques" ? "" : tile("Cliques no link", fmtInt(a.cliques), delta(a.cliques,b.cliques,"sobe"), `CTR ${pctOu(a.ctr)} · CPC ${moedaOu(div(a.gasto,a.cliques))}`)}
+      ${VID ? tile("Views de 3s", fmtInt(a.views), delta(a.views,b.views,"sobe"), `custo por view ${moedaOu(a.cpv)}`) : ""}
+      ${VID ? tile("Hook rate", pctOu(a.hook), deltaPP(a.hook,b.hook), "views de 3s ÷ impressões") : ""}
+      ${VID ? tile("Retenção", pctOu(a.ret), deltaPP(a.ret,b.ret), "ThruPlays ÷ views de 3s") : ""}
+      ${VID ? tile("Engajamento", fmtInt(a.engajamento), delta(a.engajamento,b.engajamento,"sobe"), `custo por engajamento ${moedaOu(a.cpe)}`) : ""}
+      ${VID ? tile("Alcance", fmtInt(a.alcance), delta(a.alcance,b.alcance,"sobe"), `frequência ${a.freq ? a.freq.toFixed(2).replace(".",",") : "-"}`) : ""}
       ${SP ? tile("Impressões", fmtInt(a.impressoes), delta(a.impressoes,b.impressoes,"sobe"), `CPM ${moedaOu(a.cpm)}`) : tile("Visitas à página", fmtInt(a.visitas), delta(a.visitas,b.visitas,"sobe"), `CPM ${moedaOu(a.cpm)}`)}
     </div>
   </section>
@@ -500,17 +562,17 @@ function abaFunil(P, aba){
   <section>
     <div class="sec-head"><div><h2>Campanhas</h2><p class="sub">${campanhas.length} campanha${campanhas.length===1?"":"s"} de ${R.grupo.toLowerCase()} com gasto no período</p></div></div>
     <div class="card tbl-wrap"><table>
-      <thead><tr><th>Campanha</th><th>Valor usado</th><th>${R.un}</th><th>${R.cu}</th><th>Cliques</th>${colVis}${R.conv?"<th>Conversão</th>":""}${colVenda}</tr></thead>
+      <thead><tr><th>Campanha</th><th>Valor usado</th><th>${R.un}</th><th>${R.cu}</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th>${colVis}${R.conv?"<th>Conversão</th>":""}${VID?"<th>Views 3s</th><th>Hook rate</th><th>Retenção</th><th>Engajamento</th>":""}${colVenda}</tr></thead>
       <tbody>${campanhas.map(({c,m}) => `<tr>
         <td>${esc(c.nome)} ${badge(c.status)}${c.publico ? `<span class="st">Público: ${c.publico}</span>` : ""}</td>
         <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(m.res)}</td><td>${moedaOu(m.cpr)}</td>
-        <td>${fmtInt(m.cliques)}</td>${celVis(m)}
-        ${R.conv?`<td>${pctOu(m.conv)}</td>`:""}${celVenda(m)}</tr>`).join("")}
+        <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>${celVis(m)}
+        ${R.conv?`<td>${pctOu(m.conv)}</td>`:""}${VID?`<td>${fmtInt(m.views)}</td><td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td>${fmtInt(m.engajamento)}</td>`:""}${celVenda(m)}</tr>`).join("")}
       </tbody></table></div>
   </section>
 
-  <section>
-    <div class="sec-head"><div><h2>Páginas</h2><p class="sub">Resultado por página de destino dos anúncios</p></div></div>
+  ${VID ? "" : `<section>
+    <div class="sec-head"><div><h2>Páginas</h2><p class="sub">Resultado por página de destino dos anúncios${CAMPF!=="todas"?" da campanha escolhida":""}</p></div></div>
     <div class="card tbl-wrap"><table>
       <thead><tr><th>Página</th>${G?"":"<th>Anúncios</th>"}<th>Valor usado</th><th>Cliques</th>${colVis}<th>${R.un}</th>${R.conv?"<th>Conversão</th>":""}<th>${R.cu}</th>${colVenda}</tr></thead>
       <tbody>${paginas.map(({u,m,n}) => `<tr>
@@ -519,11 +581,12 @@ function abaFunil(P, aba){
         <td class="hl">${fmtInt(m.res)}</td>${R.conv?`<td>${pctOu(m.conv)}</td>`:""}<td>${moedaOu(m.cpr)}</td>${celVenda(m)}</tr>`).join("")}
       </tbody></table></div>
     <p class="defs">${G ? "Página = URL final dos anúncios do Google (relatório de páginas de destino), sem parâmetros. Campanhas de geração de demanda e PMax podem não aparecer aqui." : "Página = link de destino do criativo, sem os parâmetros de UTM. Anúncio de catálogo leva para a página de cada produto do feed."}</p>
-  </section>
+  </section>`}
 
   ${G ? "" : `<section>
     <div class="sec-head"><div><h2>Criativos</h2><p class="sub">${crit.length} anúncio${crit.length===1?"":"s"} com pelo menos ${fmtMoeda(minimo)} de valor usado</p></div>
-      <label class="sub">Ordenar por <select id="ord" aria-label="Ordenar criativos">${Object.entries(ords).map(([k,v]) => `<option value="${k}"${ORD===k?" selected":""}>${v}</option>`).join("")}</select></label></div>
+      <div class="filtros" style="margin-top:0">${filtroCamp}
+      <label class="sub">Ordenar por <select id="ord" aria-label="Ordenar criativos">${Object.entries(ords).map(([k,v]) => `<option value="${k}"${ORD===k?" selected":""}>${v}</option>`).join("")}</select></label></div></div>
     ${crit.length ? `<div class="ads">${crit.map((x,i) => `<div class="card ad">
       <a class="thumb" ${x.x.instagram?`href="${esc(x.x.instagram)}" target="_blank" rel="noopener"`:""}>${x.x.thumb?`<img src="${esc(x.x.thumb)}" alt="" loading="lazy">`:""}<span class="rank">${i+1}</span></a>
       <div><div class="nm">${esc(x.x.nome)} ${badge(x.x.status)}</div>
@@ -532,11 +595,14 @@ function abaFunil(P, aba){
           <div class="${ORD==="res"?"sel":""}">${R.un}<b>${fmtInt(x.res)}</b></div>
           <div class="${ORD==="cpr"?"sel":""}">${R.cu}<b>${moedaOu(x.cpr)}</b></div>
           <div class="${ORD==="gasto"?"sel":""}">Valor usado<b>${fmtMoeda(x.gasto)}</b></div>
-          ${SP ? `<div>CTR<b>${pctOu(x.ctr)}</b></div>` : `<div>Carregamento<b>${pctOu(x.carreg)}</b></div>`}
-          ${R.conv?`<div class="${ORD==="conv"?"sel":""}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div>CTR<b>${pctOu(x.ctr)}</b></div>`}
+          ${VID ? `<div class="${ORD==="hook"?"sel":""}">Hook rate<b>${pctOu(x.hook)}</b></div><div class="${ORD==="ret"?"sel":""}">Retenção<b>${pctOu(x.ret)}</b></div>
+            <div>Views 3s<b>${fmtInt(x.views)}</b></div><div>Engajamento<b>${fmtInt(x.engajamento)}</b></div>` : ""}
+          ${SP || VID ? "" : `<div>Carregamento<b>${pctOu(x.carreg)}</b></div>`}
+          ${R.conv?`<div class="${ORD==="conv"?"sel":""}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div class="${ORD==="ctr"?"sel":""}">CTR<b>${pctOu(x.ctr)}</b></div>`}
           ${ehVenda?`<div class="${ORD==="roas"?"sel":""}">ROAS<b>${xOu(x.roas)}</b></div>`:`<div>Cliques<b>${fmtInt(x.cliques)}</b></div>`}
+          ${SP && !VID ? `<div>CTR<b>${pctOu(x.ctr)}</b></div>` : ""}
         </div>
-        <div class="pg">${esc(x.x.url)}</div>
+        ${VID && x.x.url === "Sem link identificado" ? "" : `<div class="pg">${esc(x.x.url)}</div>`}
         <div class="links">
           ${x.x.instagram?`<a class="lnk" href="${esc(x.x.instagram)}" target="_blank" rel="noopener">${ICO_IG} Instagram</a>`:""}
           ${x.x.previa?`<a class="lnk" href="${esc(x.x.previa)}" target="_blank" rel="noopener">${ICO_EYE} Prévia</a>`:""}
