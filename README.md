@@ -253,6 +253,7 @@ https://carlos-primo.github.io/c2pro-dashboards/relatorios/<cliente>/
 | BJJ Protech | Análise do fim de semana de queda (10 e 11/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/bjj-protech-fim-de-semana/ |
 | Ana Paula Lima | Passagem de bastão para a Jessica (28/10/2026; com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/ana-paula-lima-passagem-de-bastao/ |
 | Rodrigo Goedert (BJJ Protech) | Passagem de bastão para a Jessica (02/11/2026; com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/rodrigo-goedert-passagem-de-bastao/ |
+| Grupo do Bastidores | Resumo do encontro "IA nos bastidores dos lançamentos" (21/11/2026; com senha, conteúdo criptografado) | https://carlos-primo.github.io/c2pro-dashboards/relatorios/bastidores-ia-lancamentos/ |
 
 ## Apresentações
 
