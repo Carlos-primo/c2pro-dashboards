@@ -500,13 +500,14 @@ def bloco_hotmart(slug, periodos, fuso):
     inicio = min(dt.date.fromisoformat(p["inicio"]) for p in periodos.values())
     fim = max(dt.date.fromisoformat(p["fim"]) for p in periodos.values())
     if fonte == "Kiwify":
-        linhas = mod.vendas(mod.Kiwify(slug), list(produtos), inicio, fim, fuso, cfg.get("excluir_planos", []))
+        linhas = mod.vendas(mod.Kiwify(slug), list(produtos), inicio, fim, fuso, cfg.get("excluir_planos", []),
+                           cfg.get("planos", []))
     else:
         linhas = mod.vendas(mod.Hotmart(slug), list(produtos), inicio, fim, fuso)
     for p in periodos.values():
         p["hotmart"] = mod.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
     return {"produtos": list(produtos.values()), "fonte": fonte,
-            "excluir_planos": cfg.get("excluir_planos", [])}
+            "excluir_planos": cfg.get("excluir_planos", []), "planos": cfg.get("planos", [])}
 
 
 def bloco_asaas(slug, periodos):

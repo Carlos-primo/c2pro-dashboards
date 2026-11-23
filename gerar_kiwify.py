@@ -5,6 +5,9 @@ config.json do dashboard (vendas/<slug>/config.json):
     "kiwify": {"produtos": {"<id do produto>": "<nome>"}, "excluir_planos": ["Renova"]}
 "excluir_planos": trechos do nome do plano/oferta que nao contam (Wescley: "Renova" sao renovacoes da base,
 nao vem de anuncio). Sem acento e sem diferenciar maiuscula.
+"planos": se existir, so contam vendas desses planos (nome exato do plano na Kiwify). Wescley: os planos dos
+checkouts para onde as paginas dos anuncios mandam (lp-vsl-3-1c e oferta-vsl1-reforma -> Fiedl94 "Plano Anual - 12x"
+e HIFbNyG "Plano Anual - Pix"; vsl-demo e oferta-2027-roleta -> ZFLqQz7 "OFF Oferta Roleta - 12x"), conferido em 23/11/2026.
 
 Credencial (Kiwify > Apps > API > Criar API Key, so com Vendas e Produtos marcados), uma por cliente:
     KIWIFY_<SLUG>_CLIENT_ID, KIWIFY_<SLUG>_CLIENT_SECRET e KIWIFY_<SLUG>_ACCOUNT_ID   (ex: KIWIFY_WESCLEY_CLIENT_ID)
@@ -82,9 +85,10 @@ class Kiwify:
             pagina += 1
 
 
-def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=()):
+def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=(), planos=()):
     """Vendas do periodo (pelo dia no fuso da conta do Meta), so com o que o dashboard usa."""
     excluir = [_norm(e) for e in excluir_planos]
+    so = {_norm(p) for p in planos}
     linhas = []
     # Um dia de folga nas pontas: a Kiwify filtra em UTC e o dia certo sai do fuso abaixo.
     for v in kw.vendas(inicio - dt.timedelta(days=1), fim + dt.timedelta(days=1)):
@@ -94,6 +98,8 @@ def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=()):
             continue
         plano = _norm(f"{p.get('plan_name') or ''} {p.get('offer_name') or ''}")
         if any(e in plano for e in excluir):
+            continue
+        if so and _norm(p.get("plan_name") or p.get("offer_name")) not in so:
             continue
         dia = dt.datetime.fromisoformat(v["created_at"].replace("Z", "+00:00")).astimezone(fuso).date()
         if not inicio <= dia <= fim:

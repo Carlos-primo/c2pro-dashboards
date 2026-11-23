@@ -10,6 +10,7 @@
     "produtos": {
       "fffcd5b0-128b-11f1-8b4f-d1133a04ba15": "Minha Revenda App - Essencial"
     },
-    "excluir_planos": ["Renova"]
+    "excluir_planos": ["Renova"],
+    "planos": ["Essencial - Plano Anual - 12x", "Essencial - Plano Anual - Pix", "OFF Oferta Roleta - 12x"]
   }
 }
