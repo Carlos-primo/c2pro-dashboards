@@ -1,0 +1,15 @@
+{
+  "nome": "Wescley Lima",
+  "subtitulo": "Perpétuo: funil VSL do Minha Revenda App",
+  "conta_anuncio": "act_359674206839374",
+  "criativos_gasto_minimo": 10,
+  "excluir": ["BLACK"],
+  "mes_atual": true,
+  "periodos_extra": [14],
+  "kiwify": {
+    "produtos": {
+      "fffcd5b0-128b-11f1-8b4f-d1133a04ba15": "Minha Revenda App - Essencial"
+    },
+    "excluir_planos": ["Renova"]
+  }
+}
