@@ -392,7 +392,7 @@ const ORDENS = {
 let ORDEM = "cpl";
 try { ORDEM = localStorage.getItem("c2pro-black-ordem") || "cpl"; if (!ORDENS[ORDEM]) ORDEM = "cpl"; } catch(_){}
 
-const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias"};
+const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias","mes":"Este mês"};
 
 const nomeConta = k => k === "todas" ? "Todas as contas" : k;
 const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
@@ -463,7 +463,21 @@ function hotmartSecao(P, a){
   }).sort((x,y) => y.vendas - x.vendas || y.gasto - x.gasto);
   const ads = daVisao(HP.atual.anuncios).slice(0, 15);
   const M = H.meta, pm = M ? Math.min(100, M.faturamento * 100 / M.valor) : 0, pa = M ? Math.min(pm, M.faturamento_anuncios * 100 / M.valor) : 0;
-  return `<section>
+  const G = D.google && D.google.periodos[PER];
+  const invMeta = gasto, invGoogle = G ? G.atual.custo : 0, inv = invMeta + invGoogle;
+  const invB = gastoB + (G ? G.anterior.custo : 0);
+  const fatT = HP.atual.total_faturamento, fatTB = HP.anterior.total_faturamento;
+  const resultado = !todas ? "" : `<section>
+    <div class="sec-head"><div><h2>Resultado da Black</h2>
+      <p class="sub">Todo o investimento das campanhas da Black contra todo o faturamento da Black na Hotmart, no período.</p></div></div>
+    <div class="tiles">
+      ${tile("Faturamento da Black", fmtMoeda(fatT), delta(fatT, fatTB, "sobe"), `${fmtInt(HP.atual.total_vendas)} vendas na Hotmart, de qualquer origem`, true)}
+      ${tile("Investimento", fmtMoeda(inv), delta(inv, invB, null), G ? `Meta ${fmtMoeda(invMeta)} + Google ${fmtMoeda(invGoogle)}` : "Meta Ads")}
+      ${tile("ROAS da Black", inv ? fmtX(fatT / inv) : "-", delta(div(fatT, inv), div(fatTB, invB), "sobe"), "faturamento da Black ÷ investimento")}
+      ${tile("Vendas da Black", fmtInt(HP.atual.total_vendas), delta(HP.atual.total_vendas, HP.anterior.total_vendas, "sobe"), `ticket médio ${moedaOu(div(fatT, HP.atual.total_vendas))}`)}
+    </div>
+  </section>`;
+  return `${resultado}<section>
     <div class="sec-head"><div><h2>Vendas reais na Hotmart (dos anúncios)</h2>
       <p class="sub">Só as vendas que chegaram ao checkout com a UTM de uma campanha da Black${todas ? "" : " desta conta"}. É o que de fato veio dos anúncios.</p></div></div>
     ${M && todas ? `<div class="card" style="padding:18px 20px;margin-bottom:16px">
@@ -479,7 +493,6 @@ function hotmartSecao(P, a){
       ${tile("Faturamento dos anúncios", fmtMoeda(f), delta(f, fb, "sobe"), "valor da venda na Hotmart")}
       ${tile("Custo por venda real", moedaOu(cpv), delta(cpv, cpvB, "desce"), "investimento ÷ vendas dos anúncios")}
       ${tile("ROAS real", roas == null ? "-" : fmtX(roas), delta(roas, roasB, "sobe"), "faturamento dos anúncios ÷ investimento")}
-      ${todas ? tile("Vendas da Black na Hotmart", fmtInt(HP.atual.total_vendas), delta(HP.atual.total_vendas, HP.anterior.total_vendas, "sobe"), `${fmtMoeda(HP.atual.total_faturamento)}, de qualquer origem; ${fmtInt(HP.atual.sem_utm)} sem UTM`) : ""}
     </div>
     <div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas reais por campanha</h2></div></div>
     <div class="card tbl-wrap"><table>

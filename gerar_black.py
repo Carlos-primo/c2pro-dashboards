@@ -11,6 +11,7 @@ config.json:
   {"nome": "...", "subtitulo": "...", "filtro": "BLACK", "criativos_gasto_minimo": 10,
    "contas": [{"id": "act_...", "nome": "Camila"}, {"id": "act_...", "nome": "Revenda"}],
    "google": {"customer_id": "7321202082", "nome": "Camila"},      (opcional: aba Google Ads, mesmo filtro)
+   "mes_atual": true,                                               (opcional: periodo "Este mes", do dia 1 ate ontem)
    "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"},  (opcional: aba pago x organico,
                                                                        ver origem_leads.py)
    "hotmart": {"produtos": {"8852927": "Minha Revenda App - Loja PRO"}, "utm_contem": "BLACK",
@@ -163,7 +164,9 @@ def _google(g, gg, filtro, ontem):
         return sorted(ads, key=lambda a: -a["custo"])
 
     periodos = {}
-    for dias in gv.PERIODOS:
+    chaves_per = [str(d) for d in gv.PERIODOS] + (["mes"] if gcfg.get("mes_atual") else [])
+    for chave in chaves_per:
+        dias = (ontem - ontem.replace(day=1)).days + 1 if chave == "mes" else int(chave)
         ini = ontem - dt.timedelta(days=dias - 1)
         pfim = ini - dt.timedelta(days=1)
         pini = pfim - dt.timedelta(days=dias - 1)
@@ -178,7 +181,7 @@ def _google(g, gg, filtro, ontem):
         tv = gg.termos(g.q("SELECT campaign.name, campaign.advertising_channel_type, campaign_search_term_view.search_term, "
                            "metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions "
                            f"FROM campaign_search_term_view WHERE {gg.entre(ini, ontem)} AND {onde}"))
-        periodos[str(dias)] = {
+        periodos[chave] = {
             "inicio": ini.isoformat(), "fim": ontem.isoformat(), "ant_inicio": pini.isoformat(), "ant_fim": pfim.isoformat(),
             "atual": t, "anterior": total(campanhas(pini, pfim)), "acoes": acoes,
             "campanhas": sorted(camps, key=lambda c: -c["custo"]), "anuncios": anuncios(ini, ontem),
@@ -324,6 +327,8 @@ def gerar_cliente(slug):
         status_camp = {x["id"]: x["effective_status"] for x in api(
             f"{c['id']}/campaigns", fields="effective_status", limit=500)}
         periodos = {str(d): gv.periodo(d, ontem, status_camp, {}) for d in gv.PERIODOS}
+        if cfg.get("mes_atual"):
+            periodos["mes"] = gv.periodo(0, ontem, status_camp, {}, ontem.replace(day=1))
 
         todos = {a["id"]: a for p in periodos.values() for a in p["anuncios"]}
         gv.detalhes_anuncios(list(todos.values()))
@@ -359,7 +364,7 @@ def gerar_cliente(slug):
         "gasto_minimo_criativo": cfg["criativos_gasto_minimo"],
         "contas": nomes,
         "visoes": {"todas": visoes_todas, **visoes},
-        "google": google(cfg["google"], gv.FILTRO, ontem) if cfg.get("google") else None,
+        "google": google({**cfg["google"], "mes_atual": cfg.get("mes_atual")}, gv.FILTRO, ontem) if cfg.get("google") else None,
         "origem": origem(slug, cfg["origem_leads"], visoes_todas["periodos"], ontem) if cfg.get("origem_leads") else None,
         "hotmart": hotmart(slug, cfg["hotmart"], visoes_todas["periodos"], ontem, fuso) if cfg.get("hotmart") else None,
     }

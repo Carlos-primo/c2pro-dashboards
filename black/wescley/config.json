@@ -3,6 +3,7 @@
   "subtitulo": "Black Friday",
   "filtro": "BLACK",
   "criativos_gasto_minimo": 10,
+  "mes_atual": true,
   "contas": [
     {"id": "act_359674206839374", "nome": "Camila"},
     {"id": "act_1072009758391272", "nome": "Revenda"}
