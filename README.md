@@ -79,7 +79,9 @@ Senha opcional: secret `SENHA_VENDAS_<SLUG>` no passo "Gerar dashboards de venda
 Exceções por cliente no `config.json`, só com pedido do Carlos (hoje só a Rocha Mazzo): `filtros_extra` (aceita outro
 trecho no nome além de VENDAS, ex. `LOWTICKET`), `desde` (período a mais, de uma data até ontem) e `hotmart` (vendas
 reais da Hotmart comparadas com as compras do pixel, com custo por venda e ROAS reais; credencial nos secrets
-`HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET`).
+`HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET`). `faturamento_real` com `"fonte": "Asaas"` traz o que entrou
+no Asaas em cada período (assinatura, parcelada, avulsa e líquido), pela chave no secret `ASAAS_<SLUG>_API_KEY`
+(`gerar_asaas.py`; hoje só a BJJ Protech).
 
 **Visão completa de tráfego** (BJJ Protech, só com pedido do Carlos): `mes_atual` (período "Este mês"), `frentes`
 (resultado por frente, pelo nome da campanha e do conjunto), `destinos` (qual página vende mais: LP x site), `atletas`

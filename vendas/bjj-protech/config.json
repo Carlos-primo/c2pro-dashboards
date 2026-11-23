@@ -3,7 +3,7 @@
   "subtitulo": "Tráfego pago: Meta e Google",
   "conta_anuncio": "act_1439156336846241",
   "criativos_gasto_minimo": 10,
-  "senha_obrigatoria": false,
+  "senha_obrigatoria": true,
   "filtros_extra": ["LEADS_", "WHATSAPP", "LEMBRETE", "POST DO INSTAGRAM"],
   "mes_atual": true,
   "regua_roas": 6,

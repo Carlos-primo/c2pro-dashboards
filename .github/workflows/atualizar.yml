@@ -18,6 +18,7 @@
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 # Hotmart (campo "hotmart" no config.json): HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET,
 # no bloco env do passo que gera aquele dashboard (hoje: vendas/rocha-mazzo).
+# Asaas ("faturamento_real": {"fonte": "Asaas"} no config de vendas): ASAAS_<SLUG>_API_KEY (hoje: vendas/bjj-protech).
 # Dashboards do Google Ads: secrets GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, GOOGLE_ADS_REFRESH_TOKEN e GOOGLE_ADS_LOGIN_CUSTOMER_ID.
 
 name: Atualizar dashboards
@@ -127,6 +128,7 @@ jobs:
           HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
           SENHA_VENDAS_ROCHA_MAZZO: ${{ secrets.SENHA_LEADS_ROCHA_MAZZO }}   # mesma senha do dashboard de leads
           SENHA_VENDAS_BJJ_PROTECH: ${{ secrets.SENHA_VENDAS_BJJ_PROTECH }}  # criar o secret antes de publicar
+          ASAAS_BJJ_PROTECH_API_KEY: ${{ secrets.ASAAS_BJJ_PROTECH_API_KEY }}  # faturamento real (gerar_asaas.py)
           GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}          # secao Google (config "google")
           GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
           GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}

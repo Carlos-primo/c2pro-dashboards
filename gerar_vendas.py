@@ -38,7 +38,8 @@ filtro VENDAS (as frentes so separam o que ja passou nele):
                                   compras so da acao de conversao que tem "acao_compra" no nome
   "regua_roas": 6                 ROAS minimo combinado com o cliente (Meta + Google), mostrado contra o periodo
   "faturamento_real": {"fonte": "Asaas"}
-                                  quadro faturamento real x plataformas; sem integracao ainda, mostra "aguardando"
+                                  quadro faturamento real x plataformas, com o que entrou no Asaas em cada periodo
+                                  (gerar_asaas.py, secret ASAAS_<SLUG>_API_KEY); sem a chave, mostra "aguardando"
   "senha_obrigatoria": true       nao gera sem o secret SENHA_VENDAS_<SLUG> (previa local: PREVIA_SEM_SENHA=1)
   "paginas": [{"nome": "Black", "contem": ["BLACK26"]}, ...]
                                   uma aba por tipo de campanha (pelo nome da campanha; a primeira regra que casar ganha),
@@ -48,7 +49,7 @@ filtro VENDAS (as frentes so separam o que ja passou nele):
                                   gerar.py), dentro do mesmo payload (mesma senha)
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional) e, com Hotmart,
-HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET.
+HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET; com Asaas, ASAAS_<SLUG>_API_KEY.
 """
 
 import datetime as dt
@@ -62,6 +63,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from gerar import api, criptografar, diario_seguro
+import gerar_asaas
 import gerar_hotmart
 
 AQUI = Path(__file__).resolve().parent
@@ -495,6 +497,19 @@ def bloco_hotmart(slug, periodos, fuso):
     return {"produtos": list(produtos.values())}
 
 
+def bloco_asaas(slug, periodos):
+    """Faturamento real do Asaas em cada periodo (atual e anterior), de qualquer origem. Sem a chave, o quadro
+    mostra "aguardando"."""
+    if not gerar_asaas.chave(slug):
+        print(f"::warning::vendas/{slug} saiu sem o Asaas: falta o secret ASAAS_{slug.upper().replace('-', '_')}_API_KEY")
+        return
+    datas = [dt.date.fromisoformat(p[k]) for p in periodos.values() for k in ("inicio", "fim", "ant_inicio", "ant_fim")]
+    linhas = gerar_asaas.cobrancas(gerar_asaas.Asaas(slug), min(datas), max(datas))
+    for p in periodos.values():
+        p["faturamento_real"] = gerar_asaas.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("inicio", "fim")))
+        p["faturamento_real_ant"] = gerar_asaas.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("ant_inicio", "ant_fim")))
+
+
 def serie_diaria(ontem, ids=None):
     inicio = ontem - dt.timedelta(days=29)
     por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
@@ -546,6 +561,8 @@ def gerar_cliente(slug):
                 a["destino"] = destino_de(a)
 
     hotmart = bloco_hotmart(slug, periodos, fuso) if CFG.get("hotmart") else None
+    if (CFG.get("faturamento_real") or {}).get("fonte", "").lower() == "asaas":
+        bloco_asaas(slug, periodos)
     atletas = bloco_atletas(ontem) if CFG.get("atletas") else None
     google = bloco_google(periodos) if CFG.get("google") else None
 
@@ -620,6 +637,11 @@ def gerar_cliente(slug):
         ref = periodos.get("desde", periodos["30"])
         print(f"   + Hotmart: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "
               f"x {ref['atual']['compras']:.0f} compras no pixel")
+    if periodos["30"].get("faturamento_real"):
+        ref = periodos.get("mes", periodos["30"])
+        fr = ref["faturamento_real"]
+        print(f"   + Asaas: {ref['inicio']} a {ref['fim']} R$ {fr['valor']:.2f} em {fr['vendas']} vendas "
+              + ", ".join(f"{t} R$ {v['valor']:.2f}" for t, v in fr["por_tipo"].items()))
     print(f"OK vendas/{slug}: 30d R$ {p30['gasto']:.2f}, {p30['compras']:.0f} compras, "
           f"{len(periodos['30']['campanhas'])} campanhas, {len(periodos['30']['anuncios'])} anuncios | "
           f"{'com senha' if senha else 'link aberto, sem senha'}")

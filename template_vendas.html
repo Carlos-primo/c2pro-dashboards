@@ -547,7 +547,7 @@ function desenhar(){
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
     ${D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
-    ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação). Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
+    ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação): cobranças pagas, no dia em que o cliente pagou (no cartão, o dia da aprovação). Parcelas da mesma venda contam como uma venda. No cartão parcelado a venda inteira conta no dia da compra; no boleto parcelado, cada parcela conta quando é paga. Estornos e chargebacks ficam fora. Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
     <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
@@ -665,6 +665,7 @@ function secaoPlataformas(P0){
   const roas = div(m.faturamento + gf, m.gasto + gg);
   const r = D.regua_roas;
   const real = D.faturamento_real;
+  const FR = P0.faturamento_real, FRa = P0.faturamento_real_ant;
   return `<section>
     <div class="sec-head"><div><h2>Faturamento real x plataformas</h2>
       <p class="sub">O que cada plataforma diz que vendeu, separado, ao lado do que entrou de verdade.</p></div></div>
@@ -673,8 +674,14 @@ function secaoPlataformas(P0){
       ${D.google ? tile("Google Ads", fmtMoeda(gf), "", gg ? `investido ${fmtMoeda(gg)}, ROAS ${fmtRoas(div(gf,gg))}` : `nenhuma campanha com "${esc(D.filtro)}" no nome`) : ""}
       ${D.google ? tile("Soma das plataformas", fmtMoeda(m.faturamento + gf), "", "a mesma venda pode contar nas duas") : ""}
       ${tile(r ? "ROAS Meta + Google" : "ROAS", fmtRoas(roas), "", r ? (roas == null ? `régua: ${fmtConv(r)}` : roas >= r ? `na régua (${fmtConv(r)} ou mais)` : `abaixo da régua de ${fmtConv(r)}`) : "faturamento ÷ investimento")}
-      ${real ? tile(`Faturamento real (${esc(real.fonte)})`, real.valor == null ? "Aguardando" : fmtMoeda(real.valor), "", real.valor == null ? `falta o acesso ao ${esc(real.fonte)}` : `ROAS real ${fmtRoas(div(real.valor, m.gasto + gg))}`, true) : ""}
+      ${real && !FR ? tile(`Faturamento real (${esc(real.fonte)})`, "Aguardando", "", `falta o acesso ao ${esc(real.fonte)}`, true) : ""}
+      ${FR ? tile(`Faturamento real (${esc(real.fonte)})`, fmtMoeda(FR.valor), delta(FR.valor, FRa && FRa.valor, "sobe"), `ROAS real ${fmtRoas(div(FR.valor, m.gasto + gg))} · ${fmtInt(FR.vendas)} vendas`, true) : ""}
     </div>
+    ${FR ? `<div class="tiles" style="margin-top:12px">
+      ${[["assinatura","Assinaturas"],["parcelada","Parceladas"],["avulsa","Avulsas"]].map(([k, nome]) => tile(nome, fmtMoeda(FR.por_tipo[k].valor),
+        delta(FR.por_tipo[k].valor, FRa && FRa.por_tipo[k].valor, "sobe"), `${fmtInt(FR.por_tipo[k].vendas)} vendas · ${pctOu(div(FR.por_tipo[k].valor*100, FR.valor))} do real`)).join("")}
+      ${tile("Líquido no Asaas", fmtMoeda(FR.liquido), "", FR.devolvidas ? `depois das taxas · ${fmtInt(FR.devolvidas)} estorno(s) de ${fmtMoeda(FR.valor_devolvido)} fora da conta` : "depois das taxas · sem estorno no período")}
+    </div>` : ""}
   </section>`;
 }
 
