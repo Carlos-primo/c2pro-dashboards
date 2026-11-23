@@ -126,6 +126,9 @@ jobs:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
           HOTMART_ROCHA_MAZZO_CLIENT_ID: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_ID }}
           HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
+          KIWIFY_WESCLEY_CLIENT_ID: ${{ secrets.KIWIFY_WESCLEY_CLIENT_ID }}        # vendas reais (gerar_kiwify.py)
+          KIWIFY_WESCLEY_CLIENT_SECRET: ${{ secrets.KIWIFY_WESCLEY_CLIENT_SECRET }}
+          KIWIFY_WESCLEY_ACCOUNT_ID: ${{ secrets.KIWIFY_WESCLEY_ACCOUNT_ID }}
           SENHA_VENDAS_ROCHA_MAZZO: ${{ secrets.SENHA_LEADS_ROCHA_MAZZO }}   # mesma senha do dashboard de leads
           SENHA_VENDAS_BJJ_PROTECH: ${{ secrets.SENHA_VENDAS_BJJ_PROTECH }}  # criar o secret antes de publicar
           ASAAS_BJJ_PROTECH_API_KEY: ${{ secrets.ASAAS_BJJ_PROTECH_API_KEY }}  # faturamento real (gerar_asaas.py)

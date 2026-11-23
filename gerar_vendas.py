@@ -13,6 +13,8 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
   "filtros_extra": ["LOWTICKET"]  aceita tambem campanhas com esse trecho no nome (excecao a regra do VENDAS)
   "desde": "2026-09-18"           periodo a mais, do dia indicado ate ontem
   "hotmart": {"produtos": {"<id>": "<nome>"}}  vendas reais da Hotmart x compras do pixel (ver gerar_hotmart.py)
+  "kiwify": {"produtos": {"<id>": "<nome>"}, "excluir_planos": ["Renova"]}
+                                  o mesmo quadro com as vendas da Kiwify, valor liquido (ver gerar_kiwify.py)
   "excluir": ["BLACK"]            tira campanhas com esse trecho no nome, mesmo tendo VENDAS (Vita Hair: a Black
                                   da Debora tem dashboard proprio)
   "so_dados": true                dashboard so com numeros: sem alerta, sugestao nem textos explicativos
@@ -24,6 +26,7 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
 Visao completa de trafego (BJJ Protech, 13/11/2026). Tudo opcional e so com pedido do Carlos; sempre dentro do
 filtro VENDAS (as frentes so separam o que ja passou nele):
   "mes_atual": true               periodo "Este mes", do dia 1 ate ontem (abre nele)
+  "periodos_extra": [14]          periodos a mais alem de ontem, 3, 7 e 30 dias (Wescley: 14 dias, 23/11/2026)
   "frentes": [{"nome": "Black: aluno", "contem": ["BLACK26"]}, ...]
                                   agrupa campanha + conjunto pelo nome (sem acento, maiuscula; a primeira regra que
                                   casar ganha, o resto vira "Outras") e mostra investimento, compras, faturamento e
@@ -49,7 +52,8 @@ filtro VENDAS (as frentes so separam o que ja passou nele):
                                   gerar.py), dentro do mesmo payload (mesma senha)
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional) e, com Hotmart,
-HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET; com Asaas, ASAAS_<SLUG>_API_KEY.
+HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET; com Kiwify, KIWIFY_<SLUG>_CLIENT_ID,
+_CLIENT_SECRET e _ACCOUNT_ID; com Asaas, ASAAS_<SLUG>_API_KEY.
 """
 
 import datetime as dt
@@ -65,6 +69,7 @@ from zoneinfo import ZoneInfo
 from gerar import api, criptografar, diario_seguro
 import gerar_asaas
 import gerar_hotmart
+import gerar_kiwify
 
 AQUI = Path(__file__).resolve().parent
 SITE = AQUI / "site" / "vendas"
@@ -483,18 +488,25 @@ def periodo(dias, ontem, status_camp, segmentos, inicio=None):
 
 
 def bloco_hotmart(slug, periodos, fuso):
-    """Vendas reais da Hotmart em cada periodo, pra comparar com as compras do pixel das campanhas do dashboard.
-    A Hotmart conta vendas de qualquer origem (anuncio, organico, link direto)."""
-    if not gerar_hotmart.credencial(slug):
-        print(f"::warning::vendas/{slug} saiu sem a Hotmart: faltam os secrets HOTMART_{slug.upper().replace('-', '_')}_*")
+    """Vendas reais da plataforma de pagamento (Hotmart ou Kiwify) em cada periodo, pra comparar com as compras do
+    pixel das campanhas do dashboard. A plataforma conta vendas de qualquer origem (anuncio, organico, link direto)."""
+    fonte = "Kiwify" if CFG.get("kiwify") else "Hotmart"
+    mod = gerar_kiwify if fonte == "Kiwify" else gerar_hotmart
+    cfg = CFG[fonte.lower()]
+    if not mod.credencial(slug):
+        print(f"::warning::vendas/{slug} saiu sem a {fonte}: faltam os secrets {fonte.upper()}_{slug.upper().replace('-', '_')}_*")
         return None
-    produtos = CFG["hotmart"]["produtos"]
+    produtos = cfg["produtos"]
     inicio = min(dt.date.fromisoformat(p["inicio"]) for p in periodos.values())
     fim = max(dt.date.fromisoformat(p["fim"]) for p in periodos.values())
-    linhas = gerar_hotmart.vendas(gerar_hotmart.Hotmart(slug), list(produtos), inicio, fim, fuso)
+    if fonte == "Kiwify":
+        linhas = mod.vendas(mod.Kiwify(slug), list(produtos), inicio, fim, fuso, cfg.get("excluir_planos", []))
+    else:
+        linhas = mod.vendas(mod.Hotmart(slug), list(produtos), inicio, fim, fuso)
     for p in periodos.values():
-        p["hotmart"] = gerar_hotmart.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
-    return {"produtos": list(produtos.values())}
+        p["hotmart"] = mod.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
+    return {"produtos": list(produtos.values()), "fonte": fonte,
+            "excluir_planos": cfg.get("excluir_planos", [])}
 
 
 def bloco_asaas(slug, periodos):
@@ -542,7 +554,7 @@ def gerar_cliente(slug):
         ids = [c["id"] for c in todas if eh_vendas(c["name"]) and temperatura(c["name"]) == nome]
         if ids:
             segmentos[nome] = ids
-    periodos = {str(d): periodo(d, ontem, status_camp, segmentos) for d in PERIODOS}
+    periodos = {str(d): periodo(d, ontem, status_camp, segmentos) for d in sorted(set(PERIODOS) | set(CFG.get("periodos_extra", [])))}
     if CFG.get("desde"):
         periodos["desde"] = periodo(0, ontem, status_camp, segmentos, dt.date.fromisoformat(CFG["desde"]))
     if CFG.get("mes_atual"):
@@ -560,7 +572,7 @@ def gerar_cliente(slug):
             for a in p["anuncios"]:
                 a["destino"] = destino_de(a)
 
-    hotmart = bloco_hotmart(slug, periodos, fuso) if CFG.get("hotmart") else None
+    hotmart = bloco_hotmart(slug, periodos, fuso) if CFG.get("hotmart") or CFG.get("kiwify") else None
     if (CFG.get("faturamento_real") or {}).get("fonte", "").lower() == "asaas":
         bloco_asaas(slug, periodos)
     atletas = bloco_atletas(ontem) if CFG.get("atletas") else None
@@ -635,7 +647,7 @@ def gerar_cliente(slug):
         print(f"   + Distribuicao: 30d R$ {d30['atual']['gasto']:.2f}, {len(d30['campanhas'])} campanhas")
     if hotmart:
         ref = periodos.get("desde", periodos["30"])
-        print(f"   + Hotmart: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "
+        print(f"   + {hotmart['fonte']}: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "
               f"x {ref['atual']['compras']:.0f} compras no pixel")
     if periodos["30"].get("faturamento_real"):
         ref = periodos.get("mes", periodos["30"])

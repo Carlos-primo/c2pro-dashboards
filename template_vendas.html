@@ -395,7 +395,7 @@ const ORDENS = {
 let ORDEM = "cpa";
 try { ORDEM = localStorage.getItem("c2pro-vendas-ordem") || "cpa"; if (!ORDENS[ORDEM]) ORDEM = "cpa"; } catch(_){}
 
-const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","30":"Últimos 30 dias","mes":"Este mês"};
+const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","14":"Últimos 14 dias","30":"Últimos 30 dias","mes":"Este mês"};
 
 const NOMES_SEG = {todos:"Todas as campanhas", quente:"Público quente", frio:"Público frio"};
 
@@ -546,7 +546,7 @@ function desenhar(){
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    ${D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
+    ${D.hotmart && D.hotmart.fonte === "Kiwify" ? `<div class="explica" style="margin-top:12px"><b>Vendas na Kiwify:</b> vendas pagas de ${esc(D.hotmart.produtos.join(", "))}, pela data da compra, direto da API da Kiwify${D.hotmart.excluir_planos && D.hotmart.excluir_planos.length ? `, sem os planos de renovação (${esc(D.hotmart.excluir_planos.join(", "))})` : ""}. Faturamento líquido, já sem a taxa da Kiwify. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
     ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação): cobranças pagas, no dia em que o cliente pagou (no cartão, o dia da aprovação). Parcelas da mesma venda contam como uma venda. No cartão parcelado a venda inteira conta no dia da compra; no boleto parcelado, cada parcela conta quando é paga. Estornos e chargebacks ficam fora. Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
     <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
@@ -622,6 +622,7 @@ function secaoTipos(P0){
 
 // Vendas reais na Hotmart x compras que o pixel registrou, no período escolhido.
 function hotmartSecao(h, a){
+  const F = esc((D.hotmart && D.hotmart.fonte) || "Hotmart");
   const dif = h.vendas - a.compras;
   const leitura = !h.vendas && !a.compras ? "nenhuma venda no período"
     : !a.compras ? "o pixel não registrou nenhuma"
@@ -629,14 +630,14 @@ function hotmartSecao(h, a){
     : dif < 0 ? `o pixel registrou ${fmtInt(-dif)} a mais` : "batem com o pixel";
   const max = h.origens.length ? h.origens[0].vendas : 0;
   return `<section>
-    <div class="sec-head"><div><h2>Vendas reais na Hotmart</h2>
+    <div class="sec-head"><div><h2>Vendas reais na ${F}</h2>
       <p class="sub">O que vendeu de verdade contra o que o pixel da Meta contou no mesmo período.</p></div></div>
     <div class="tiles">
-      ${tile("Vendas na Hotmart", fmtInt(h.vendas), "", leitura, true)}
-      ${tile("Compras no pixel", fmtInt(a.compras), "", h.vendas ? `${fmtInt(a.compras*100/h.vendas)}% das vendas da Hotmart` : "registradas pela Meta")}
-      ${tile("Faturamento na Hotmart", fmtMoeda(h.faturamento), "", h.devolvidas ? `${fmtInt(h.devolvidas)} reembolso(s) fora da conta` : "sem reembolso no período")}
-      ${tile("Custo por venda real", moedaOu(div(a.gasto, h.vendas)), "", "investimento ÷ vendas da Hotmart")}
-      ${tile("ROAS real", a.gasto ? fmtX(h.faturamento / a.gasto) : "-", "", "faturamento Hotmart ÷ investimento")}
+      ${tile(`Vendas na ${F}`, fmtInt(h.vendas), "", leitura, true)}
+      ${tile("Compras no pixel", fmtInt(a.compras), "", h.vendas ? `${fmtInt(a.compras*100/h.vendas)}% das vendas da ${F}` : "registradas pela Meta")}
+      ${tile(`Faturamento na ${F}`, fmtMoeda(h.faturamento), "", h.devolvidas ? `${fmtInt(h.devolvidas)} reembolso(s) fora da conta` : "sem reembolso no período")}
+      ${tile("Custo por venda real", moedaOu(div(a.gasto, h.vendas)), "", `investimento ÷ vendas da ${F}`)}
+      ${tile("ROAS real", a.gasto ? fmtX(h.faturamento / a.gasto) : "-", "", `faturamento ${F} ÷ investimento`)}
     </div>
     ${h.origens.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas por origem</h2>
       <p class="sub">UTMs que a página repassou ao checkout. "Sem origem" é venda que chegou sem UTM.</p></div></div>
