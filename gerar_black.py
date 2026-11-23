@@ -84,13 +84,13 @@ def google(gcfg, filtro, ontem):
     import gerar_google as gg
     try:
         g = gg.Google(gcfg["customer_id"])
-        return _google(g, gg, filtro, ontem) | {"nome": gcfg.get("nome", "Google Ads"), "conta": gcfg["customer_id"]}
+        return _google(g, gg, filtro, ontem, gcfg.get("mes_atual")) | {"nome": gcfg.get("nome", "Google Ads"), "conta": gcfg["customer_id"]}
     except SystemExit as erro:
         print(f"  aviso: Google Ads ficou de fora ({erro})")
         return None
 
 
-def _google(g, gg, filtro, ontem):
+def _google(g, gg, filtro, ontem, mes_atual=False):
     onde = f"campaign.name REGEXP_MATCH '(?i).*{filtro}.*'"  # so campanhas da Black, sem diferenciar maiuscula
     met = "metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions, metrics.conversions_value"
     chaves = ("custo", "imp", "cli", "conv", "valor")
@@ -164,7 +164,7 @@ def _google(g, gg, filtro, ontem):
         return sorted(ads, key=lambda a: -a["custo"])
 
     periodos = {}
-    chaves_per = [str(d) for d in gv.PERIODOS] + (["mes"] if gcfg.get("mes_atual") else [])
+    chaves_per = [str(d) for d in gv.PERIODOS] + (["mes"] if mes_atual else [])
     for chave in chaves_per:
         dias = (ontem - ontem.replace(day=1)).days + 1 if chave == "mes" else int(chave)
         ini = ontem - dt.timedelta(days=dias - 1)
