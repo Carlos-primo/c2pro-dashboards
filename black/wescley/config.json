@@ -7,5 +7,10 @@
     {"id": "act_359674206839374", "nome": "Camila"},
     {"id": "act_1072009758391272", "nome": "Revenda"}
   ],
-  "google": {"customer_id": "7321202082", "nome": "Camila"}
+  "google": {"customer_id": "7321202082", "nome": "Camila"},
+  "hotmart": {
+    "produtos": {"8852927": "Minha Revenda App - Loja PRO"},
+    "utm_contem": "BLACK",
+    "meta": {"valor": 300000, "inicio": "2026-11-01", "fim": "2026-11-30"}
+  }
 }

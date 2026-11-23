@@ -105,7 +105,7 @@ https://carlos-primo.github.io/c2pro-dashboards/black/<cliente>/
 | Wescley Lima | Camila e Revenda (C.Ad2) | https://carlos-primo.github.io/c2pro-dashboards/black/wescley/ |
 | Vita Hair (Débora Maciel) | CA03 | https://carlos-primo.github.io/c2pro-dashboards/black/vita-hair/ |
 
-Abas por conta + "Todas as contas" (alcance nao soma entre contas). Com o campo `google` no config (`{"customer_id": "...", "nome": "..."}`), ganha a aba Google Ads, separada da Meta e com o mesmo filtro: campanhas, anuncios (titulos, descricoes, destino), pesquisas que converteram e dia a dia. Wescley: conta Google da Camila, 732-120-2082. Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`.
+Abas por conta + "Todas as contas" (alcance nao soma entre contas). Com o campo `google` no config (`{"customer_id": "...", "nome": "..."}`), ganha a aba Google Ads, separada da Meta e com o mesmo filtro: campanhas, anuncios (titulos, descricoes, destino), pesquisas que converteram e dia a dia. Wescley: conta Google da Camila, 732-120-2082. Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`. Com o campo `hotmart` no config (Wescley, desde 23/11/2026): vendas reais da Hotmart dos anúncios (UTM com o nome da campanha BLACK), por campanha e anúncio, com custo por venda e ROAS reais, e a meta de faturamento do mês (`meta`). Secrets `HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET` no passo da Black.
 Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black" do workflow.
 
 **Origem dos leads (pago x orgânico)**, com `origem_leads` no config (hoje: Vita Hair): aba que lê a planilha de captura

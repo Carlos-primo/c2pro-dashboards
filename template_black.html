@@ -444,6 +444,58 @@ function eventos(){
   }));
 }
 
+// Vendas reais na Hotmart: só as que vieram dos anúncios da Black (UTM com o nome da campanha), mais a meta do mês.
+function hotmartSecao(P, a){
+  const H = D.hotmart; const HP = H && H.periodos[PER];
+  if (!HP) return "";
+  const todas = CONTA === "todas";
+  const nomes = new Set(P.campanhas.map(c => c.nome));
+  const daVisao = lista => todas ? lista : lista.filter(c => nomes.has(c.campanha));
+  const soma = (lista, k) => lista.reduce((s, x) => s + x[k], 0);
+  const ca = daVisao(HP.atual.campanhas), cb = daVisao(HP.anterior.campanhas);
+  const v = soma(ca, "vendas"), f = soma(ca, "faturamento"), vb = soma(cb, "vendas"), fb = soma(cb, "faturamento");
+  const gasto = P.atual.gasto, gastoB = P.anterior.gasto;
+  const cpv = div(gasto, v), cpvB = div(gastoB, vb), roas = div(f, gasto), roasB = div(fb, gastoB);
+  const gastoCamp = Object.fromEntries(P.campanhas.map(c => [c.nome, c.gasto]));
+  const camps = [...new Set([...ca.map(c => c.nome), ...P.campanhas.map(c => c.nome)])].map(n => {
+    const h = ca.find(c => c.nome === n) || {vendas:0, faturamento:0};
+    return {nome:n, gasto:gastoCamp[n] || 0, vendas:h.vendas, faturamento:h.faturamento};
+  }).sort((x,y) => y.vendas - x.vendas || y.gasto - x.gasto);
+  const ads = daVisao(HP.atual.anuncios).slice(0, 15);
+  const M = H.meta, pm = M ? Math.min(100, M.faturamento * 100 / M.valor) : 0, pa = M ? Math.min(pm, M.faturamento_anuncios * 100 / M.valor) : 0;
+  return `<section>
+    <div class="sec-head"><div><h2>Vendas reais na Hotmart (dos anúncios)</h2>
+      <p class="sub">Só as vendas que chegaram ao checkout com a UTM de uma campanha da Black${todas ? "" : " desta conta"}. É o que de fato veio dos anúncios.</p></div></div>
+    ${M && todas ? `<div class="card" style="padding:18px 20px;margin-bottom:16px">
+      <div class="lbl" style="margin-bottom:6px"><b>Meta da Black: ${fmtMoeda(M.valor)}</b> (${dataBR(M.inicio)} a ${dataBR(M.fim_meta)})</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:8px">${fmtMoeda(M.faturamento)} <span class="sub" style="font-size:14px;font-weight:400">${pctOu(M.faturamento*100/M.valor)} da meta, até ${dataBR(M.ate)} · faltam ${fmtMoeda(Math.max(0, M.valor - M.faturamento))}</span></div>
+      <div class="split" role="img" aria-label="${pctOu(pm)} da meta atingida">
+        ${pa ? `<i style="flex:${pa};background:var(--acc)"></i>` : ""}${pm - pa > 0 ? `<i style="flex:${pm - pa};background:var(--org)"></i>` : ""}<i style="flex:${100 - pm};background:transparent"></i></div>
+      <div class="legenda"><span style="--c:var(--acc)">Dos anúncios (UTM): ${fmtMoeda(M.faturamento_anuncios)} em ${fmtInt(M.vendas_anuncios)} vendas</span>
+        <span style="--c:var(--org)">Demais origens e sem UTM: ${fmtMoeda(M.faturamento - M.faturamento_anuncios)} em ${fmtInt(M.vendas - M.vendas_anuncios)} vendas</span></div>
+    </div>` : ""}
+    <div class="tiles">
+      ${tile("Vendas dos anúncios", fmtInt(v), delta(v, vb, "sobe"), `${fmtInt(a.compras)} compras no pixel`, true)}
+      ${tile("Faturamento dos anúncios", fmtMoeda(f), delta(f, fb, "sobe"), "valor da venda na Hotmart")}
+      ${tile("Custo por venda real", moedaOu(cpv), delta(cpv, cpvB, "desce"), "investimento ÷ vendas dos anúncios")}
+      ${tile("ROAS real", roas == null ? "-" : fmtX(roas), delta(roas, roasB, "sobe"), "faturamento dos anúncios ÷ investimento")}
+      ${todas ? tile("Vendas da Black na Hotmart", fmtInt(HP.atual.total_vendas), delta(HP.atual.total_vendas, HP.anterior.total_vendas, "sobe"), `${fmtMoeda(HP.atual.total_faturamento)}, de qualquer origem; ${fmtInt(HP.atual.sem_utm)} sem UTM`) : ""}
+    </div>
+    <div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas reais por campanha</h2></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th class="nome">Campanha</th><th>Investimento</th><th>Vendas Hotmart</th><th>Faturamento</th><th>Custo por venda</th><th>ROAS real</th></tr></thead>
+      <tbody>${camps.map(c => `<tr><td class="nome">${esc(c.nome)}</td><td>${fmtMoeda(c.gasto)}</td><td>${fmtInt(c.vendas)}</td>
+        <td>${fmtMoeda(c.faturamento)}</td><td>${c.gasto ? moedaOu(div(c.gasto, c.vendas)) : "-"}</td><td>${c.gasto ? fmtX(c.faturamento / c.gasto) : "-"}</td></tr>`).join("")}</tbody></table></div>
+    ${ads.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Anúncios que venderam</h2>
+      <p class="sub">Pelo utm_content da venda, que é o nome do anúncio.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th class="nome">Anúncio</th><th class="nome">Campanha</th><th>Vendas</th><th>Faturamento</th></tr></thead>
+      <tbody>${ads.map(x => `<tr><td class="nome">${esc(x.nome)}</td><td class="nome">${esc(x.campanha)}</td><td>${fmtInt(x.vendas)}</td><td>${fmtMoeda(x.faturamento)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+    <p class="sub" style="margin-top:12px">Vendas aprovadas e concluídas de ${esc(H.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart, com o valor da venda (antes das taxas). Reembolsos e chargebacks ficam fora.
+      Venda sem UTM ou com UTM de outra conta de anúncio não entra como "dos anúncios", mesmo que a pessoa tenha visto o anúncio: por isso as vendas dos anúncios são o mínimo garantido. A meta conta o faturamento do produto de qualquer origem.</p>
+  </section>`;
+}
+
 function desenhar(){
   if (CONTA === "google") return desenharGoogle();
   if (CONTA === "origem") return desenharOrigem();
@@ -466,6 +518,8 @@ function desenhar(){
       ${tile("Custo por compra", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"))}
     </div>
   </section>
+
+  ${hotmartSecao(P, a)}
 
   <section>
     <div class="sec-head"><div><h2>Funil da Black</h2><p class="sub">Do anúncio até o lead e a compra: quantas pessoas passam em cada etapa e quanto custa cada uma.</p></div></div>
@@ -525,7 +579,7 @@ function desenhar(){
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Visita para lead:</b> leads ÷ visitas à página. <b>Lead para compra:</b> compras do pixel ÷ leads.
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome, nas contas ${esc(D.contas.join(" e "))}. Leads, compras e faturamento são os que o pixel da Meta registrou e podem diferir da Hotmart. O alcance não soma entre contas porque a mesma pessoa pode estar nas duas. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    <div style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com "${esc(D.filtro)}" no nome, nas contas ${esc(D.contas.join(" e "))}. Leads, compras e faturamento são os que o pixel da Meta registrou e podem diferir da Hotmart${D.hotmart ? " (as vendas reais da Hotmart ficam no quadro próprio)" : ""}. O alcance não soma entre contas porque a mesma pessoa pode estar nas duas. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 

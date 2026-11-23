@@ -17,7 +17,7 @@
 # Dashboards de leads: SENHA_LEADS_<SLUG>, no bloco env do passo "Gerar dashboards de leads".
 # Dashboards de lancamento: SENHA_LANCAMENTO_<SLUG>, no bloco env do passo "Gerar dashboards de lancamento".
 # Hotmart (campo "hotmart" no config.json): HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET,
-# no bloco env do passo que gera aquele dashboard (hoje: vendas/rocha-mazzo).
+# no bloco env do passo que gera aquele dashboard (hoje: vendas/rocha-mazzo e black/wescley).
 # Asaas ("faturamento_real": {"fonte": "Asaas"} no config de vendas): ASAAS_<SLUG>_API_KEY (hoje: vendas/bjj-protech).
 # Dashboards do Google Ads: secrets GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, GOOGLE_ADS_REFRESH_TOKEN e GOOGLE_ADS_LOGIN_CUSTOMER_ID.
 
@@ -145,6 +145,8 @@ jobs:
         continue-on-error: true
         env:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          HOTMART_WESCLEY_CLIENT_ID: ${{ secrets.HOTMART_WESCLEY_CLIENT_ID }}          # vendas reais (config "hotmart")
+          HOTMART_WESCLEY_CLIENT_SECRET: ${{ secrets.HOTMART_WESCLEY_CLIENT_SECRET }}
           GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
           GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
           GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}

@@ -11,8 +11,14 @@ config.json:
   {"nome": "...", "subtitulo": "...", "filtro": "BLACK", "criativos_gasto_minimo": 10,
    "contas": [{"id": "act_...", "nome": "Camila"}, {"id": "act_...", "nome": "Revenda"}],
    "google": {"customer_id": "7321202082", "nome": "Camila"},      (opcional: aba Google Ads, mesmo filtro)
-   "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"}}  (opcional: aba pago x organico,
+   "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"},  (opcional: aba pago x organico,
                                                                        ver origem_leads.py)
+   "hotmart": {"produtos": {"8852927": "Minha Revenda App - Loja PRO"}, "utm_contem": "BLACK",
+               "meta": {"valor": 300000, "inicio": "2026-11-01", "fim": "2026-11-30"}}}
+               (opcional: vendas reais da Hotmart. "Dos anuncios" = venda com utm_campaign contendo utm_contem, que e
+               o nome da campanha no gerenciador; UTM numerica e de campanha de outra conta e fica fora.
+               Meta = faturamento bruto do produto na Hotmart no intervalo, de qualquer origem. Secrets
+               HOTMART_<SLUG>_CLIENT_ID e _CLIENT_SECRET, como no gerar_hotmart.py)
 
 Uso local:   python gerar_black.py            (todos)
              python gerar_black.py wescley     (so um)
@@ -27,6 +33,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import gerar_vendas as gv
+import gerar_hotmart
 import origem_leads
 from gerar import api, criptografar
 
@@ -225,6 +232,79 @@ def origem(slug, ocfg, periodos_meta, ontem):
     return {"fonte": fonte, "ate": resumo["ate"], "fora": resumo.get("fora", {}), "periodos": per, "diario": diario}
 
 
+def _utm(compra):
+    bruto = (compra.get("tracking") or {}).get("source_sck") or ""
+    return dict(p.split(":", 1) for p in bruto.split("|") if ":" in p) if "utm_" in bruto else {}
+
+
+def hotmart(slug, hcfg, periodos_meta, ontem, fuso):
+    """Vendas reais da Hotmart: as que vieram dos anuncios da Black (pela UTM) e o total, por periodo, mais a meta."""
+    if not gerar_hotmart.credencial(slug):
+        print(f"::warning::black/{slug} saiu sem a Hotmart: faltam os secrets HOTMART_{slug.upper().replace('-', '_')}_*")
+        return None
+    meta = hcfg.get("meta")
+    datas = [dt.date.fromisoformat(p[k]) for p in periodos_meta.values() for k in ("inicio", "ant_inicio", "fim")]
+    if meta:
+        datas.append(dt.date.fromisoformat(meta["inicio"]))
+    inicio, fim = min(datas), ontem
+    contem = hcfg.get("utm_contem", "BLACK").upper()
+    hm, linhas = gerar_hotmart.Hotmart(slug), {}
+    for produto in hcfg["produtos"]:
+        for status in gerar_hotmart.VENDIDAS + gerar_hotmart.DEVOLVIDAS:
+            for v in hm.get("/sales/history", product_id=produto, transaction_status=status,
+                            start_date=gerar_hotmart.ms(inicio, fuso), end_date=gerar_hotmart.ms(fim, fuso, fim=True)):
+                p = v.get("purchase", {})
+                quando = p.get("approved_date") or p.get("order_date")
+                if not quando:
+                    continue
+                u = _utm(p)
+                camp = u.get("utm_campaign", "").strip()
+                preco = p.get("price") or {}
+                linhas[p.get("transaction")] = {
+                    "dia": dt.datetime.fromtimestamp(quando / 1000, fuso).date(),
+                    "vendida": p.get("status", status) in gerar_hotmart.VENDIDAS,
+                    "valor": float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0,
+                    "campanha": camp if contem in camp.upper() else None,
+                    "anuncio": (u.get("utm_content") or "").strip() if contem in camp.upper() else None,
+                    "utm": bool(u),
+                }
+    linhas = list(linhas.values())
+
+    def resumo(ini, fim_):
+        doper = [l for l in linhas if ini <= l["dia"] <= fim_]
+        ok = [l for l in doper if l["vendida"]]
+        anun = [l for l in ok if l["campanha"]]
+        def agrupa(chave):
+            g = {}
+            for l in anun:
+                x = g.setdefault(l[chave] or "(sem nome)", {"nome": l[chave] or "(sem nome)", "campanha": l["campanha"],
+                                                           "vendas": 0, "faturamento": 0.0})
+                x["vendas"] += 1
+                x["faturamento"] = round(x["faturamento"] + l["valor"], 2)
+            return sorted(g.values(), key=lambda x: (-x["vendas"], -x["faturamento"]))
+        return {
+            "vendas": len(anun), "faturamento": round(sum(l["valor"] for l in anun), 2),
+            "total_vendas": len(ok), "total_faturamento": round(sum(l["valor"] for l in ok), 2),
+            "sem_utm": sum(1 for l in ok if not l["utm"]),
+            "outras_utm": sum(1 for l in ok if l["utm"] and not l["campanha"]),
+            "devolvidas": sum(1 for l in doper if not l["vendida"] and l["campanha"]),
+            "campanhas": agrupa("campanha"), "anuncios": agrupa("anuncio"),
+        }
+
+    d = lambda x: dt.date.fromisoformat(x)
+    saida = {"produtos": list(hcfg["produtos"].values()), "filtro_utm": contem,
+             "periodos": {k: {"atual": resumo(d(p["inicio"]), d(p["fim"])),
+                              "anterior": resumo(d(p["ant_inicio"]), d(p["ant_fim"]))}
+                          for k, p in periodos_meta.items()}}
+    if meta:
+        mi, mf = d(meta["inicio"]), min(d(meta["fim"]), ontem)
+        r = resumo(mi, mf)
+        saida["meta"] = {"valor": meta["valor"], "inicio": meta["inicio"], "fim_meta": meta["fim"], "ate": mf.isoformat(),
+                         "faturamento": r["total_faturamento"], "vendas": r["total_vendas"],
+                         "faturamento_anuncios": r["faturamento"], "vendas_anuncios": r["vendas"]}
+    return saida
+
+
 def gerar_cliente(slug):
     cfg = json.loads((AQUI / "black" / slug / "config.json").read_text(encoding="utf-8"))
     gv.FILTRO = cfg["filtro"].upper()
@@ -281,6 +361,7 @@ def gerar_cliente(slug):
         "visoes": {"todas": visoes_todas, **visoes},
         "google": google(cfg["google"], gv.FILTRO, ontem) if cfg.get("google") else None,
         "origem": origem(slug, cfg["origem_leads"], visoes_todas["periodos"], ontem) if cfg.get("origem_leads") else None,
+        "hotmart": hotmart(slug, cfg["hotmart"], visoes_todas["periodos"], ontem, fuso) if cfg.get("hotmart") else None,
     }
 
     senha = os.environ.get(f"SENHA_BLACK_{slug.upper().replace('-', '_')}", "")
@@ -303,6 +384,12 @@ def gerar_cliente(slug):
     if dados["origem"]:
         o = dados["origem"]["periodos"]["30"]["atual"]
         partes += f"; Origem ({dados['origem']['fonte']}): {o['pago']} pago, {o['organico']} organico"
+    if dados["hotmart"]:
+        h = dados["hotmart"]["periodos"]["30"]["atual"]
+        partes += f"; Hotmart 30d: {h['vendas']} vendas dos anuncios de {h['total_vendas']} no total"
+        if dados["hotmart"].get("meta"):
+            m = dados["hotmart"]["meta"]
+            partes += f"; meta R$ {m['faturamento']:.2f} de R$ {m['valor']:.2f}"
     print(f"OK black/{slug}: 30d {partes} | {'com senha' if senha else 'link aberto, sem senha'}")
 
 
