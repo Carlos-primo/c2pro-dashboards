@@ -47,6 +47,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import unicodedata
 from collections import Counter
 from pathlib import Path
@@ -258,20 +259,28 @@ def periodo(inicio, fim, ant_inicio, ant_fim):
     # Hoje ainda esta gastando: entre a chamada da conta e a dos anuncios o valor pode andar alguns centavos.
     tol = 1.0 if fim == CFG.get("_hoje") else 0.05
 
-    camp = campanhas_do_periodo(inicio, fim)
-    total = insights("account", inicio, fim, CAMPOS)
-    total_gasto = float(total[0]["spend"]) if total else 0.0
-    conferir(abs(sum(m["gasto"] for m in camp.values()) - total_gasto) < tol,
-             f"{dias}d: soma das campanhas ({sum(m['gasto'] for m in camp.values()):.2f}) difere do total "
-             f"da conta {CFG['conta_anuncio']} ({total_gasto:.2f})")
-
-    anuncios = []
-    for l in insights("ad", inicio, fim, "ad_id,ad_name,campaign_id," + CAMPOS):
-        m = metricas(l)
-        if m["gasto"] > 0:
-            anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha_id": l["campaign_id"], **m})
-    conferir(abs(sum(a["gasto"] for a in anuncios) - total_gasto) < tol,
-             f"{dias}d: soma dos anuncios difere do total da conta")
+    # A Meta ainda acerta o gasto de ontem ao longo do dia: entre uma chamada e outra o total anda alguns centavos
+    # (U-TRAX, 24/11/2026, falhou 4 vezes no mesmo dia). Busca de novo ate 3 vezes antes de abortar.
+    for tentativa in range(3):
+        camp = campanhas_do_periodo(inicio, fim)
+        total = insights("account", inicio, fim, CAMPOS)
+        total_gasto = float(total[0]["spend"]) if total else 0.0
+        anuncios = []
+        for l in insights("ad", inicio, fim, "ad_id,ad_name,campaign_id," + CAMPOS):
+            m = metricas(l)
+            if m["gasto"] > 0:
+                anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha_id": l["campaign_id"], **m})
+        soma_c, soma_a = sum(m["gasto"] for m in camp.values()), sum(a["gasto"] for a in anuncios)
+        if abs(soma_c - total_gasto) < tol and abs(soma_a - total_gasto) < tol:
+            break
+        if tentativa < 2:
+            print(f"  aviso: {dias} {CFG['conta_anuncio']} nao bateu (campanhas {soma_c:.2f}, anuncios {soma_a:.2f}, "
+                  f"conta {total_gasto:.2f}); buscando de novo em 30s")
+            time.sleep(30)
+    conferir(abs(soma_c - total_gasto) < tol,
+             f"{dias}d: soma das campanhas ({soma_c:.2f}) difere do total da conta {CFG['conta_anuncio']} ({total_gasto:.2f})")
+    conferir(abs(soma_a - total_gasto) < tol,
+             f"{dias}d: soma dos anuncios ({soma_a:.2f}) difere do total da conta {CFG['conta_anuncio']} ({total_gasto:.2f})")
 
     return {"inicio": inicio.isoformat(), "fim": fim.isoformat(),
             "ant_inicio": ant_inicio.isoformat(), "ant_fim": ant_fim.isoformat(),
@@ -405,18 +414,26 @@ def coletar_conta(agora, ontem, nome_conta):
 
     # Dia a dia (30 dias) por campanha, pra montar o grafico de cada aba no navegador.
     inicio30 = ontem - dt.timedelta(days=29)
-    diario = {}
-    for l in diario_seguro(lambda c, i, f, **e: insights("campaign", i, f, c, **e),
-                           "campaign_id,spend,inline_link_clicks,actions,action_values,video_thruplay_watched_actions,reach",
-                           inicio30, ontem):
-        m = metricas(l)
-        if m["gasto"] > 0:
-            diario.setdefault(l["campaign_id"], {})[l["date_start"]] = {
-                k: m[k] for k in ("gasto", "compras", "faturamento", "leads", "cadastros", "conversas", "thruplay",
-                                  "alcance", "visitas", "cliques", "checkouts", "views", "engajamento")}
-    soma_diaria = sum(d["gasto"] for c in diario.values() for d in c.values())
     soma_30 = sum(m["gasto"] for m in periodos["30"]["campanhas"].values())
-    conferir(abs(soma_diaria - soma_30) < 0.05, "serie diaria nao bate com o total de 30 dias")
+    for tentativa in range(3):  # mesmo motivo do periodo(): o gasto de ontem ainda anda alguns centavos
+        diario = {}
+        for l in diario_seguro(lambda c, i, f, **e: insights("campaign", i, f, c, **e),
+                               "campaign_id,spend,inline_link_clicks,actions,action_values,video_thruplay_watched_actions,reach",
+                               inicio30, ontem):
+            m = metricas(l)
+            if m["gasto"] > 0:
+                diario.setdefault(l["campaign_id"], {})[l["date_start"]] = {
+                    k: m[k] for k in ("gasto", "compras", "faturamento", "leads", "cadastros", "conversas", "thruplay",
+                                      "alcance", "visitas", "cliques", "checkouts", "views", "engajamento")}
+        soma_diaria = sum(d["gasto"] for c in diario.values() for d in c.values())
+        if abs(soma_diaria - soma_30) < 0.05:
+            break
+        if tentativa < 2:
+            print(f"  aviso: serie diaria {CFG['conta_anuncio']} ({soma_diaria:.2f}) nao bateu com 30d ({soma_30:.2f}); "
+                  "buscando de novo em 30s")
+            time.sleep(30)
+    conferir(abs(soma_diaria - soma_30) < 0.05,
+             f"serie diaria ({soma_diaria:.2f}) nao bate com o total de 30 dias ({soma_30:.2f})")
     conjuntos = conjuntos_ativos(nome_conta) if CFG.get("quebras") else []
     for cj in conjuntos:
         cj["campanha"] = campanhas.get(cj["campanha_id"], {}).get("nome", "")
