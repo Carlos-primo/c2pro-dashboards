@@ -4,16 +4,60 @@
   "conta_anuncio": "act_1320774509162020",
   "criativos_gasto_minimo": 5,
   "so_dados": true,
-  "filtros_extra": ["CAPTACAO"],
+  "filtros_extra": [
+    "CAPTACAO"
+  ],
   "leads": true,
   "mes_atual": true,
-  "periodos_extra": [14],
+  "periodos_extra": [
+    14
+  ],
   "paginas": [
-    {"nome": "Teste EletroFísico", "contem": ["ELETROFISICO"], "hotmart": ["8692475"]},
-    {"nome": "Black: vendas", "contem": ["VENDAS", "BLACK"], "hotmart": ["8879726"]},
-    {"nome": "Black: captação", "contem": ["CAPTACAO"], "resultado": "leads"},
-    {"nome": "Perpétuo (Mapa do Fio)", "contem": ["PERPETUO"], "hotmart": ["8427381"]},
-    {"nome": "Caminhada Juntas", "contem": ["CAMINHADA"], "hotmart": ["8159638", "8770795"]}
+    {
+      "nome": "Teste EletroFísico",
+      "contem": [
+        "ELETROFISICO"
+      ],
+      "hotmart": [
+        "8692475"
+      ]
+    },
+    {
+      "nome": "Black: vendas",
+      "contem": [
+        "VENDAS",
+        "BLACK"
+      ],
+      "hotmart": [
+        "8879726"
+      ]
+    },
+    {
+      "nome": "Black: captação",
+      "contem": [
+        "CAPTACAO"
+      ],
+      "resultado": "leads"
+    },
+    {
+      "nome": "Perpétuo (Mapa do Fio)",
+      "contem": [
+        "PERPETUO"
+      ],
+      "hotmart": [
+        "8427381"
+      ]
+    },
+    {
+      "nome": "Caminhada Juntas",
+      "contem": [
+        "CAMINHADA"
+      ],
+      "hotmart": [
+        "8159638",
+        "8770795"
+      ]
+    }
   ],
   "hotmart": {
     "produtos": {
@@ -25,6 +69,21 @@
       "8713453": "Mapa dos Sinais",
       "8744035": "Mapa das Toxinas",
       "8692453": "Mapa do Prato"
+    }
+  },
+  "acumulado": {
+    "nome": "Black",
+    "inicio": "2026-10-27",
+    "produtos": [
+      "8879726"
+    ],
+    "campanhas": {
+      "contem": [
+        "BLACK"
+      ],
+      "sem": [
+        "ELETROFISICO"
+      ]
     }
   },
   "origem_leads": {

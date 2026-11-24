@@ -30,6 +30,12 @@ Dashboard unico da Debora (Vita Hair, 24/11/2026, pedido do Carlos: juntar o de 
                                   "resultado": "leads" abre a aba com custo por lead em destaque e leads por dia.
                                   "hotmart": vendas reais daqueles produtos na Hotmart dentro da aba (precisa do
                                   bloco "hotmart" do config com todos os produtos)
+  "acumulado": {"nome": "Black", "inicio": "2026-10-27", "produtos": ["8879726"],
+                "campanhas": {"contem": ["BLACK"], "sem": ["ELETROFISICO"]}}
+                                  quadro fixo (nao depende do periodo): tudo que os produtos venderam na Hotmart do
+                                  inicio ate hoje, de qualquer origem (faturamento total da acao), contra o investimento
+                                  das campanhas da acao na Meta no mesmo intervalo. Mais a tabela de tudo que a conta
+                                  vendeu na Hotmart no intervalo, produto por produto. Precisa do bloco "hotmart"
   "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"}
                                   aba Origem dos leads (pago x organico pela planilha de UTM), igual a do dashboard
                                   da Black (origem_leads.py); o resumo salvo fica em vendas/<slug>/
@@ -551,6 +557,60 @@ def bloco_asaas(slug, periodos):
         p["faturamento_real_ant"] = gerar_asaas.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("ant_inicio", "ant_fim")))
 
 
+def bloco_acumulado(slug, fuso, hoje):
+    """Resultado total de uma acao (ex.: Black) desde o inicio, pela Hotmart, de qualquer origem. Vai ate hoje
+    (vendas de hoje entram); o investimento da Meta vai ate hoje tambem (parcial)."""
+    cfg = CFG["acumulado"]
+    if not gerar_hotmart.credencial(slug):
+        print(f"::warning::vendas/{slug}: quadro '{cfg['nome']}' saiu sem a Hotmart (faltam os secrets HOTMART_*)")
+        return {"nome": cfg["nome"], "inicio": cfg["inicio"], "sem_hotmart": True}
+    inicio = dt.date.fromisoformat(cfg["inicio"])
+    hm = gerar_hotmart.Hotmart(slug)
+    # Todos os produtos da conta no intervalo (nao so os do config): o quadro mostra tudo que entrou.
+    nomes = {str(k): v for k, v in CFG["hotmart"]["produtos"].items()}
+    linhas = gerar_hotmart.vendas(hm, list(nomes), inicio, hoje, fuso)
+    da_acao = [str(x) for x in cfg["produtos"]]
+
+    def resumo(ls):
+        vend = [l for l in ls if l["status"] in gerar_hotmart.VENDIDAS]
+        fora = [l for l in vend if l.get("moeda", "BRL") != "BRL"]
+        dev = [l for l in ls if l["status"] not in gerar_hotmart.VENDIDAS]
+        return {"vendas": len(vend), "faturamento": round(sum(l["valor"] for l in vend), 2),
+                "exterior": len(fora), "devolvidas": len(dev),
+                "valor_devolvido": round(sum(l["valor"] for l in dev), 2)}
+
+    acao = resumo([l for l in linhas if l["produto"] in da_acao])
+    por_dia = {}
+    for l in linhas:
+        if l["produto"] in da_acao and l["status"] in gerar_hotmart.VENDIDAS:
+            d = por_dia.setdefault(l["dia"].isoformat(), {"vendas": 0, "faturamento": 0.0})
+            d["vendas"] += 1
+            d["faturamento"] = round(d["faturamento"] + l["valor"], 2)
+    produtos = sorted(({"nome": nomes[pid], "da_acao": pid in da_acao,
+                        **resumo([l for l in linhas if l["produto"] == pid])} for pid in nomes),
+                      key=lambda x: -x["faturamento"])
+
+    termos = [sem_acento(t) for t in cfg.get("campanhas", {}).get("contem", [])]
+    sem = [sem_acento(t) for t in cfg.get("campanhas", {}).get("sem", [])]
+    todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name", limit=500)
+    ids = [c["id"] for c in todas if all(t in sem_acento(c["name"]) for t in termos)
+           and not any(t in sem_acento(c["name"]) for t in sem)]
+    gasto, campanhas = 0.0, []
+    if ids:
+        for l in api(f"{CFG['conta_anuncio']}/insights", level="campaign", fields="campaign_name,spend",
+                     time_range=json.dumps({"since": inicio.isoformat(), "until": hoje.isoformat()}),
+                     filtering=json.dumps([{"field": "campaign.id", "operator": "IN", "value": ids}]), limit=500):
+            gasto += float(l.get("spend", 0))
+            campanhas.append({"nome": l["campaign_name"], "gasto": float(l.get("spend", 0))})
+    return {"nome": cfg["nome"], "inicio": inicio.isoformat(), "fim": hoje.isoformat(),
+            "produtos_acao": [nomes[p] for p in da_acao if p in nomes],
+            "acao": acao, "gasto": round(gasto, 2), "campanhas": sorted(campanhas, key=lambda c: -c["gasto"]),
+            "por_dia": [{"data": d.isoformat(), **por_dia.get(d.isoformat(), {"vendas": 0, "faturamento": 0.0})}
+                        for d in (inicio + dt.timedelta(days=n) for n in range((hoje - inicio).days + 1))],
+            "produtos": [x for x in produtos if x["vendas"] or x["devolvidas"]],
+            "total": resumo(linhas)}
+
+
 def leads_por_atribuicao(inicio, fim):
     """Leads da Meta separados em quem clicou no anuncio (7 dias) e quem so viu (1 dia), pra conciliar com a planilha
     de UTM. Mesmas campanhas do dashboard e mesmo evento de lead (o primeiro de EVENTOS_LEAD que aparecer)."""
@@ -671,6 +731,8 @@ def gerar_cliente(slug):
         dados["distribuicao"] = bloco_distribuicao()
     if CFG.get("origem_leads"):
         dados["origem"] = bloco_origem(slug, periodos, ontem)
+    if CFG.get("acumulado"):
+        dados["acumulado"] = bloco_acumulado(slug, fuso, agora.date())
     soma_diaria = sum(d["gasto"] for d in dados["diario"])
     conferir(abs(soma_diaria - periodos["30"]["atual"]["gasto"]) < 0.05,
              "serie diaria nao bate com o total de 30 dias")
@@ -716,6 +778,10 @@ def gerar_cliente(slug):
               f"{o['pago']} pago, {o['organico']} organico, {o.get('nao_traqueado', 0)} nao traqueado")
     if CFG.get("leads"):
         print(f"   + Leads: 30d {p30.get('leads', 0):.0f}")
+    ac = dados.get("acumulado")
+    if ac and not ac.get("sem_hotmart"):
+        print(f"   + {ac['nome']} desde {ac['inicio']}: {ac['acao']['vendas']} vendas, R$ {ac['acao']['faturamento']:.2f} "
+              f"na Hotmart (todas as origens), investimento R$ {ac['gasto']:.2f}; conta toda R$ {ac['total']['faturamento']:.2f}")
     if hotmart:
         ref = periodos.get("desde", periodos["30"])
         print(f"   + {hotmart['fonte']}: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "

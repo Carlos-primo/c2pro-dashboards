@@ -118,6 +118,8 @@ def vendas(hm, produtos, inicio, fim, fuso):
                     "dia": dt.datetime.fromtimestamp(quando / 1000, fuso).date(),
                     "status": p.get("status", status),
                     "valor": float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0,
+                    "moeda": preco.get("currency_code", "BRL"),
+                    "valor_original": float(preco.get("value") or 0),
                     "origem": origem(p.get("tracking") or {}),
                 })
     # A mesma transacao nao pode aparecer em dois status; se a API repetir, fica uma so.
