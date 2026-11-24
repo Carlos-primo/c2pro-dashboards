@@ -23,6 +23,17 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
                                   criativos. Mesmo link. Config igual ao de funis/ (abas, periodos, aba_inicial).
                                   Ordus (17/11/2026), pedido do Carlos: a campanha ativa e de WhatsApp, nao VENDAS
 
+Dashboard unico da Debora (Vita Hair, 24/11/2026, pedido do Carlos: juntar o de vendas e o da Black num so):
+  "leads": true                   conta leads (evento de lead do pixel/formulario) em tudo: resumo, abas, campanhas,
+                                  criativos e dia a dia. Pra quando entram campanhas de captacao (filtros_extra CAPTACAO)
+  "paginas": [{"nome": "...", "contem": [...], "resultado": "leads", "hotmart": ["<id do produto>"]}]
+                                  "resultado": "leads" abre a aba com custo por lead em destaque e leads por dia.
+                                  "hotmart": vendas reais daqueles produtos na Hotmart dentro da aba (precisa do
+                                  bloco "hotmart" do config com todos os produtos)
+  "origem_leads": {"planilha": "<id>", "gid": "0", "resumo": "origem.json"}
+                                  aba Origem dos leads (pago x organico pela planilha de UTM), igual a do dashboard
+                                  da Black (origem_leads.py); o resumo salvo fica em vendas/<slug>/
+
 Visao completa de trafego (BJJ Protech, 13/11/2026). Tudo opcional e so com pedido do Carlos; sempre dentro do
 filtro VENDAS (as frentes so separam o que ja passou nele):
   "mes_atual": true               periodo "Este mes", do dia 1 ate ontem (abre nele)
@@ -90,6 +101,8 @@ EVENTOS = {
     "checkouts": ["initiate_checkout", "omni_initiated_checkout", "offsite_conversion.fb_pixel_initiate_checkout"],
     "compras": ["purchase", "omni_purchase", "offsite_conversion.fb_pixel_purchase"],
 }
+# Mesmos eventos de lead do dashboard da Black (gerar_black.py). So entram com "leads": true no config.
+EVENTOS_LEAD = ["lead", "offsite_conversion.fb_pixel_lead", "onsite_conversion.lead_grouped"]
 
 
 def sem_acento(txt):
@@ -155,7 +168,7 @@ def primeiro(dic, chaves):
 def metricas(linha):
     acoes = {a["action_type"]: float(a["value"]) for a in linha.get("actions", [])}
     valores = {a["action_type"]: float(a["value"]) for a in linha.get("action_values", [])}
-    return {
+    m = {
         "gasto": float(linha.get("spend", 0)),
         "impressoes": int(linha.get("impressions", 0)),
         "alcance": int(linha.get("reach", 0)),
@@ -165,6 +178,9 @@ def metricas(linha):
         "compras": primeiro(acoes, EVENTOS["compras"]),
         "faturamento": primeiro(valores, EVENTOS["compras"]),
     }
+    if CFG.get("leads"):
+        m["leads"] = primeiro(acoes, EVENTOS_LEAD)
+    return m
 
 
 def conta_total(inicio, fim, ids=None):
@@ -421,7 +437,7 @@ def periodo(dias, ontem, status_camp, segmentos, inicio=None):
         m = metricas(l)
         # Campanha sem gasto no periodo mas com compra (clique de dias antes) entra, igual aos conjuntos e anuncios:
         # senao o faturamento das frentes nao bate com o das campanhas (BJJ, Esquenta RMK, 14/11/2026).
-        if m["gasto"] > 0 or m["compras"] > 0:
+        if m["gasto"] > 0 or m["compras"] > 0 or m.get("leads", 0) > 0:
             campanhas.append({"id": l["campaign_id"], "nome": l["campaign_name"],
                               "temp": temperatura(l["campaign_name"]),
                               "status": status_camp.get(l["campaign_id"], ""), **m})
@@ -433,7 +449,7 @@ def periodo(dias, ontem, status_camp, segmentos, inicio=None):
         m = metricas(l)
         # Compra sem gasto no periodo (clique de dias antes) tambem entra: frentes e destinos somam o faturamento
         # inteiro. O ranking de criativos continua exigindo o gasto minimo.
-        if m["gasto"] > 0 or m["compras"] > 0:
+        if m["gasto"] > 0 or m["compras"] > 0 or m.get("leads", 0) > 0:
             anuncios.append({"id": l["ad_id"], "nome": l["ad_name"], "campanha": l["campaign_name"],
                              "conjunto": l.get("adset_name", ""), "temp": temperatura(l["campaign_name"]), **m})
 
@@ -504,8 +520,20 @@ def bloco_hotmart(slug, periodos, fuso):
                            cfg.get("planos", []))
     else:
         linhas = mod.vendas(mod.Hotmart(slug), list(produtos), inicio, fim, fuso)
+    abas = {pg["nome"]: [str(x) for x in pg["hotmart"]] for pg in CFG.get("paginas", []) if pg.get("hotmart")}
     for p in periodos.values():
-        p["hotmart"] = mod.resumo(linhas, dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
+        ini, fim_p = dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"])
+        p["hotmart"] = mod.resumo(linhas, ini, fim_p)
+        if len(produtos) > 1 and fonte == "Hotmart":
+            # Quanto cada produto vendeu de verdade no periodo (de qualquer origem).
+            p["hotmart"]["produtos"] = sorted((
+                {"nome": nome, "vendas": r["vendas"], "faturamento": r["faturamento"]}
+                for pid, nome in produtos.items()
+                for r in [mod.resumo([l for l in linhas if l.get("produto") == str(pid)], ini, fim_p)]),
+                key=lambda x: -x["faturamento"])
+        for nome, ids in abas.items():
+            if p.get("paginas") and nome in p["paginas"]:
+                p["paginas"][nome]["hotmart"] = mod.resumo([l for l in linhas if l.get("produto") in ids], ini, fim_p)
     return {"produtos": list(produtos.values()), "fonte": fonte,
             "excluir_planos": cfg.get("excluir_planos", []), "planos": cfg.get("planos", [])}
 
@@ -521,6 +549,38 @@ def bloco_asaas(slug, periodos):
     for p in periodos.values():
         p["faturamento_real"] = gerar_asaas.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("inicio", "fim")))
         p["faturamento_real_ant"] = gerar_asaas.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("ant_inicio", "ant_fim")))
+
+
+def leads_por_atribuicao(inicio, fim):
+    """Leads da Meta separados em quem clicou no anuncio (7 dias) e quem so viu (1 dia), pra conciliar com a planilha
+    de UTM. Mesmas campanhas do dashboard e mesmo evento de lead (o primeiro de EVENTOS_LEAD que aparecer)."""
+    t = {"total": 0.0, "clique": 0.0, "visualizacao": 0.0}
+    for linha in insights("account", dt.date.fromisoformat(inicio), dt.date.fromisoformat(fim), "actions",
+                          action_attribution_windows=json.dumps(["7d_click", "1d_view"])):
+        acoes = {a["action_type"]: a for a in linha.get("actions", [])}
+        a = next((acoes[e] for e in EVENTOS_LEAD if e in acoes), None)
+        if a:
+            t["total"] += float(a.get("value", 0))
+            t["clique"] += float(a.get("7d_click", 0))
+            t["visualizacao"] += float(a.get("1d_view", 0))
+    return t
+
+
+def bloco_origem(slug, periodos, ontem):
+    """Aba Origem dos leads (pago x organico), da planilha de UTM do cliente. So contagens, nenhum dado pessoal."""
+    import origem_leads
+    resumo, fonte = origem_leads.carregar(slug, CFG["origem_leads"], pasta="vendas")
+    if not resumo:
+        print("  aviso: origem dos leads ficou de fora (planilha fechada e sem resumo salvo)")
+        return None
+    per, diario = origem_leads.periodos(resumo, periodos, ontem, ontem - dt.timedelta(days=29))
+    for k, p in per.items():
+        p["meta"] = leads_por_atribuicao(periodos[k]["inicio"], periodos[k]["fim"])
+        conferir(abs(p["meta"]["total"] - periodos[k]["atual"].get("leads", 0)) < 0.5,
+                 f"origem {k}d: leads por atribuicao nao batem com o total da Meta")
+        conferir(p["atual"]["total"] == sum(c["leads"] for c in p["canais"]), f"origem {k}d: canais nao fecham")
+        conferir(p["atual"]["pago"] == sum(a["leads"] for a in p["anuncios"]), f"origem {k}d: anuncios nao fecham")
+    return {"fonte": fonte, "ate": resumo["ate"], "fora": resumo.get("fora", {}), "periodos": per, "diario": diario}
 
 
 def serie_diaria(ontem, ids=None):
@@ -588,6 +648,8 @@ def gerar_cliente(slug):
         "filtros": filtros(),
         "excluir": excluidos(),
         "so_dados": bool(CFG.get("so_dados")),
+        "leads": bool(CFG.get("leads")),
+        "paginas_leads": [p["nome"] for p in CFG.get("paginas", []) if p.get("resultado") == "leads"],
         "hotmart": hotmart,
         "atletas": atletas,
         "google": google,
@@ -607,6 +669,8 @@ def gerar_cliente(slug):
         conferir(abs(soma - periodos["30"]["atual"]["gasto"]) < 0.05, "dia a dia das abas nao bate com o total de 30 dias")
     if CFG.get("distribuicao"):
         dados["distribuicao"] = bloco_distribuicao()
+    if CFG.get("origem_leads"):
+        dados["origem"] = bloco_origem(slug, periodos, ontem)
     soma_diaria = sum(d["gasto"] for d in dados["diario"])
     conferir(abs(soma_diaria - periodos["30"]["atual"]["gasto"]) < 0.05,
              "serie diaria nao bate com o total de 30 dias")
@@ -646,6 +710,12 @@ def gerar_cliente(slug):
     if dados.get("distribuicao"):
         d30 = dados["distribuicao"]["periodos"]["30"]
         print(f"   + Distribuicao: 30d R$ {d30['atual']['gasto']:.2f}, {len(d30['campanhas'])} campanhas")
+    if dados.get("origem"):
+        o = dados["origem"]["periodos"]["30"]["atual"]
+        print(f"   + Origem dos leads ({dados['origem']['fonte']}, ate {dados['origem']['ate']}): "
+              f"{o['pago']} pago, {o['organico']} organico, {o.get('nao_traqueado', 0)} nao traqueado")
+    if CFG.get("leads"):
+        print(f"   + Leads: 30d {p30.get('leads', 0):.0f}")
     if hotmart:
         ref = periodos.get("desde", periodos["30"])
         print(f"   + {hotmart['fonte']}: {ref['inicio']} a {ref['fim']} {ref['hotmart']['vendas']} vendas "

@@ -120,12 +120,12 @@ def ler_planilha(cfg):
     return list(csv.DictReader(io.StringIO(resp.content.decode("utf-8-sig"))))
 
 
-def carregar(slug, cfg):
+def carregar(slug, cfg, pasta="black"):
     """-> (resumo, fonte). fonte: 'planilha' (lida agora) ou 'resumo salvo'."""
     linhas = ler_planilha(cfg)
     if linhas is not None:
         return resumir(linhas), "planilha"
-    arq = AQUI / "black" / slug / cfg.get("resumo", "origem.json")
+    arq = AQUI / pasta / slug / cfg.get("resumo", "origem.json")
     if not arq.exists():
         return None, ""
     return json.loads(arq.read_text(encoding="utf-8")), "resumo salvo"

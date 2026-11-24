@@ -1,8 +1,35 @@
 {
   "nome": "Vita Hair",
-  "subtitulo": "Campanhas de vendas",
+  "subtitulo": "Tráfego pago: Black, Teste EletroFísico e perpétuo",
   "conta_anuncio": "act_1320774509162020",
   "criativos_gasto_minimo": 5,
-  "excluir": ["BLACK"],
-  "so_dados": true
+  "so_dados": true,
+  "filtros_extra": ["CAPTACAO"],
+  "leads": true,
+  "mes_atual": true,
+  "periodos_extra": [14],
+  "paginas": [
+    {"nome": "Teste EletroFísico", "contem": ["ELETROFISICO"], "hotmart": ["8692475"]},
+    {"nome": "Black: vendas", "contem": ["VENDAS", "BLACK"], "hotmart": ["8879726"]},
+    {"nome": "Black: captação", "contem": ["CAPTACAO"], "resultado": "leads"},
+    {"nome": "Perpétuo (Mapa do Fio)", "contem": ["PERPETUO"], "hotmart": ["8427381"]},
+    {"nome": "Caminhada Juntas", "contem": ["CAMINHADA"], "hotmart": ["8159638", "8770795"]}
+  ],
+  "hotmart": {
+    "produtos": {
+      "8879726": "Pacote Vitalício (Black)",
+      "8692475": "Teste EletroFísico",
+      "8427381": "Mapa do Fio",
+      "8159638": "Caminhada Juntas (Oferta)",
+      "8770795": "Caminhada Juntas",
+      "8713453": "Mapa dos Sinais",
+      "8744035": "Mapa das Toxinas",
+      "8692453": "Mapa do Prato"
+    }
+  },
+  "origem_leads": {
+    "planilha": "1f7KuIj_I_FAH5STkMV5wjOaGVFdd94djZlBOiK1ptUQ",
+    "gid": "0",
+    "resumo": "origem.json"
+  }
 }

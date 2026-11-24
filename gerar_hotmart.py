@@ -114,6 +114,7 @@ def vendas(hm, produtos, inicio, fim, fuso):
                 preco = p.get("price") or {}
                 linhas.append({
                     "transacao": p.get("transaction"),
+                    "produto": str(produto),
                     "dia": dt.datetime.fromtimestamp(quando / 1000, fuso).date(),
                     "status": p.get("status", status),
                     "valor": float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0,

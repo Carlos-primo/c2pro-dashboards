@@ -64,7 +64,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 | Cliente | Link |
 |---|---|
 | Ordus System (acompanhamento: todas as campanhas, por funil; ontem, 3, 7, 14 e 30 dias) | https://carlos-primo.github.io/c2pro-dashboards/vendas/ordus/ |
-| Vita Hair | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
+| Vita Hair (Débora Maciel): dashboard único desde 24/11/2026, com abas Teste EletroFísico, Black (vendas e captação), Perpétuo, Caminhada Juntas e Origem dos leads; leads, vendas reais da Hotmart por aba e por produto | https://carlos-primo.github.io/c2pro-dashboards/vendas/vita-hair/ |
 | Rocha Mazzo Advogados (Raio-X da MP 1.376) | https://carlos-primo.github.io/c2pro-dashboards/vendas/rocha-mazzo/ |
 | BJJ Protech (tráfego completo: abas por tipo, Google e distribuição; com senha) | https://carlos-primo.github.io/c2pro-dashboards/vendas/bjj-protech/ |
 | Wescley Lima (perpétuo: funil VSL, vendas reais da Kiwify; ontem, 3, 7, 14, 30 dias e este mês) | https://carlos-primo.github.io/c2pro-dashboards/vendas/wescley/ |
@@ -103,12 +103,13 @@ https://carlos-primo.github.io/c2pro-dashboards/black/<cliente>/
 | Cliente | Contas | Link |
 |---|---|---|
 | Wescley Lima | Camila e Revenda (C.Ad2) | https://carlos-primo.github.io/c2pro-dashboards/black/wescley/ |
-| Vita Hair (Débora Maciel) | CA03 | https://carlos-primo.github.io/c2pro-dashboards/black/vita-hair/ |
 
 Abas por conta + "Todas as contas" (alcance nao soma entre contas). Com o campo `google` no config (`{"customer_id": "...", "nome": "..."}`), ganha a aba Google Ads, separada da Meta e com o mesmo filtro: campanhas, anuncios (titulos, descricoes, destino), pesquisas que converteram e dia a dia. Wescley: conta Google da Camila, 732-120-2082. Reaproveita o `gerar_vendas.py`. Rodar no PC: `python gerar_black.py [slug]`. Com o campo `hotmart` no config (Wescley, desde 23/11/2026): vendas reais da Hotmart dos anúncios (UTM com o nome da campanha BLACK), por campanha e anúncio, com custo por venda e ROAS reais, e a meta de faturamento do mês (`meta`). Secrets `HOTMART_<SLUG>_CLIENT_ID` e `_CLIENT_SECRET` no passo da Black.
 Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black" do workflow.
 
-**Origem dos leads (pago x orgânico)**, com `origem_leads` no config (hoje: Vita Hair): aba que lê a planilha de captura
+A Black da Vita Hair (Débora) entrou no dashboard de vendas dela em 24/11/2026; o link `black/vita-hair/` redireciona pra lá (`redirecionar/`).
+
+**Origem dos leads (pago x orgânico)**, com `origem_leads` no config (Wescley pode usar; a Vita Hair usa no `vendas/vita-hair`, com o resumo em `vendas/vita-hair/origem.json`): aba que lê a planilha de captura
 de UTM da página e separa os leads em **tráfego pago** (UTM de anúncio da Meta: source ig/fb/an, campanhas C2PRO) e
 **orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station), além de **não traqueado** (cadastro sem UTM nenhuma). Mostra pago x orgânico nos mesmos períodos da
 aba Meta, dia a dia empilhado, os canais, os anúncios que trouxeram lead pago e o custo por lead pago real (investimento

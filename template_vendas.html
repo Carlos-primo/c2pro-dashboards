@@ -16,7 +16,7 @@
   --b-sub:rgba(255,255,255,.07); --b-def:rgba(255,255,255,.12); --b-strong:rgba(255,255,255,.2); --b-acc:rgba(0,216,245,.45);
   --t-strong:#F2F6FA; --t-body:#C9D2DD; --t-muted:#9AA6B6; --t-faint:#6B788A;
   --acc:#00D8F5; --acc-h:#37E6FF; --on-acc:#00171C; --acc-soft:rgba(0,216,245,.12);
-  --pos:#23D18B; --neg:#FF4D5E;
+  --pos:#23D18B; --neg:#FF4D5E; --org:#B48CFF; --nt:#7C8799;
   --grid:rgba(255,255,255,.07);
   --card:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
   --elev:0 12px 32px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);
@@ -171,6 +171,15 @@ tr.link{cursor:pointer} tr.link:hover td{color:var(--t-strong)}
 .origem .q{font:600 16px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--t-strong)}
 .origem .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--s2);overflow:hidden}
 .origem .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+/* ---------- Origem dos leads (pago x orgânico), só com "origem_leads" no config ---------- */
+.split{height:14px;border-radius:999px;overflow:hidden;display:flex;gap:2px;background:var(--s2);margin:0 0 10px}
+.split i{display:block;height:100%}
+.legenda{display:flex;gap:6px 18px;flex-wrap:wrap;font:400 12px/1.4 var(--mono);color:var(--t-muted)}
+.legenda span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.tile.org{border-color:rgba(180,140,255,.4)}
+.tile.nt{border-color:rgba(124,135,153,.45)}
+.barra-tb{display:inline-block;height:6px;border-radius:3px;background:var(--c);vertical-align:middle;margin-right:10px}
+.aviso{margin-top:12px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,77,94,.35);background:rgba(255,77,94,.08);font-size:13px;color:var(--t-body)}
 .defs{margin-top:12px;font-size:12px;color:var(--t-faint);line-height:1.6}
 .defs b{color:var(--t-muted);font-weight:500}
 
@@ -236,7 +245,8 @@ function derivadas(m){
     tx_total: div(m.compras*100, m.visitas),
     cpc: div(m.gasto, m.cliques), c_visita: div(m.gasto, m.visitas),
     c_checkout: div(m.gasto, m.checkouts), cpa: div(m.gasto, m.compras),
-    roas: div(m.faturamento, m.gasto), ticket: div(m.faturamento, m.compras) };
+    roas: div(m.faturamento, m.gasto), ticket: div(m.faturamento, m.compras),
+    cpl: div(m.gasto, m.leads), tx_lead: div((m.leads||0)*100, m.visitas) };
 }
 
 // ---------- tela de senha ----------
@@ -282,6 +292,8 @@ let SEG = "todos";
 try { PER_SALVO = localStorage.getItem("c2pro-vendas-periodo"); PER = PER_SALVO || "7"; SEG = localStorage.getItem("c2pro-vendas-publico") || "todos"; } catch(_){}
 
 function render(dados){ D = dados; MOEDA = D.moeda || "BRL";
+  if (D.leads) Object.assign(ORDENS, ORDEM_LEAD);
+  if (!ORDENS[ORDEM]) ORDEM = "cpa";
   if (D.periodos.desde) NOMES_PER.desde = `Desde ${dataBR(D.periodos.desde.inicio)}`;
   // Com o periodo "desde" (campanhas que pararam), quem nunca escolheu um periodo abre nele.
   if (D.periodos.desde && !PER_SALVO) PER = "desde";
@@ -336,20 +348,25 @@ const TAXAS = [
   {k:"tx_checkout", nome:"Página para checkout", formula:"checkouts ÷ visitas"},
   {k:"tx_compra",   nome:"Checkout para compra", formula:"compras ÷ checkouts"},
 ];
+// Funil de captação (abas com "resultado": "leads" no config): termina no cadastro.
+const ETAPAS_LEAD = [ETAPAS[0], ETAPAS[1], ETAPAS[2],
+  {k:"leads", nome:"Leads", desc:"Quem se cadastrou", custo:"Custo por lead", cv:m => m.cpl}];
+const TAXAS_LEAD = [TAXAS[0], TAXAS[1], {k:"tx_lead", nome:"Página para lead", formula:"leads ÷ visitas"}];
 
-function forma(i){
+function forma(i, n){
   // Trapézio: cada etapa começa na largura em que a anterior terminou.
   const L = [100, 84, 68, 52, 38, 28];
   const t = (100 - L[i]) / 2, b = (100 - L[i+1]) / 2;
   const fill = [.05,.08,.11,.15,.22][i];
-  const fim = i === ETAPAS.length - 1;
+  const fim = i === (n || ETAPAS.length) - 1;
   return `<svg viewBox="0 0 100 72" preserveAspectRatio="none" aria-hidden="true">
     <polygon points="${t},0 ${100-t},0 ${100-b},72 ${b},72" fill="rgba(0,216,245,${fill})"
       stroke="${fim ? "rgba(0,216,245,.6)" : "rgba(0,216,245,.28)"}" stroke-width="1" vector-effect="non-scaling-stroke"
       ${fim ? 'style="filter:drop-shadow(0 0 14px rgba(0,216,245,.35))"' : ""}/></svg>`;
 }
 
-function funil(a, b){
+function funil(a, b, lead){
+  const ETAPAS = lead ? ETAPAS_LEAD : ETAPAS_V, TAXAS = lead ? TAXAS_LEAD : TAXAS_V;
   // Etapa com a maior queda de taxa em relação ao período anterior.
   let pior = null;
   if (!D.so_dados) TAXAS.forEach((t, i) => {
@@ -364,7 +381,7 @@ function funil(a, b){
     const pctTopo = i && a.impressoes ? `${fmtPct(a[e.k]*100/a.impressoes)} das impressões` : (i ? "" : "topo do funil");
     html += `<div class="fn-row${i === ETAPAS.length-1 ? " fim" : ""}">
       <div class="fn-nome"><div class="n">${e.nome}</div><div class="d">${e.desc}</div></div>
-      <div class="fn-forma">${forma(i)}<div class="q"><b>${fmtInt(a[e.k])}</b><span>${pctTopo}</span></div></div>
+      <div class="fn-forma">${forma(i, ETAPAS.length)}<div class="q"><b>${fmtInt(a[e.k])}</b><span>${pctTopo}</span></div></div>
       <div class="fn-custo"><div class="l">${e.custo}</div><div class="v">${moedaOu(e.cv(a))}</div>${delta(e.cv(a), e.cv(b), "desce")}</div>
     </div>`;
     const t = TAXAS[i];
@@ -372,7 +389,11 @@ function funil(a, b){
       <div class="chip${pior && pior.i === i ? " pior" : ""}">${ICO_DOWN}<span class="k">${t.nome}</span><b>${pctOu(a[t.k])}</b>${deltaPP(a[t.k], b[t.k])}</div>
       <div class="nota">${D.so_dados ? "" : `${t.formula}<br>`}antes: ${pctOu(b[t.k])}</div></div>`;
   });
-  html += `<div class="fn-rodape">
+  html += lead ? `<div class="fn-rodape">
+      <div>Compras: <b>${fmtInt(a.compras)}</b></div>
+      <div>Faturamento: <b>${fmtMoeda(a.faturamento)}</b></div>
+      <div>ROAS: <b>${a.roas == null ? "-" : fmtX(a.roas)}</b></div>
+    </div>` : `<div class="fn-rodape">
       <div>Da visita à compra: <b>${pctOu(a.tx_total)}</b></div>
       <div>Faturamento: <b>${fmtMoeda(a.faturamento)}</b></div>
       <div>ROAS: <b>${a.roas == null ? "-" : fmtX(a.roas)}</b></div>
@@ -386,14 +407,17 @@ function funil(a, b){
   return html + `</div>`;
 }
 
+const ETAPAS_V = ETAPAS, TAXAS_V = TAXAS;
 const ORDENS = {
   cpa:  {label:"Custo por compra",   val:m => m.cpa,        melhor:"menor"},
   comp: {label:"Compras",            val:m => m.compras,    melhor:"maior"},
   ctr:  {label:"CTR",                val:m => m.ctr,        melhor:"maior"},
   cchk: {label:"Custo por checkout", val:m => m.c_checkout, melhor:"menor"},
 };
+// Com "leads" no config, os criativos também ordenam por custo por lead.
+const ORDEM_LEAD = {cpl: {label:"Custo por lead", val:m => m.cpl, melhor:"menor"}};
 let ORDEM = "cpa";
-try { ORDEM = localStorage.getItem("c2pro-vendas-ordem") || "cpa"; if (!ORDENS[ORDEM]) ORDEM = "cpa"; } catch(_){}
+try { ORDEM = localStorage.getItem("c2pro-vendas-ordem") || "cpa"; if (!ORDENS[ORDEM] && !ORDEM_LEAD[ORDEM]) ORDEM = "cpa"; } catch(_){}
 
 const NOMES_PER = {"1":"Ontem","3":"Últimos 3 dias","7":"Últimos 7 dias","14":"Últimos 14 dias","30":"Últimos 30 dias","mes":"Este mês"};
 
@@ -411,6 +435,7 @@ function abasDisponiveis(){
   });
   if (D.google) l.push({k:"google", nome:"Google Ads"});
   if (D.distribuicao) l.push({k:"distribuicao", nome:"Distribuição"});
+  if (D.origem) l.push({k:"origem", nome:"Origem dos leads"});
   return l;
 }
 
@@ -418,7 +443,8 @@ function desenhar(){
   const ABAS = abasDisponiveis();
   if (!ABAS.some(x => x.k === ABA)) ABA = "geral";
   const aba = ABAS.find(x => x.k === ABA), pg = aba.pagina;
-  const geral = ABA === "geral", google = ABA === "google", dist = ABA === "distribuicao";
+  const geral = ABA === "geral", google = ABA === "google", dist = ABA === "distribuicao", org = ABA === "origem";
+  const ehLead = !!pg && (D.paginas_leads || []).includes(pg);
   const P0 = D.periodos[PER];
   // Filtro quente/frio: só na aba Geral, e só quando o gerador achou campanhas com Q (quente) ou ASP/F (frio) no nome.
   const segs = geral ? Object.keys(P0.segmentos || {}) : [];
@@ -444,6 +470,8 @@ function desenhar(){
   ${ABAS.length > 1 ? `<nav class="abas" role="tablist" aria-label="Tipo de campanha">
       ${ABAS.map(x => `<button role="tab" data-a="${x.k}" aria-selected="${ABA===x.k}">${esc(x.nome)}</button>`).join("")}
     </nav>` : ""}`;
+
+  if (org) return desenharOrigem(topo, P0);
 
   if (dist || google) {
     const GP = google ? D.google.periodos[PER] : null;
@@ -475,16 +503,19 @@ function desenhar(){
 
   <section>
     <div class="tiles">
-      ${tile("Custo por compra", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"), `${fmtInt(a.compras)} compras`, true)}
+      ${ehLead ? tile("Custo por lead", moedaOu(a.cpl), delta(a.cpl,b.cpl,"desce"), `${fmtInt(a.leads)} leads`, true) + tile("Leads", fmtInt(a.leads), delta(a.leads,b.leads,"sobe")) : ""}
+      ${tile("Custo por compra", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"), `${fmtInt(a.compras)} compras`, !ehLead)}
       ${tile("Compras", fmtInt(a.compras), delta(a.compras,b.compras,"sobe"))}
       ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
       ${tile("Faturamento", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe"))}
       ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), delta(a.roas,b.roas,"sobe"), D.so_dados ? "" : "faturamento ÷ investimento")}
       ${tile("Ticket médio", moedaOu(a.ticket), delta(a.ticket,b.ticket,"sobe"))}
+      ${D.leads && !ehLead && (a.leads || b.leads) ? tile("Leads", fmtInt(a.leads), delta(a.leads,b.leads,"sobe")) + tile("Custo por lead", moedaOu(a.cpl), delta(a.cpl,b.cpl,"desce")) : ""}
     </div>
   </section>
 
   ${geral && P0.hotmart ? hotmartSecao(P0.hotmart, a) : ""}
+  ${pg && P0.paginas[pg].hotmart ? hotmartSecao(P0.paginas[pg].hotmart, a) : ""}
   ${geral && (D.google || D.faturamento_real) ? secaoPlataformas(P0) : ""}
   ${geral && P0.paginas ? secaoTipos(P0) : ""}
   ${P0.conjuntos && (geral || new Set(P.conjuntos.map(c => c.frente)).size > 1) ? secaoFrentes(P) : ""}
@@ -492,8 +523,8 @@ function desenhar(){
   ${geral && D.google && !D.paginas ? secaoGoogle() : ""}
 
   <section>
-    <div class="sec-head"><div><h2>Funil de vendas</h2><p class="sub">Do anúncio até a compra: quantas pessoas passam em cada etapa e quanto custa cada uma.</p></div></div>
-    ${funil(a, b)}
+    <div class="sec-head"><div><h2>${ehLead ? "Funil de captação" : "Funil de vendas"}</h2><p class="sub">${ehLead ? "Do anúncio até o cadastro" : "Do anúncio até a compra"}: quantas pessoas passam em cada etapa e quanto custa cada uma.</p></div></div>
+    ${funil(a, b, ehLead)}
   </section>
 
   <section>
@@ -514,6 +545,8 @@ function desenhar(){
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.compras,0))} compras</div><svg id="c-compras"></svg></div>
       <div class="card chart"><h3>Checkouts iniciados por dia</h3>
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.checkouts,0))} checkouts</div><svg id="c-checkouts"></svg></div>
+      ${D.leads && DD.some(d => d.leads) ? `<div class="card chart"><h3>Leads por dia</h3>
+        <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+(d.leads||0),0))} leads</div><svg id="c-leads"></svg></div>` : ""}
     </div>
     <details><summary>Ver o funil de cada dia em tabela</summary>
       <div class="card tbl-wrap" style="margin-top:12px"><table>
@@ -548,7 +581,7 @@ function desenhar(){
       <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
     ${D.hotmart && D.hotmart.fonte === "Kiwify" ? `<div class="explica" style="margin-top:12px"><b>Vendas na Kiwify:</b> vendas pagas de ${esc(D.hotmart.produtos.join(", "))}, pela data da compra, direto da API da Kiwify${D.hotmart.planos && D.hotmart.planos.length ? `, só dos checkouts para onde os anúncios levam (${esc(D.hotmart.planos.join(", "))})` : D.hotmart.excluir_planos && D.hotmart.excluir_planos.length ? `, sem os planos de renovação (${esc(D.hotmart.excluir_planos.join(", "))})` : ""}. Faturamento líquido, já sem a taxa da Kiwify. Quem chega nesses checkouts sem ser pelo anúncio (orgânico, link direto) também conta, porque a página não repassa a origem ao checkout. Reembolsos e chargebacks ficam fora.</div>` : D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
     ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação): cobranças pagas, no dia em que o cliente pagou (no cartão, o dia da aprovação). Parcelas da mesma venda contam como uma venda. No cartão parcelado a venda inteira conta no dia da compra; no boleto parcelado, cada parcela conta quando é paga. Estornos e chargebacks ficam fora. Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
-    <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. Compras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
+    <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. ${D.leads ? "Leads, c" : "C"}ompras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
   </div>`;
 
@@ -557,6 +590,9 @@ function desenhar(){
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
     p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+  const cl = document.getElementById("c-leads");
+  if (cl) graficoBarras(cl, DD.map(d => ({x:d.data, y:d.leads||0, g:d.gasto})),
+    p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por lead: ${moedaOu(div(p.g,p.y))}`);
 }
 
 function irPara(k){
@@ -604,18 +640,21 @@ function abaDosAtletas(pg){
 
 // Geral: uma linha por aba de tipo de campanha, clicável.
 function secaoTipos(P0){
-  const L = D.paginas.map(n => ({nome:n, ...P0.paginas[n].atual})).filter(x => x.gasto > 0 || x.compras > 0);
+  const L = D.paginas.map(n => ({nome:n, ...P0.paginas[n].atual, hm:P0.paginas[n].hotmart})).filter(x => x.gasto > 0 || x.compras > 0 || x.leads > 0);
   const tg = L.reduce((s,x) => s + x.gasto, 0), tf = L.reduce((s,x) => s + x.faturamento, 0);
+  const comLead = D.leads, comHm = L.some(x => x.hm);
+  const hmCols = x => !comHm ? "" : x.hm ? `<td>${fmtInt(x.hm.vendas)}</td><td>${fmtMoeda(x.hm.faturamento)}</td><td>${fmtRoas(div(x.hm.faturamento, x.gasto))}</td>` : `<td>-</td><td>-</td><td>-</td>`;
   return `<section>
     <div class="sec-head"><div><h2>Resultado por tipo de campanha</h2>
-      <p class="sub">Toque numa linha para abrir a página daquele tipo.${notaRegua()}</p></div></div>
+      <p class="sub">Toque numa linha para abrir a página daquele tipo.${notaRegua()}${D.hotmart ? ` Vendas e faturamento da ${esc(D.hotmart.fonte)} são do produto de cada tipo, de qualquer origem.` : ""}</p></div></div>
     <div class="card tbl-wrap"><table>
-      <thead><tr><th>Tipo</th><th>Investimento</th><th>% da verba</th><th>Compras</th><th>Custo por compra</th>
-        <th>Faturamento</th><th>% do faturamento</th><th>ROAS</th></tr></thead>
+      <thead><tr><th>Tipo</th><th>Investimento</th><th>% da verba</th>${comLead ? "<th>Leads</th><th>Custo por lead</th>" : ""}<th>Compras</th><th>Custo por compra</th>
+        <th>Faturamento</th><th>% do faturamento</th><th>ROAS</th>${comHm ? `<th>Vendas ${esc(D.hotmart.fonte)}</th><th>Faturamento ${esc(D.hotmart.fonte)}</th><th>ROAS real</th>` : ""}</tr></thead>
       <tbody>${L.map(x => { const m = derivadas(x);
         return `<tr class="link" data-ir="${slugAba(x.nome)}"><td>${esc(x.nome)} ›</td><td>${fmtMoeda(m.gasto)}</td><td>${pctOu(div(m.gasto*100,tg))}</td>
+          ${comLead ? `<td>${fmtInt(m.leads)}</td><td>${moedaOu(m.cpl)}</td>` : ""}
           <td>${fmtInt(m.compras)}</td><td>${moedaOu(m.cpa)}</td><td>${fmtMoeda(m.faturamento)}</td>
-          <td>${pctOu(div(m.faturamento*100,tf))}</td><td class="${roasCls(m.roas)}">${fmtRoas(m.roas)}</td></tr>`; }).join("")}</tbody>
+          <td>${pctOu(div(m.faturamento*100,tf))}</td><td class="${roasCls(m.roas)}">${fmtRoas(m.roas)}</td>${hmCols(x)}</tr>`; }).join("")}</tbody>
     </table></div>
   </section>`;
 }
@@ -639,11 +678,148 @@ function hotmartSecao(h, a){
       ${tile("Custo por venda real", moedaOu(div(a.gasto, h.vendas)), "", `investimento ÷ vendas da ${F}`)}
       ${tile("ROAS real", a.gasto ? fmtX(h.faturamento / a.gasto) : "-", "", `faturamento ${F} ÷ investimento`)}
     </div>
+    ${h.produtos && h.produtos.some(x => x.vendas) ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas por produto na ${F}</h2>
+      <p class="sub">Tudo que cada produto vendeu no período, de qualquer origem.</p></div></div>
+      <div class="card tbl-wrap"><table><thead><tr><th>Produto</th><th>Vendas</th><th>Faturamento</th><th>% do faturamento</th></tr></thead>
+      <tbody>${h.produtos.filter(x => x.vendas).map(x => `<tr><td>${esc(x.nome)}</td><td>${fmtInt(x.vendas)}</td><td>${fmtMoeda(x.faturamento)}</td>
+        <td>${pctOu(div(x.faturamento*100, h.faturamento))}</td></tr>`).join("")}</tbody></table></div>` : ""}
     ${h.origens.length ? `<div class="sec-head" style="margin:24px 0 12px"><div><h2 style="font-size:16px">Vendas por origem</h2>
       <p class="sub">UTMs que a página repassou ao checkout. "Sem origem" é venda que chegou sem UTM.</p></div></div>
       <div class="card origens">${h.origens.map(o => `<div class="origem"><div class="nm">${esc(o.nome)}</div>
         <div class="q">${fmtInt(o.vendas)}</div><div class="bar"><i style="width:${max ? o.vendas/max*100 : 0}%"></i></div></div>`).join("")}</div>` : ""}
   </section>`;
+}
+
+// ---------- aba Origem dos leads (planilha de UTM; mesma aba do dashboard da Black) ----------
+const COR_PAGO = "var(--acc)", COR_ORG = "var(--org)", COR_NT = "var(--nt)";
+const corCanal = x => x.nome === "Meta Ads" ? COR_PAGO : x.nome.startsWith("Não traqueado") ? COR_NT : COR_ORG;
+const pctDe = (n, t) => t ? n * 100 / t : null;
+
+function tabelaSimples(lista, total, cor, rotulo, vazio){
+  if (!lista.length) return `<div class="card empty">${vazio}</div>`;
+  const max = Math.max(...lista.map(x => x.leads));
+  return `<div class="card tbl-wrap"><table>
+    <thead><tr><th class="nome">${rotulo}</th><th>Leads</th><th>% do total</th></tr></thead>
+    <tbody>${lista.map(x => `<tr><td class="nome"><span class="barra-tb" style="--c:${cor(x)};width:${Math.max(4, Math.round(x.leads*80/max))}px"></span>${esc(x.nome)}</td>
+      <td>${fmtInt(x.leads)}</td><td>${pctOu(pctDe(x.leads, total))}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function desenharOrigem(topo, PM){
+  const O = D.origem, P = O.periodos[PER];
+  const a = P.atual, b = P.anterior;
+  const nt = a.nao_traqueado || 0;
+  const pp = pctDe(a.pago, a.total), po = pctDe(a.organico, a.total), pn = pctDe(nt, a.total);
+  const cplReal = div(PM.atual.gasto, a.pago), cplRealAnt = div(PM.anterior.gasto, b.pago);
+  const DD = O.diario, fora = O.fora || {};
+  const atrasada = O.ate && O.ate < PM.fim;
+  const soma = k => DD.reduce((s,d) => s + (d[k]||0), 0);
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+  const faixa = (i,f) => i === f ? dataBR(i) : `${dataBR(i)} a ${dataBR(f)}`;
+
+  app.innerHTML = `<div class="wrap">
+  ${topo}
+  <div class="meta"><span>Planilha de captura de UTM${O.ate ? ` (cadastros até ${dataBRano(O.ate)})` : ""}</span>
+    <span>Período: ${faixa(PM.inicio, PM.fim)}</span><span>Comparado com: ${faixa(PM.ant_inicio, PM.ant_fim)}</span><span>Atualizado em ${quando}</span></div>
+  ${atrasada ? `<div class="aviso">A planilha foi lida até ${dataBRano(O.ate)}. Os dias depois disso ainda não entraram nesta aba.</div>` : ""}
+
+  <section>
+    <div class="tiles">
+      ${tile("Leads no período", fmtInt(a.total), delta(a.total,b.total,"sobe"), `cadastros na página (${fmtInt(a.unicos)} pessoas diferentes)`, true)}
+      ${tile("Tráfego pago", fmtInt(a.pago), delta(a.pago,b.pago,"sobe"), `${pctOu(pp)} dos leads`)}
+      <div class="card tile org"><div class="lbl">Orgânico</div><div class="val">${fmtInt(a.organico)}</div>
+        <div class="extra">${pctOu(po)} dos leads</div>${delta(a.organico,b.organico,"sobe")}</div>
+      <div class="card tile nt"><div class="lbl">Não traqueado</div><div class="val">${fmtInt(nt)}</div>
+        <div class="extra">${pctOu(pn)} dos leads, sem UTM: não dá pra saber a origem</div>${delta(nt,b.nao_traqueado||0,"desce")}</div>
+      ${tile("Custo por lead pago (planilha)", moedaOu(cplReal), delta(cplReal,cplRealAnt,"desce"), "investimento Meta ÷ leads pagos da planilha")}
+      ${tile("Leads no gerenciador", fmtInt(PM.atual.leads), delta(PM.atual.leads,PM.anterior.leads,"sobe"), "o que a Meta registrou (ver conciliação abaixo)")}
+    </div>
+    <div class="card" style="padding:18px 20px;margin-top:16px">
+      <div class="split" role="img" aria-label="Pago ${pctOu(pp)}, orgânico ${pctOu(po)}, não traqueado ${pctOu(pn)}">
+        ${a.pago ? `<i style="flex:${a.pago};background:${COR_PAGO}"></i>` : ""}${a.organico ? `<i style="flex:${a.organico};background:${COR_ORG}"></i>` : ""}${nt ? `<i style="flex:${nt};background:${COR_NT}"></i>` : ""}</div>
+      <div class="legenda"><span style="--c:${COR_PAGO}">Tráfego pago: ${fmtInt(a.pago)} (${pctOu(pp)})</span>
+        <span style="--c:${COR_ORG}">Orgânico: ${fmtInt(a.organico)} (${pctOu(po)})</span>
+        <span style="--c:${COR_NT}">Não traqueado: ${fmtInt(nt)} (${pctOu(pn)})</span></div>
+    </div>
+  </section>
+
+  ${P.meta ? `<section>
+    <div class="sec-head"><div><h2>Gerenciador x planilha</h2><p class="sub">Por que os leads do gerenciador não são iguais aos leads pagos da planilha.</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th class="nome">O que é</th><th>Leads</th></tr></thead>
+      <tbody>
+        <tr><td class="nome"><b>Leads no gerenciador da Meta</b></td><td class="hl">${fmtInt(P.meta.total)}</td></tr>
+        <tr><td class="nome">↳ clicaram no anúncio e se cadastraram em até 7 dias</td><td>${fmtInt(P.meta.clique)}</td></tr>
+        <tr><td class="nome">↳ só viram o anúncio (sem clicar) e se cadastraram em até 1 dia, por outro caminho</td><td>${fmtInt(P.meta.visualizacao)}</td></tr>
+        <tr><td class="nome"><b>Cadastros com UTM de anúncio na planilha</b></td><td class="hl">${fmtInt(a.pago)}</td></tr>
+        <tr><td class="nome">Diferença entre os cliques da Meta e a planilha</td><td>${fmtInt(P.meta.clique - a.pago)}</td></tr>
+      </tbody></table></div>
+    <p class="sub" style="margin-top:12px">A Meta dá o lead para o anúncio sempre que a pessoa teve contato com ele, mesmo que tenha se cadastrado depois pela bio, pelo WhatsApp ou pelo e-mail.
+      A planilha registra o caminho do cadastro: quem viu o anúncio e depois entrou pela bio aparece como orgânico aqui e como lead no gerenciador.</p>
+  </section>` : ""}
+
+  <section>
+    <div class="sec-head"><div><h2>Dia a dia</h2><p class="sub">Leads por dia nos últimos 30 dias, independente do período selecionado.</p></div>
+      <div class="legenda"><span style="--c:${COR_PAGO}">Pago</span><span style="--c:${COR_ORG}">Orgânico</span><span style="--c:${COR_NT}">Não traqueado</span></div></div>
+    <div class="card chart"><h3>Leads por dia: pago, orgânico e não traqueado</h3>
+      <div class="tot">Total: ${fmtInt(soma("total"))} leads (${fmtInt(soma("pago"))} pago, ${fmtInt(soma("organico"))} orgânico, ${fmtInt(soma("nao_traqueado"))} não traqueado)</div>
+      <svg id="o-dia"></svg></div>
+    <details><summary>Ver cada dia em tabela</summary>
+      <div class="card tbl-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>Dia</th><th>Leads</th><th>Pago</th><th>Orgânico</th><th>Não traqueado</th><th>% pago</th></tr></thead>
+        <tbody>${DD.slice().reverse().filter(d => d.total).map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtInt(d.total)}</td>
+          <td>${fmtInt(d.pago)}</td><td>${fmtInt(d.organico)}</td><td>${fmtInt(d.nao_traqueado||0)}</td><td>${pctOu(pctDe(d.pago,d.total))}</td></tr>`).join("")}</tbody>
+      </table></div></details>
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>De onde veio cada lead</h2><p class="sub">Todos os canais no período, pelas UTMs do cadastro.</p></div></div>
+    ${tabelaSimples(P.canais, a.total, corCanal, "Canal", "Nenhum lead na planilha nesse período.")}
+  </section>
+
+  <section>
+    <div class="sec-head"><div><h2>Leads do tráfego pago por anúncio</h2><p class="sub">Pelo utm_content do cadastro (o nome do anúncio na Meta).</p></div></div>
+    ${tabelaSimples(P.anuncios, a.pago, () => COR_PAGO, "Anúncio", "Nenhum lead pago na planilha nesse período.")}
+    <details><summary>Ver por campanha</summary><div style="margin-top:12px">
+      ${tabelaSimples(P.campanhas, a.pago, () => COR_PAGO, "Campanha (utm_campaign)", "Nenhum lead pago na planilha nesse período.")}</div></details>
+  </section>
+
+  <footer>
+    <div class="defs"><b>Tráfego pago:</b> cadastros com UTM de anúncio da Meta (utm_source ig, fb ou an, campanhas C2PRO).
+      <b>Orgânico:</b> cadastros com UTM dos canais próprios: link da bio do Instagram, disparos de WhatsApp e e-mail (RD Station).
+      <b>Não traqueado:</b> cadastros que chegaram sem UTM nenhuma, então não dá pra saber de onde vieram.
+      <b>Custo por lead pago (planilha):</b> investimento das campanhas do dashboard na Meta ÷ leads pagos contados na planilha.
+      <b>Leads no gerenciador:</b> o que a Meta registrou, com a atribuição padrão (7 dias após o clique ou 1 dia após ver o anúncio).</div>
+    <div style="margin-top:12px">Fonte: planilha de captura de UTM da página (${O.fonte === "planilha" ? "lida na atualização" : "resumo salvo da planilha"}).
+      Todo cadastro conta, como no gerenciador, inclusive os ${fmtInt(fora.sem_contato||0)} que chegaram com a UTM mas sem e-mail.
+      ${fmtInt(fora.repetido||0)} cadastros são de pessoas que já tinham se cadastrado antes; eles contam nos leads e ficam de fora só em "pessoas diferentes".
+      Só os ${fmtInt(fora.teste||0)} testes ficam de fora.</div>
+  </footer>
+  </div>`;
+
+  ligarEventos();
+  graficoEmpilhado(document.getElementById("o-dia"), DD.map(d => ({x:d.data, y:d.total, partes:[[d.pago,COR_PAGO],[d.organico,COR_ORG],[d.nao_traqueado||0,COR_NT]]})),
+    p => `<b>${dataBRano(p.x)}</b><br>Leads: ${fmtInt(p.y)}<br>Pago: ${fmtInt(p.partes[0][0])} (${pctOu(pctDe(p.partes[0][0],p.y))})<br>Orgânico: ${fmtInt(p.partes[1][0])}<br>Não traqueado: ${fmtInt(p.partes[2][0])}`);
+}
+
+function graficoEmpilhado(svg, pts, tooltip){
+  const geo = base(svg, pts);
+  const bw = Math.max(2, geo.pw - 2);
+  let g = "";
+  pts.forEach((p,i) => {
+    const x0 = geo.x(i) - bw/2;
+    let acum = 0, primeiro = true;
+    p.partes.forEach(([n, cor]) => {
+      if (!n) return;
+      const yb = geo.y(acum), yt = geo.y(acum + n);
+      const h = Math.max(1, yb - yt - (primeiro ? 0 : 2));
+      g += `<rect data-i="${i}" x="${x0}" y="${yt}" width="${bw}" height="${h}" fill="${cor}"/>`;
+      acum += n; primeiro = false;
+    });
+  });
+  svg.insertAdjacentHTML("beforeend", g);
+  const barras = [...svg.querySelectorAll("rect[data-i]")];
+  hover(svg, pts, geo, tooltip,
+    i => barras.forEach(b => b.setAttribute("opacity", i < 0 || +b.dataset.i === i ? 1 : .35)));
 }
 
 // ---------- visão completa de tráfego (só aparece com os campos opcionais no config) ----------
@@ -774,11 +950,11 @@ function statusBadge(s){
 function tabelaCampanhas(lista){
   if (!lista.length) return `<div class="card empty">Nenhuma campanha com investimento no período.</div>`;
   return `<div class="card tbl-wrap"><table>
-    <thead><tr><th>Campanha</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>Connect</th><th>Pág. para checkout</th>
+    <thead><tr><th>Campanha</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>Connect</th>${D.leads ? "<th>Leads</th><th>Custo por lead</th>" : ""}<th>Pág. para checkout</th>
       <th>Checkout para compra</th><th>Compras</th><th>Custo por compra</th><th>Faturamento</th><th>ROAS</th></tr></thead>
     <tbody>${lista.map(c => { const m = derivadas(c);
       return `<tr><td>${esc(c.nome)}${statusBadge(c.status)}</td><td>${fmtMoeda(m.gasto)}</td><td>${moedaOu(m.cpm)}</td>
-        <td>${pctOu(m.ctr)}</td><td>${pctOu(m.connect)}</td><td>${pctOu(m.tx_checkout)}</td><td>${pctOu(m.tx_compra)}</td>
+        <td>${pctOu(m.ctr)}</td><td>${pctOu(m.connect)}</td>${D.leads ? `<td>${fmtInt(m.leads)}</td><td>${moedaOu(m.cpl)}</td>` : ""}<td>${pctOu(m.tx_checkout)}</td><td>${pctOu(m.tx_compra)}</td>
         <td>${fmtInt(m.compras)}</td><td class="hl">${moedaOu(m.cpa)}</td><td>${fmtMoeda(m.faturamento)}</td>
         <td>${m.roas==null?"-":fmtX(m.roas)}</td></tr>`; }).join("")}</tbody></table></div>`;
 }
@@ -804,6 +980,7 @@ function cardAnuncio(ad, pos){
       ${kpi("cpa","Custo por compra",moedaOu(m.cpa))}${kpi("comp","Compras",fmtInt(m.compras))}
       ${kpi("ctr","CTR",pctOu(m.ctr))}${kpi("cchk","Custo por checkout",moedaOu(m.c_checkout))}
       ${kpi("","Investido",fmtMoeda(m.gasto))}${kpi("","Faturamento",fmtMoeda(m.faturamento))}
+      ${D.leads && m.leads ? kpi("","Leads",fmtInt(m.leads)) + kpi("cpl","Custo por lead",moedaOu(m.cpl)) : ""}
       ${miniFunil(m)}
     </div>
     <div class="links">

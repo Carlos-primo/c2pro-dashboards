@@ -126,6 +126,8 @@ jobs:
           META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
           HOTMART_ROCHA_MAZZO_CLIENT_ID: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_ID }}
           HOTMART_ROCHA_MAZZO_CLIENT_SECRET: ${{ secrets.HOTMART_ROCHA_MAZZO_CLIENT_SECRET }}
+          HOTMART_VITA_HAIR_CLIENT_ID: ${{ secrets.HOTMART_VITA_HAIR_CLIENT_ID }}          # Debora: vendas reais por aba
+          HOTMART_VITA_HAIR_CLIENT_SECRET: ${{ secrets.HOTMART_VITA_HAIR_CLIENT_SECRET }}
           KIWIFY_WESCLEY_CLIENT_ID: ${{ secrets.KIWIFY_WESCLEY_CLIENT_ID }}        # vendas reais (gerar_kiwify.py)
           KIWIFY_WESCLEY_CLIENT_SECRET: ${{ secrets.KIWIFY_WESCLEY_CLIENT_SECRET }}
           KIWIFY_WESCLEY_ACCOUNT_ID: ${{ secrets.KIWIFY_WESCLEY_ACCOUNT_ID }}
@@ -239,6 +241,10 @@ jobs:
 
       - name: Copiar apresentacoes
         run: mkdir -p site && cp -r apresentacoes site/apresentacoes
+
+      # Links antigos que viraram parte de outro dashboard (ex: black/vita-hair -> vendas/vita-hair).
+      - name: Copiar redirecionamentos
+        run: mkdir -p site && cp -r redirecionar/. site/
 
       - uses: actions/upload-pages-artifact@v4
         with:
