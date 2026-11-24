@@ -220,6 +220,13 @@ tr.ruim td,tr.grave td{color:var(--neg)}
 tr.acima td{color:#FFB547}
 tr.ruim td .st,tr.grave td .st,tr.acima td .st{color:inherit;opacity:.75}
 .alerta.ok svg{color:var(--pos)}
+.idd{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--s2)}
+.idd.sel{outline:1px solid var(--b-acc)}
+.idd-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--s1);margin:6px 0}
+.idd-bar i{display:block;height:100%}
+.idd-tx{font:400 11px/1.5 var(--mono);color:var(--t-muted)}
+.idd-tx b{color:var(--t-strong);font-weight:600}
+.idd-tx .v,.idd-tx .v b{color:var(--neg)}
 </style>
 </head>
 <body>
@@ -272,7 +279,8 @@ function deriv(m, r, g){
   return { ...m, res,
     cpr: R && R.mil ? div(m.gasto*1000, res) : div(m.gasto, res),
     carreg: g ? null : div(m.visitas*100, m.cliques),
-    conv: g ? div(res*100, m.cliques) : R && R.conv ? div(res*100, m[R.conv]) : null,
+    // Formulário da própria Meta não passa pela página: com menos visitas que resultados, a base vira os cliques.
+    conv: g ? div(res*100, m.cliques) : R && R.conv ? div(res*100, R.conv === "visitas" && (m.visitas||0) < res ? m.cliques : m[R.conv]) : null,
     roas: div(m.faturamento, m.gasto), ctr: div(m.cliques*100, m.impressoes), cpm: div(m.gasto*1000, m.impressoes),
     hook: m.views ? div(m.views*100, m.impressoes) : null, ret: m.views ? div(m.thruplay*100, m.views) : null,
     cpv: m.views ? div(m.gasto, m.views) : null, cpe: m.engajamento ? div(m.gasto, m.engajamento) : null,
@@ -382,7 +390,7 @@ function desenhar(){
   <footer>Dados da Meta Ads (atribuição padrão da conta) e do Google Ads, atualizados todo dia de madrugada.
     Resultado = o evento que cada campanha otimiza (compra, lead, conversa, ThruPlay...).
     Taxa de carregamento = visitas à página ÷ cliques no link. Taxa de conversão = resultado ÷ visitas à página
-    (nas campanhas de WhatsApp, conversas ÷ cliques). Hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
+    (nas campanhas de WhatsApp, conversas ÷ cliques; no formulário da própria Meta, leads ÷ cliques). Hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
     Os períodos terminam ontem${D.periodos["0"] ? `; "Hoje" é parcial, da meia-noite até a última atualização` : ""}.</footer>
   </div>`;
 
@@ -532,6 +540,37 @@ function secaoQuebras(P, ids, r){
     <p class="defs">Em vermelho, as faixas de 55 anos ou mais. Números das quebras da Meta: a soma pode ficar um pouco abaixo do total, porque a Meta deixa de fora uma parte pequena nas quebras.</p>
   </section>`;
 }
+// Idade de cada anúncio: resultado e valor usado por faixa; pv = % do resultado com 55+ (ou do valor, sem resultado).
+const FAIXAS = ["18-24","25-34","35-44","45-54","55-64","65+"];
+const COR_FAIXA = {"18-24":"rgba(0,216,245,.25)","25-34":"rgba(0,216,245,.45)","35-44":"rgba(0,216,245,.7)","45-54":"#00D8F5",
+  "55-64":"#FF8A94","65+":"var(--neg)"};
+function idadeDosAnuncios(P, r){
+  const saida = {};
+  if (!P.quebras || !P.quebras.idade_ad) return saida;
+  P.quebras.idade_ad.forEach(l => {
+    const a = saida[l.a] = saida[l.a] || {faixas:{}, g:0, res:0, gv:0, rv:0};
+    const res = l[r] || 0, g = l.gasto || 0;
+    const f = a.faixas[l.f] = a.faixas[l.f] || {g:0, res:0};
+    f.g += g; f.res += res; a.g += g; a.res += res;
+    if (VELHO(l.f)) { a.gv += g; a.rv += res; }
+  });
+  Object.values(saida).forEach(a => { a.pg = a.g ? a.gv*100/a.g : 0; a.pr = a.res ? a.rv*100/a.res : null;
+    a.pv = a.pr != null ? a.pr : a.pg; });
+  return saida;
+}
+function idadeCriativo(a, R, destaque){
+  const porRes = a.res > 0, base = porRes ? a.res : a.g;
+  if (!base) return "";
+  const seg = FAIXAS.filter(f => a.faixas[f]).map(f => { const v = porRes ? a.faixas[f].res : a.faixas[f].g;
+    return v ? `<i style="width:${v*100/base}%;background:${COR_FAIXA[f]}" title="${nomeIdade(f)}: ${porRes ? fmtInt(v)+" "+R.un.toLowerCase() : fmtMoeda(v)} (${fmtPct(v*100/base)})"></i>` : ""; }).join("");
+  const cont = FAIXAS.filter(f => a.faixas[f] && (porRes ? a.faixas[f].res : a.faixas[f].g))
+    .map(f => `<span${VELHO(f) ? ' class="v"' : ""}>${f} ${porRes ? fmtInt(a.faixas[f].res) : fmtPct(a.faixas[f].g*100/a.g)}</span>`).join(" · ");
+  const alto = a.pv >= 30;
+  return `<div class="idd${destaque ? " sel" : ""}">
+    <div class="idd-tx"><span class="${alto ? "v" : ""}">55+: <b>${porRes ? fmtPct(a.pr) : "-"}</b> do resultado · <b>${fmtPct(a.pg)}</b> do valor usado</span></div>
+    <div class="idd-bar">${seg}</div>
+    <div class="idd-tx">${porRes ? `${esc(R.un)} por idade: ` : "Valor por idade: "}${cont}</div></div>`;
+}
 function secaoConjuntos(){
   if (!D.conjuntos) return "";
   const teto = D.idade_maxima || 65;
@@ -582,7 +621,8 @@ function abaFunil(P, aba){
   const campsComAd = campanhas.filter(({c}) => P.anuncios.some(x => x.campanha_id === c.id));
   if (CAMPF !== "todas" && !campsComAd.some(({c}) => c.id === CAMPF)) CAMPF = "todas";
   const idsF = CAMPF === "todas" ? idsT : [CAMPF];
-  const anuncios = P.anuncios.filter(x => idsF.includes(x.campanha_id)).map(x => ({...deriv(x, r), x}));
+  const IA = idadeDosAnuncios(P, r);
+  const anuncios = P.anuncios.filter(x => idsF.includes(x.campanha_id)).map(x => ({...deriv(x, r), x, idade: IA[x.id]}));
   const VID = r === "thruplay" || r === "alcance" || r === "engajamento";
   const filtroCamp = campsComAd.length > 1 ? `<label class="sub">Campanha <select id="campf" aria-label="Filtrar por campanha">
       <option value="todas">Todas (${campsComAd.length})</option>
@@ -594,7 +634,8 @@ function abaFunil(P, aba){
     : Object.entries(pags).map(([u, l]) => ({u, m: deriv(somar(l), r), n: l.length}))).sort((x,y) => y.m.gasto - x.m.gasto);
   const minimo = D.gasto_minimo_criativo || 0;
   const ords = {res:"Mais resultado", cpr:"Menor custo por resultado", gasto:"Maior valor usado", ...(ehVenda ? {roas:"Maior ROAS"} : {}),
-    ...(R.conv ? {conv:"Maior taxa de conversão"} : {ctr:"Maior CTR"}), ...(VID ? {hook:"Maior hook rate", ret:"Maior retenção"} : {})};
+    ...(R.conv ? {conv:"Maior taxa de conversão"} : {ctr:"Maior CTR"}), ...(VID ? {hook:"Maior hook rate", ret:"Maior retenção"} : {}),
+    ...(P.quebras ? {velho:"Mais 55+ (% do resultado)", novo:"Menos 55+ (% do resultado)"} : {})};
   if (!ords[ORD]) ORD = "res";
   const crit = anuncios.filter(x => x.gasto >= minimo).sort((x,y) => {
     if (ORD === "cpr") return (x.cpr ?? 1e12) - (y.cpr ?? 1e12) || y.res - x.res;
@@ -604,6 +645,8 @@ function abaFunil(P, aba){
     if (ORD === "ctr") return (y.ctr||0) - (x.ctr||0);
     if (ORD === "hook") return (y.hook||0) - (x.hook||0);
     if (ORD === "ret") return (y.ret||0) - (x.ret||0);
+    if (ORD === "velho" || ORD === "novo") { const a = x.idade ? x.idade.pv : -1, b = y.idade ? y.idade.pv : -1;
+      return ORD === "velho" ? b - a || y.res - x.res : (a < 0 ? 1e9 : a) - (b < 0 ? 1e9 : b) || y.res - x.res; }
     return y.res - x.res || (x.cpr ?? 1e12) - (y.cpr ?? 1e12);
   });
 
@@ -693,6 +736,7 @@ function abaFunil(P, aba){
           ${ehVenda?`<div class="${ORD==="roas"?"sel":""}">ROAS<b>${xOu(x.roas)}</b></div>`:`<div>Cliques<b>${fmtInt(x.cliques)}</b></div>`}
           ${SP && !VID ? `<div>CTR<b>${pctOu(x.ctr)}</b></div>` : ""}
         </div>
+        ${x.idade ? idadeCriativo(x.idade, R, ORD === "velho" || ORD === "novo") : ""}
         ${VID && x.x.url === "Sem link identificado" ? "" : `<div class="pg">${esc(x.x.url)}</div>`}
         <div class="links">
           ${x.x.instagram?`<a class="lnk" href="${esc(x.x.instagram)}" target="_blank" rel="noopener">${ICO_IG} Instagram</a>`:""}

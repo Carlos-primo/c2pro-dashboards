@@ -355,6 +355,13 @@ def quebras(inicio, fim):
                 faixa = "|".join(l.get(x, "") for x in bd.split(","))
                 linhas.append({"c": l["campaign_id"], "f": faixa, **{k: round(m[k], 2) for k in CHAVES_QUEBRA}})
         saida[nome] = linhas
+    # Idade por anuncio (cartao de cada criativo). So as chaves com valor, pra pagina nao crescer demais.
+    saida["idade_ad"] = []
+    for l in insights("ad", inicio, fim, "ad_id," + CAMPOS, breakdowns="age"):
+        m = metricas(l)
+        if m["gasto"] > 0:
+            saida["idade_ad"].append({"a": l["ad_id"], "f": l.get("age", ""),
+                                      **{k: round(m[k], 2) for k in CHAVES_QUEBRA if m[k]}})
     return saida
 
 
