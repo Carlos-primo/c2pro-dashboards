@@ -1,0 +1,87 @@
+{
+  "nome": "U-TRAX",
+  "subtitulo": "Acompanhamento do tráfego",
+  "contas": [
+    {
+      "id": "act_993835626688829",
+      "nome": "CA - Renan Marcio"
+    },
+    {
+      "id": "act_1448894737271028",
+      "nome": "CA - U-Tr4x"
+    }
+  ],
+  "criativos_gasto_minimo": 20,
+  "periodos": [
+    1,
+    7,
+    14,
+    30
+  ],
+  "periodo_inicial": "7",
+  "quebras": true,
+  "idade_maxima": 55,
+  "abas": [
+    {
+      "id": "juridico",
+      "nome": "Jurídico",
+      "descricao": "Campanhas da vertical de advogados (Paulo).",
+      "tokens": [
+        "LEGAL",
+        "ADVOGADO",
+        "ADVOGADOS",
+        "JURIDICO",
+        "DIREITO",
+        "ADVOCACIA"
+      ]
+    },
+    {
+      "id": "consultoria",
+      "nome": "Consultoria",
+      "descricao": "Consultoria do Renan para donos de clínica: formulário, página e WhatsApp, mais o remarketing de 30 dias.",
+      "contem": [
+        "CONSULTORIA"
+      ]
+    },
+    {
+      "id": "black",
+      "nome": "Black Friday",
+      "descricao": "Oferta da Black: captação por formulário, vendas pela página e remarketing no WhatsApp.",
+      "contem": [
+        "BLACK"
+      ]
+    },
+    {
+      "id": "eventos",
+      "nome": "Eventos (DSS)",
+      "descricao": "Captação para os eventos presenciais (DSS Santos, Campinas, Ribeirão Preto e Road Show).",
+      "contem": [
+        "DSS",
+        "ROAD SHOW",
+        "ROADSHOW"
+      ]
+    },
+    {
+      "id": "autoridade",
+      "nome": "Autoridade",
+      "descricao": "Topo de funil: autoridade do Renan e da U-TRAX, engajamento, visitas ao perfil e posts impulsionados. Nas campanhas de visita ao perfil, o resultado mostrado é o engajamento, porque a Meta não entrega as visitas ao perfil por aqui.",
+      "contem": [
+        "AUTORIDADE",
+        "ENGAJAMENTO",
+        "ESTRUTURA",
+        "BUSINESS SUITE",
+        "PERFIL"
+      ]
+    },
+    {
+      "id": "plataforma",
+      "nome": "Plataforma",
+      "descricao": "Plataforma U-TRAX e Método 3x3: captação (formulário, aula gratuita, iscas), vendas e remarketing.",
+      "contem": [
+        "PLAT",
+        "3X3",
+        "DIA DENTISTA"
+      ]
+    }
+  ]
+}

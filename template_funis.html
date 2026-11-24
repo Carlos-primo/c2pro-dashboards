@@ -214,6 +214,12 @@ td .st{display:block;font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-t
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .ad .pg{font:400 11px/1.4 var(--mono);color:var(--t-faint);margin-top:8px;word-break:break-all}
 @media (max-width:760px){ .tabs button{padding:10px 12px;font-size:13px} }
+/* quebras de público e alerta dos conjuntos (config "quebras") */
+.qh{margin:26px 0 10px;font:600 15px/1.3 Inter,sans-serif;color:var(--t-strong)}
+tr.ruim td,tr.grave td{color:var(--neg)}
+tr.acima td{color:#FFB547}
+tr.ruim td .st,tr.grave td .st,tr.acima td .st{color:inherit;opacity:.75}
+.alerta.ok svg{color:var(--pos)}
 </style>
 </head>
 <body>
@@ -251,11 +257,12 @@ const RES = {
   checkouts: {grupo:"Checkouts",    un:"Checkouts",         cu:"Custo por checkout",  conv:"visitas"},
   conversas: {grupo:"WhatsApp",     un:"Conversas",         cu:"Custo por conversa",  conv:"cliques"},
   thruplay:  {grupo:"Distribuição", un:"ThruPlays",         cu:"Custo por ThruPlay",  conv:null},
+  engajamento:{grupo:"Engajamento", un:"Engajamentos",      cu:"Custo por engajamento",conv:null},
   alcance:   {grupo:"Lembrete",     un:"Pessoas alcançadas",cu:"Custo por mil pessoas",conv:null, mil:true},
   visitas:   {grupo:"Visitas",      un:"Visitas à página",  cu:"Custo por visita",    conv:null},
   cliques:   {grupo:"Cliques",      un:"Cliques no link",   cu:"Custo por clique",    conv:null},
 };
-const ORDEM_RES = ["compras","leads","cadastros","checkouts","conversas","thruplay","alcance","visitas","cliques"];
+const ORDEM_RES = ["compras","leads","cadastros","checkouts","conversas","thruplay","engajamento","alcance","visitas","cliques"];
 const SOMA = ["gasto","impressoes","alcance","cliques","thruplay","faturamento","visitas","checkouts","compras","leads","cadastros","conversas","views","engajamento"];
 const vazio = () => Object.fromEntries(SOMA.map(k => [k,0]));
 function somar(lista){ const t = vazio(); lista.forEach(m => SOMA.forEach(k => t[k] += m[k]||0)); return t; }
@@ -433,6 +440,7 @@ function visaoGeral(P, abas){
       ${temVenda ? tile("Taxa de carregamento", pctOu(meta.carreg), deltaPP(meta.carreg,metaAnt.carreg), "Meta (visitas ÷ cliques)") : ""}
     </div>
   </section>
+  ${secaoConjuntos()}
   <section>
     <div class="sec-head"><div><h2>Campanhas no período</h2><p class="sub">${todas.length} campanha${todas.length===1?"":"s"} com gasto no período · ${nAt} ativa${nAt===1?"":"s"} agora</p></div>
       <div class="pills sm" role="group" aria-label="Status">
@@ -441,7 +449,7 @@ function visaoGeral(P, abas){
     ${lista.length ? `<div class="card tbl-wrap"><table>
       <thead><tr><th>Campanha</th><th>Valor usado</th><th>Resultado</th><th>Custo por resultado</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th>${temConv?"<th>Conversas</th>":""}${temVideo?"<th>ThruPlays</th><th>Hook rate</th>":""}</tr></thead>
       <tbody>${lista.map(({id,c,m}) => { const r = resCurto(c, P.campanhas[id]); return `<tr>
-        <td>${esc(c.nome)} ${badge(c.status)}<span class="st">${esc(nomeAba(c.aba))}</span></td>
+        <td>${esc(c.nome)} ${badge(c.status)}<span class="st">${esc(nomeAba(c.aba))}${c.conta ? ` · ${esc(c.conta)}` : ""}</span></td>
         <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(r.res)}<span class="st">${esc(r.un.toLowerCase())}</span></td><td>${moedaOu(r.cpr)}</td>
         <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>
         ${temConv?`<td>${fmtInt(m.conversas)}</td>`:""}${temVideo?`<td>${fmtInt(m.thruplay)}</td><td>${pctOu(m.hook)}</td>`:""}</tr>`; }).join("")}
@@ -462,6 +470,87 @@ function visaoGeral(P, abas){
     ${temVenda ? `<p class="defs">Compras e faturamento são os atribuídos pelas plataformas (pixel da Meta e tag do Google) e podem diferir das vendas reais:
       quem vê o anúncio na Meta e depois pesquisa no Google pode ser contado nas duas, então a soma tende a ficar acima do real.
       Custo por compra e custo por lead aqui dividem o valor usado de todo o funil; o custo por resultado de cada tipo de campanha está dentro da aba.</p>` : ""}
+  </section>
+  ${secaoQuebras(P, Object.keys(P.campanhas), null)}`;
+}
+
+// ---------- quebras de público (idade, gênero, posicionamento) e alerta dos conjuntos ----------
+const NOME_GEN = {female:"Mulheres", male:"Homens", unknown:"Não informado"};
+const NOME_PLAT = {facebook:"Facebook", instagram:"Instagram", audience_network:"Audience Network", messenger:"Messenger", threads:"Threads"};
+const NOME_POS = {feed:"Feed", facebook_reels:"Reels", facebook_stories:"Stories", instagram_reels:"Reels", instagram_stories:"Stories",
+  instagram_explore:"Explorar", instagram_explore_grid_home:"Explorar (grade)", instagram_profile_feed:"Feed do perfil", instagram_search:"Pesquisa",
+  instagram_profile_reels:"Reels do perfil", facebook_profile_feed:"Feed do perfil", marketplace:"Marketplace", video_feeds:"Vídeos",
+  right_hand_column:"Coluna da direita", search:"Pesquisa", instream_video:"Vídeo in-stream", facebook_reels_overlay:"Anúncio sobre o Reels",
+  an_classic:"Apps e sites", rewarded_video:"Vídeo com recompensa", messenger_inbox:"Caixa de entrada", messenger_stories:"Stories",
+  threads_feed:"Feed", notification:"Notificações", profile_reels:"Reels do perfil"};
+const nomePos = f => { const [p,pos] = f.split("|"); return `${NOME_PLAT[p]||p} · ${NOME_POS[pos]||String(pos||"").replace(/_/g," ")}`; };
+const nomeIdade = f => f === "Unknown" ? "Não informada" : f === "65+" ? "65 ou mais" : f.replace("-", " a ");
+const VELHO = f => f === "55-64" || f === "65+";
+const ICO_ALERTA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+const ICO_OK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+
+function agrupar(lista, ids){
+  const set = new Set(ids), g = {};
+  (lista||[]).filter(x => set.has(x.c)).forEach(x => { const t = g[x.f] = g[x.f] || vazio(); SOMA.forEach(k => t[k] += x[k]||0); });
+  return g;
+}
+// r = tipo de resultado da aba; sem r (visão geral) mostra leads e conversas, que são os resultados de contato.
+function tabelaQuebra(g, rotulo, nomeF, r, ordem, marca){
+  const R = r ? RES[r] : null;
+  const linhas = Object.entries(g).map(([f,m]) => ({f, m: deriv(m, r || "leads")})).filter(x => x.m.gasto > 0 || x.m.res > 0);
+  if (!linhas.length) return `<div class="card empty">Sem dados no período.</div>`;
+  const totG = linhas.reduce((s,x) => s + x.m.gasto, 0), totR = linhas.reduce((s,x) => s + x.m.res, 0);
+  linhas.sort(ordem || ((a,b) => b.m.gasto - a.m.gasto));
+  const head = R ? `<th>${R.un}</th><th>% dos resultados</th><th>${R.cu}</th>` : `<th>Leads</th><th>Custo por lead</th><th>Conversas</th><th>Custo por conversa</th>`;
+  const cel = m => R ? `<td class="hl">${fmtInt(m.res)}</td><td>${pctOu(div(m.res*100, totR))}</td><td>${moedaOu(m.cpr)}</td>`
+    : `<td>${fmtInt(m.leads)}</td><td>${moedaOu(div(m.gasto, m.leads))}</td><td>${fmtInt(m.conversas)}</td><td>${moedaOu(div(m.gasto, m.conversas))}</td>`;
+  return `<div class="card tbl-wrap"><table>
+    <thead><tr><th>${rotulo}</th><th>Valor usado</th><th>% do valor</th>${head}<th>Impressões</th><th>Cliques</th><th>CTR</th></tr></thead>
+    <tbody>${linhas.map(({f,m}) => `<tr${marca && marca(f) ? ' class="ruim"' : ""}><td>${esc(nomeF(f))}</td>
+      <td>${fmtMoeda(m.gasto)}</td><td>${pctOu(div(m.gasto*100, totG))}</td>${cel(m)}
+      <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function alertaIdade(g, r){
+  const res = m => r ? (m[r]||0) : (m.leads||0) + (m.conversas||0);
+  let tg = 0, tr = 0, vg = 0, vr = 0;
+  Object.entries(g).forEach(([f,m]) => { tg += m.gasto; tr += res(m); if (VELHO(f)) { vg += m.gasto; vr += res(m); } });
+  if (!tg) return "";
+  const pg = vg*100/tg, pr = tr ? vr*100/tr : 0, nome = r ? RES[r].un.toLowerCase() : "leads e conversas";
+  const txt = `Quem tem <b>55 anos ou mais</b> levou <b>${fmtPct(pg)}</b> do valor usado e trouxe <b>${fmtPct(pr)}</b> d${r === "conversas" || !r ? "as" : "os"} ${esc(nome)}.`;
+  return pg >= 15 || pr >= 15 ? `<div class="alerta">${ICO_ALERTA}<div>${txt} Confira a idade dos conjuntos e o Advantage+ de público.</div></div>`
+    : `<div class="alerta ok">${ICO_OK}<div>${txt}</div></div>`;
+}
+function secaoQuebras(P, ids, r){
+  if (!P.quebras) return "";
+  const gi = agrupar(P.quebras.idade, ids), gg = agrupar(P.quebras.genero, ids), gp = agrupar(P.quebras.posicao, ids);
+  return `<section>
+    <div class="sec-head"><div><h2>Idade, gênero e posicionamento</h2><p class="sub">${r ? `Campanhas de ${esc(RES[r].grupo.toLowerCase())} desta aba` : "Todas as campanhas"}: para onde foi a verba e de onde veio o resultado</p></div></div>
+    ${alertaIdade(gi, r)}
+    <h3 class="qh">Idade</h3>${tabelaQuebra(gi, "Idade", nomeIdade, r, (a,b) => a.f.localeCompare(b.f), VELHO)}
+    <h3 class="qh">Gênero</h3>${tabelaQuebra(gg, "Gênero", f => NOME_GEN[f] || f, r)}
+    <h3 class="qh">Posicionamento</h3>${tabelaQuebra(gp, "Posicionamento", nomePos, r)}
+    <p class="defs">Em vermelho, as faixas de 55 anos ou mais. Números das quebras da Meta: a soma pode ficar um pouco abaixo do total, porque a Meta deixa de fora uma parte pequena nas quebras.</p>
+  </section>`;
+}
+function secaoConjuntos(){
+  if (!D.conjuntos) return "";
+  const teto = D.idade_maxima || 65;
+  const ate = c => c.idade_max >= 65 ? "65 ou mais" : c.idade_max;
+  const grave = c => c.advantage || c.idade_max >= 65;
+  const acima = c => !grave(c) && c.idade_max > teto;
+  const ruins = D.conjuntos.filter(c => grave(c) || acima(c)).sort((a,b) => grave(b) - grave(a) || b.idade_max - a.idade_max);
+  const nG = ruins.filter(grave).length, nA = ruins.length - nG, n = D.conjuntos.length;
+  const quando = `${dataBRano(D.gerado_em.slice(0,10))} às ${D.gerado_em.slice(11,16)}`;
+  const motivo = c => c.advantage ? "Advantage+ de público ligado: a idade máxima vira só sugestão para a Meta"
+    : c.idade_max >= 65 ? "Sem limite de idade em cima (65 ou mais)" : `Acima do teto de ${teto} anos`;
+  return `<section>
+    <div class="sec-head"><div><h2>Idade dos conjuntos ativos</h2><p class="sub">${n} conjunto${n===1?"":"s"} ativo${n===1?"":"s"} conferido${n===1?"":"s"} em ${quando} · teto combinado: ${teto} anos</p></div></div>
+    ${ruins.length ? `<div class="alerta">${ICO_ALERTA}<div>${nG ? `<b>${nG} conjunto${nG===1?"":"s"}</b> com a idade aberta até 65 ou mais ou com o Advantage+ de público ligado. ` : ""}${nA ? `<b>${nA}</b> acima do teto de ${teto} anos. ` : ""}Se algum estiver assim de propósito (topo de funil, por exemplo), avisem no grupo.</div></div>
+    <div class="card tbl-wrap" style="margin-top:12px"><table>
+      <thead><tr><th>Conjunto</th><th>Idade</th><th>Advantage+ de público</th><th>O que está fora</th></tr></thead>
+      <tbody>${ruins.map(c => `<tr class="${grave(c) ? "grave" : "acima"}"><td>${esc(c.nome)}<span class="st">${esc(c.campanha || c.campanha_id)}${c.conta ? ` · ${esc(c.conta)}` : ""}</span></td>
+        <td>${c.idade_min} a ${ate(c)}</td><td>${c.advantage ? "Ligado" : "Desligado"}</td><td>${motivo(c)}</td></tr>`).join("")}</tbody></table></div>`
+    : `<div class="alerta ok">${ICO_OK}<div>Os ${n} conjuntos ativos estão com idade até ${teto} anos e com o Advantage+ de público desligado.</div></div>`}
   </section>`;
 }
 
@@ -483,7 +572,7 @@ function abaFunil(P, aba){
   const b = deriv(somar(idsT.map(id => P.anterior[id] || vazio())), r, G);
   const ehVenda = r === "compras";
   // sem página: Google (tem outro relatório), anúncio que abre o WhatsApp ou distribuição (vídeo no feed)
-  const SP = G || r === "conversas" || r === "thruplay" || r === "alcance";
+  const SP = G || r === "conversas" || r === "thruplay" || r === "alcance" || r === "engajamento";
 
   // campanhas
   const campanhas = idsT.filter(id => P.campanhas[id]).map(id => ({c: camp(id), m: deriv(P.campanhas[id], r, G)}))
@@ -494,7 +583,7 @@ function abaFunil(P, aba){
   if (CAMPF !== "todas" && !campsComAd.some(({c}) => c.id === CAMPF)) CAMPF = "todas";
   const idsF = CAMPF === "todas" ? idsT : [CAMPF];
   const anuncios = P.anuncios.filter(x => idsF.includes(x.campanha_id)).map(x => ({...deriv(x, r), x}));
-  const VID = r === "thruplay" || r === "alcance";
+  const VID = r === "thruplay" || r === "alcance" || r === "engajamento";
   const filtroCamp = campsComAd.length > 1 ? `<label class="sub">Campanha <select id="campf" aria-label="Filtrar por campanha">
       <option value="todas">Todas (${campsComAd.length})</option>
       ${campsComAd.map(({c}) => `<option value="${esc(c.id)}"${CAMPF===c.id?" selected":""}>${esc(c.nome)}${["ACTIVE","ENABLED"].includes(c.status)?"":" (não ativa)"}</option>`).join("")}
@@ -564,12 +653,14 @@ function abaFunil(P, aba){
     <div class="card tbl-wrap"><table>
       <thead><tr><th>Campanha</th><th>Valor usado</th><th>${R.un}</th><th>${R.cu}</th><th>Impressões</th><th>Cliques</th><th>CTR</th><th>CPC</th>${colVis}${R.conv?"<th>Conversão</th>":""}${VID?"<th>Views 3s</th><th>Hook rate</th><th>Retenção</th><th>Engajamento</th>":""}${colVenda}</tr></thead>
       <tbody>${campanhas.map(({c,m}) => `<tr>
-        <td>${esc(c.nome)} ${badge(c.status)}${c.publico ? `<span class="st">Público: ${c.publico}</span>` : ""}</td>
+        <td>${esc(c.nome)} ${badge(c.status)}${c.publico ? `<span class="st">Público: ${c.publico}</span>` : ""}${c.conta ? `<span class="st">${esc(c.conta)}</span>` : ""}</td>
         <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(m.res)}</td><td>${moedaOu(m.cpr)}</td>
         <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>${celVis(m)}
         ${R.conv?`<td>${pctOu(m.conv)}</td>`:""}${VID?`<td>${fmtInt(m.views)}</td><td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td>${fmtInt(m.engajamento)}</td>`:""}${celVenda(m)}</tr>`).join("")}
       </tbody></table></div>
   </section>
+
+  ${G ? "" : secaoQuebras(P, idsT, r)}
 
   ${VID ? "" : `<section>
     <div class="sec-head"><div><h2>Páginas</h2><p class="sub">Resultado por página de destino dos anúncios${CAMPF!=="todas"?" da campanha escolhida":""}</p></div></div>

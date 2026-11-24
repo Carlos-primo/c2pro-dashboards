@@ -25,6 +25,10 @@ Paginas: URL de destino de cada anuncio (link do criativo, sem parametros), com 
 Opcional: "google_customer_id": "8756808672" cria a aba Google Ads (campanhas, paginas e dia a dia).
 Opcional: "periodos": [1, 3, 7, 14, 30]  troca os botoes de periodo (padrao 7, 30 e "mes"; 30 e obrigatorio,
           e a base do dia a dia). "mes" = este mes. 1 aparece como "Ontem".
+Opcional: "contas": [{"id": "act_...", "nome": "..."}]  junta varias contas de anuncio num dashboard so (no lugar
+          de "conta_anuncio"); cada campanha mostra de qual conta e (U-TRAX, 24/11/2026).
+Opcional: "quebras": true  idade, genero e posicionamento em cada aba e na visao geral, mais o alerta dos
+          conjuntos ativos (idade aberta ate 65+, acima de "idade_maxima" ou com Advantage+ de publico ligado).
 Opcional: "aba_inicial": "<id da aba>"  o dashboard abre nessa aba em vez da visao geral.
           0 nos periodos = "Hoje": parcial, da meia-noite ate a hora da rodada, comparado com ontem inteiro.
 
@@ -80,7 +84,12 @@ POR_EVENTO = {"PURCHASE": "compras", "LEAD": "leads", "COMPLETE_REGISTRATION": "
 POR_OTIMIZACAO = {"THRUPLAY": "thruplay", "VIDEO_VIEWS": "thruplay", "CONVERSATIONS": "conversas",
                   "REACH": "alcance", "IMPRESSIONS": "alcance", "LEAD_GENERATION": "leads",
                   "QUALITY_LEAD": "leads", "LANDING_PAGE_VIEWS": "visitas", "LINK_CLICKS": "cliques",
-                  "OFFSITE_CONVERSIONS": "compras", "VALUE": "compras"}
+                  "OFFSITE_CONVERSIONS": "compras", "VALUE": "compras",
+                  # Visita ao perfil e engajamento: a API nao devolve as visitas ao perfil, entao o resultado e o
+                  # engajamento (antes caia em "compras" e aparecia 0). U-TRAX, 24/11/2026.
+                  "POST_ENGAGEMENT": "engajamento", "PROFILE_VISIT": "engajamento",
+                  "VISIT_INSTAGRAM_PROFILE": "engajamento", "PROFILE_AND_PAGE_ENGAGEMENT": "engajamento",
+                  "PAGE_LIKES": "engajamento"}
 # Quando o conjunto nao diz (campanha antiga, sem conjunto), o tipo no nome resolve.
 POR_NOME = {"VENDAS": "compras", "LEADS": "leads", "WHATSAPP": "conversas", "DISTRIBUICAO": "thruplay",
             "LEMBRETE": "alcance"}
@@ -253,7 +262,8 @@ def periodo(inicio, fim, ant_inicio, ant_fim):
     total = insights("account", inicio, fim, CAMPOS)
     total_gasto = float(total[0]["spend"]) if total else 0.0
     conferir(abs(sum(m["gasto"] for m in camp.values()) - total_gasto) < tol,
-             f"{dias}d: soma das campanhas difere do total da conta")
+             f"{dias}d: soma das campanhas ({sum(m['gasto'] for m in camp.values()):.2f}) difere do total "
+             f"da conta {CFG['conta_anuncio']} ({total_gasto:.2f})")
 
     anuncios = []
     for l in insights("ad", inicio, fim, "ad_id,ad_name,campaign_id," + CAMPOS):
@@ -327,27 +337,57 @@ def juntar_google(periodos, campanhas, diario, dias):
     return True
 
 
-def gerar_cliente(slug, pasta="funis"):
-    CFG.clear()
-    CFG.update(json.loads((AQUI / pasta / slug / "config.json").read_text(encoding="utf-8")))
-    saida = AQUI / "site" / slug if pasta == "clientes" else AQUI / "site" / pasta / slug
+# Quebras de publico (config "quebras": true): idade, genero e posicionamento por campanha, em cada periodo.
+QUEBRAS = {"idade": "age", "genero": "gender", "posicao": "publisher_platform,platform_position"}
+CHAVES_QUEBRA = ("gasto", "impressoes", "alcance", "cliques", "leads", "conversas", "compras", "cadastros", "visitas",
+                 "checkouts", "thruplay", "faturamento", "views", "engajamento")
 
-    conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
-    fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
-    agora = dt.datetime.now(fuso)
-    ontem = agora.date() - dt.timedelta(days=1)
-    CFG["_hoje"] = agora.date()
 
+def quebras(inicio, fim):
+    """Linhas por campanha e faixa. O alcance nao vai (nao soma entre faixas). Sem conferencia de total: a Meta
+    pode deixar de fora uma parte pequena do gasto nas quebras (ela avisa isso no Gerenciador)."""
+    saida = {}
+    for nome, bd in QUEBRAS.items():
+        linhas = []
+        for l in insights("campaign", inicio, fim, "campaign_id," + CAMPOS, breakdowns=bd):
+            m = metricas(l)
+            if m["gasto"] > 0 or m["impressoes"]:
+                faixa = "|".join(l.get(x, "") for x in bd.split(","))
+                linhas.append({"c": l["campaign_id"], "f": faixa, **{k: round(m[k], 2) for k in CHAVES_QUEBRA}})
+        saida[nome] = linhas
+    return saida
+
+
+def conjuntos_ativos(nome_conta):
+    """Idade e Advantage+ de publico de cada conjunto ativo agora (o alerta da visao geral).
+    age_max 65 na Meta = "65 ou mais"; com o Advantage+ de publico ligado, a idade maxima vira so sugestao."""
+    saida = []
+    for a in api(f"{CFG['conta_anuncio']}/adsets",
+                 fields="name,campaign_id,effective_status,targeting{age_min,age_max,targeting_automation}",
+                 effective_status=json.dumps(["ACTIVE"]), limit=500):
+        t = a.get("targeting") or {}
+        saida.append({"nome": a["name"], "campanha_id": a["campaign_id"], "conta": nome_conta,
+                      "idade_min": t.get("age_min", 18), "idade_max": t.get("age_max", 65),
+                      "advantage": (t.get("targeting_automation") or {}).get("advantage_audience", 0) == 1})
+    return saida
+
+
+def coletar_conta(agora, ontem, nome_conta):
+    """Campanhas, periodos, anuncios e dia a dia da conta em CFG["conta_anuncio"]."""
     todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name,effective_status", limit=500)
     resultado = resultados_das_campanhas(todas)
     campanhas = {c["id"]: {"id": c["id"], "nome": c["name"], "status": c["effective_status"],
                            "aba": aba_da(c["name"]), "publico": publico_do(c["name"]),
-                           "resultado": resultado[c["id"]]} for c in todas}
+                           "resultado": resultado[c["id"]], **({"conta": nome_conta} if nome_conta else {})}
+                 for c in todas}
 
     lista = CFG.get("periodos", PERIODOS)
     conferir(30 in lista, "periodos precisa ter 30 (base do dia a dia)")
     periodos = {str(d): periodo(*(este_mes(ontem) if d == "mes" else hoje(agora.date()) if d == 0
                                   else ultimos(int(d), ontem))) for d in lista}
+    if CFG.get("quebras"):
+        for p in periodos.values():
+            p["quebras"] = quebras(dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"]))
 
     ids_ads = {a["id"] for p in periodos.values() for a in p["anuncios"]}
     det = detalhes_anuncios(ids_ads)
@@ -370,7 +410,47 @@ def gerar_cliente(slug, pasta="funis"):
     soma_diaria = sum(d["gasto"] for c in diario.values() for d in c.values())
     soma_30 = sum(m["gasto"] for m in periodos["30"]["campanhas"].values())
     conferir(abs(soma_diaria - soma_30) < 0.05, "serie diaria nao bate com o total de 30 dias")
+    conjuntos = conjuntos_ativos(nome_conta) if CFG.get("quebras") else []
+    for cj in conjuntos:
+        cj["campanha"] = campanhas.get(cj["campanha_id"], {}).get("nome", "")
+    return campanhas, periodos, ids_ads, diario, conjuntos
 
+
+def gerar_cliente(slug, pasta="funis"):
+    CFG.clear()
+    CFG.update(json.loads((AQUI / pasta / slug / "config.json").read_text(encoding="utf-8")))
+    saida = AQUI / "site" / slug if pasta == "clientes" else AQUI / "site" / pasta / slug
+
+    # "contas": [{"id": "act_...", "nome": "..."}] junta mais de uma conta de anuncio no mesmo dashboard
+    # (U-TRAX, 24/11/2026). Sem "contas", vale o "conta_anuncio" de sempre.
+    contas = [(c["id"], c.get("nome", "")) for c in CFG.get("contas", [])] or [(CFG["conta_anuncio"], "")]
+    CFG["conta_anuncio"] = contas[0][0]
+    conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
+    fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
+    agora = dt.datetime.now(fuso)
+    ontem = agora.date() - dt.timedelta(days=1)
+    CFG["_hoje"] = agora.date()
+
+    campanhas, periodos, ids_ads, diario, conjuntos = {}, {}, set(), {}, []
+    for act, nome_conta in contas:
+        CFG["conta_anuncio"] = act
+        c, p, ids, d, cj = coletar_conta(agora, ontem, nome_conta or (conta.get("name", "") if len(contas) > 1 else ""))
+        campanhas.update(c)
+        ids_ads |= ids
+        diario.update(d)
+        conjuntos += cj
+        for k, per in p.items():
+            if k not in periodos:
+                periodos[k] = per
+                continue
+            periodos[k]["campanhas"].update(per["campanhas"])
+            periodos[k]["anterior"].update(per["anterior"])
+            periodos[k]["anuncios"] += per["anuncios"]
+            for q, linhas in per.get("quebras", {}).items():
+                periodos[k]["quebras"][q] += linhas
+    CFG["conta_anuncio"] = contas[0][0]
+
+    inicio30 = ontem - dt.timedelta(days=29)
     dias30 = [(inicio30 + dt.timedelta(days=n)).isoformat() for n in range(30)]
     tem_google = bool(CFG.get("google_customer_id")) and juntar_google(periodos, campanhas, diario, dias30)
 
@@ -388,7 +468,9 @@ def gerar_cliente(slug, pasta="funis"):
     abas.append({"id": "outras", "nome": "Outras", "descricao": "Campanhas que não entram em nenhum funil acima."})
 
     dados = {
-        "nome": CFG["nome"], "subtitulo": CFG.get("subtitulo", ""), "conta": conta.get("name", ""),
+        "nome": CFG["nome"], "subtitulo": CFG.get("subtitulo", ""),
+        "conta": " + ".join(n for _, n in contas) if len(contas) > 1 else conta.get("name", ""),
+        **({"conjuntos": conjuntos, "idade_maxima": CFG.get("idade_maxima", 65)} if CFG.get("quebras") else {}),
         "moeda": conta.get("currency", "BRL"), "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG.get("criativos_gasto_minimo", 10),
         "abas": abas, "aba_inicial": CFG.get("aba_inicial", "geral"),

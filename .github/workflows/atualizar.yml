@@ -166,6 +166,7 @@ jobs:
           GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
           GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
           GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
+          SENHA_FUNIS_UTRAX: ${{ secrets.SENHA_FUNIS_UTRAX }}   # U-TRAX (IDK): numeros sob NDA
           ALVO: ${{ steps.alvo.outputs.funis }}
         run: if [ "$ALVO" = todos ]; then python gerar_funis.py; else python gerar_funis.py "$ALVO"; fi
 

@@ -91,6 +91,20 @@ campanhas com VENDAS), `regua_roas`, `faturamento_real`, `paginas` (abas Geral +
 aba Google) e `distribuicao` (aba com o dashboard de distribuição da mesma conta, na mesma senha). Detalhes no topo do `gerar_vendas.py` e na skill
 `c2pro-dashboard-vendas`. Com Google, o workflow precisa das variáveis `GOOGLE_ADS_*` no passo de vendas.
 
+## Dashboards de acompanhamento por funil
+
+Todas as campanhas da conta, uma aba por funil (`gerar_funis.py`, detalhes no topo do arquivo). Cada um é uma pasta
+`funis/<slug>/config.json` e o link fica `https://carlos-primo.github.io/c2pro-dashboards/funis/<slug>/`.
+Roda às 3h (Brasília), junto com vendas. Senha: secret `SENHA_FUNIS_<SLUG>` no passo "Gerar dashboards por funil".
+
+| Cliente | Link |
+|---|---|
+| U-TRAX (IDK, consultoria): as 2 contas, idade, gênero, posicionamento e alerta de idade dos conjuntos ativos; com senha | https://carlos-primo.github.io/c2pro-dashboards/funis/utrax/ |
+
+Opcionais do config usados na U-TRAX (24/11/2026): `contas` (várias contas de anúncio num link só, cada campanha mostra a
+conta), `quebras` (idade, gênero e posicionamento em cada aba e na visão geral, mais o quadro "Idade dos conjuntos
+ativos", que fica vermelho com idade aberta até 65+ ou Advantage+ de público ligado e amarelo acima de `idade_maxima`).
+
 ## Dashboards da Black Friday
 
 Campanhas com `BLACK` no nome (filtro no config), separadas por conta de anuncio. Resultado principal: lead, com compras do pixel como secundario.
