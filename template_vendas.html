@@ -488,6 +488,10 @@ function desenhar(){
   }
 
   const nomeAba = pg ? `campanhas de ${pg}` : "campanhas de vendas";
+  // ROAS principal: faturamento da plataforma de vendas (qualquer origem) ÷ investimento. Só na aba Geral, sem filtro.
+  const rp = !!(D.roas_principal && geral && seg === "todos" && P0.hotmart);
+  const H = P0.hotmart, Ha = P0.hotmart_ant, PF = esc((D.hotmart && D.hotmart.fonte) || "Hotmart");
+  const comPl = !!(D.hotmart && !pg && seg === "todos" && DD.some(d => d.pl_vendas != null));
   app.innerHTML = `<div class="wrap${D.so_dados ? " so-dados" : ""}">
   ${topo}
   ${segs.length ? `<div class="pills" role="group" aria-label="Público" style="margin-bottom:12px">
@@ -501,14 +505,26 @@ function desenhar(){
     <span>Atualizado em ${quando}</span>
   </div>
 
+  ${rp ? `<section>
+    <div class="sec-head"><div><h2>Resultado do negócio</h2>
+      <p class="sub">Tudo que entrou na ${PF} no período, de qualquer origem (anúncio, orgânico, base), contra o investimento em tráfego.</p></div></div>
+    <div class="tiles">
+      ${tile("ROAS principal", fmtRoas(div(H.faturamento, a.gasto)), delta(div(H.faturamento, a.gasto), Ha && div(Ha.faturamento, b.gasto), "sobe"), `faturamento ${PF} ÷ investimento`, true)}
+      ${tile(`Faturamento na ${PF}`, fmtMoeda(H.faturamento), delta(H.faturamento, Ha && Ha.faturamento, "sobe"), "líquido, sem renovações")}
+      ${tile(`Vendas na ${PF}`, fmtInt(H.vendas), delta(H.vendas, Ha && Ha.vendas, "sobe"))}
+      ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null), "todas as contas de anúncio")}
+      ${tile("Custo por venda real", moedaOu(div(a.gasto, H.vendas)), delta(div(a.gasto, H.vendas), Ha && div(b.gasto, Ha.vendas), "desce"), `investimento ÷ vendas da ${PF}`)}
+    </div>
+  </section>` : ""}
   <section>
+    ${rp ? `<div class="sec-head"><div><h2>Tráfego</h2><p class="sub">O que o pixel da Meta atribuiu aos anúncios.</p></div></div>` : ""}
     <div class="tiles">
       ${ehLead ? tile("Custo por lead", moedaOu(a.cpl), delta(a.cpl,b.cpl,"desce"), `${fmtInt(a.leads)} leads`, true) + tile("Leads", fmtInt(a.leads), delta(a.leads,b.leads,"sobe")) : ""}
-      ${tile("Custo por compra", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"), `${fmtInt(a.compras)} compras`, !ehLead)}
-      ${tile("Compras", fmtInt(a.compras), delta(a.compras,b.compras,"sobe"))}
-      ${tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
-      ${tile("Faturamento", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe"))}
-      ${tile("ROAS", a.roas==null?"-":fmtX(a.roas), delta(a.roas,b.roas,"sobe"), D.so_dados ? "" : "faturamento ÷ investimento")}
+      ${tile(rp ? "Custo por compra (pixel)" : "Custo por compra", moedaOu(a.cpa), delta(a.cpa,b.cpa,"desce"), `${fmtInt(a.compras)} compras`, !ehLead && !rp)}
+      ${tile(rp ? "Compras no pixel" : "Compras", fmtInt(a.compras), delta(a.compras,b.compras,"sobe"))}
+      ${rp ? "" : tile("Investimento", fmtMoeda(a.gasto), delta(a.gasto,b.gasto,null))}
+      ${tile(rp ? "Faturamento no pixel" : "Faturamento", fmtMoeda(a.faturamento), delta(a.faturamento,b.faturamento,"sobe"))}
+      ${tile(rp ? "ROAS do tráfego" : "ROAS", a.roas==null?"-":fmtX(a.roas), delta(a.roas,b.roas,"sobe"), D.so_dados ? "" : rp ? "faturamento do pixel ÷ investimento" : "faturamento ÷ investimento")}
       ${tile("Ticket médio", moedaOu(a.ticket), delta(a.ticket,b.ticket,"sobe"))}
       ${D.leads && !ehLead && (a.leads || b.leads) ? tile("Leads", fmtInt(a.leads), delta(a.leads,b.leads,"sobe")) + tile("Custo por lead", moedaOu(a.cpl), delta(a.cpl,b.cpl,"desce")) : ""}
     </div>
@@ -544,6 +560,8 @@ function desenhar(){
     <div class="charts">
       <div class="card chart"><h3>Compras por dia</h3>
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.compras,0))} compras</div><svg id="c-compras"></svg></div>
+      ${comPl ? `<div class="card chart"><h3>Vendas na ${PF} por dia</h3>
+        <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+(d.pl_vendas||0),0))} vendas, ${fmtMoeda(DD.reduce((s,d)=>s+(d.pl_faturamento||0),0))}</div><svg id="c-plataforma"></svg></div>` : ""}
       <div class="card chart"><h3>Checkouts iniciados por dia</h3>
         <div class="tot">Total: ${fmtInt(DD.reduce((s,d)=>s+d.checkouts,0))} checkouts</div><svg id="c-checkouts"></svg></div>
       ${D.leads && DD.some(d => d.leads) ? `<div class="card chart"><h3>Leads por dia</h3>
@@ -551,10 +569,10 @@ function desenhar(){
     </div>
     <details><summary>Ver o funil de cada dia em tabela</summary>
       <div class="card tbl-wrap" style="margin-top:12px"><table>
-        <thead><tr><th>Dia</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>Connect</th><th>Pág. para checkout</th><th>Checkout para compra</th><th>Checkouts</th><th>Compras</th><th>Custo por compra</th></tr></thead>
+        <thead><tr><th>Dia</th><th>Investimento</th><th>CPM</th><th>CTR</th><th>Connect</th><th>Pág. para checkout</th><th>Checkout para compra</th><th>Checkouts</th><th>Compras</th><th>Custo por compra</th>${comPl ? `<th>Vendas ${PF}</th><th>Faturamento ${PF}</th><th>ROAS principal</th>` : ""}</tr></thead>
         <tbody>${DD.slice().reverse().map(d => `<tr><td class="dia">${dataBRano(d.data)}</td><td>${fmtMoeda(d.gasto)}</td>
           <td>${moedaOu(d.cpm)}</td><td>${pctOu(d.ctr)}</td><td>${pctOu(d.connect)}</td><td>${pctOu(d.tx_checkout)}</td>
-          <td>${pctOu(d.tx_compra)}</td><td>${fmtInt(d.checkouts)}</td><td>${fmtInt(d.compras)}</td><td class="${d.compras?"hl":""}">${moedaOu(d.cpa)}</td></tr>`).join("")}</tbody>
+          <td>${pctOu(d.tx_compra)}</td><td>${fmtInt(d.checkouts)}</td><td>${fmtInt(d.compras)}</td><td class="${d.compras?"hl":""}">${moedaOu(d.cpa)}</td>${comPl ? `<td>${fmtInt(d.pl_vendas)}</td><td>${fmtMoeda(d.pl_faturamento)}</td><td class="${roasCls(div(d.pl_faturamento, d.gasto))}">${fmtRoas(div(d.pl_faturamento, d.gasto))}</td>` : ""}</tr>`).join("")}</tbody>
       </table></div></details>
   </section>
 
@@ -579,8 +597,8 @@ function desenhar(){
     <div class="defs"><b>CPM:</b> investimento ÷ impressões × 1.000. <b>CTR:</b> cliques no link ÷ impressões.
       <b>Connect rate:</b> visitas à página ÷ cliques no link (quanto do clique vira visita de verdade).
       <b>Página para checkout:</b> checkouts iniciados ÷ visitas. <b>Checkout para compra:</b> compras ÷ checkouts iniciados.
-      <b>ROAS:</b> faturamento registrado pelo pixel ÷ investimento. <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
-    ${D.hotmart && D.hotmart.fonte === "Kiwify" ? `<div class="explica" style="margin-top:12px"><b>Vendas na Kiwify:</b> vendas pagas de ${esc(D.hotmart.produtos.join(", "))}, pela data da compra, direto da API da Kiwify${D.hotmart.planos && D.hotmart.planos.length ? `, só dos checkouts para onde os anúncios levam (${esc(D.hotmart.planos.join(", "))})` : D.hotmart.excluir_planos && D.hotmart.excluir_planos.length ? `, sem os planos de renovação (${esc(D.hotmart.excluir_planos.join(", "))})` : ""}. Faturamento líquido, já sem a taxa da Kiwify. Quem chega nesses checkouts sem ser pelo anúncio (orgânico, link direto) também conta, porque a página não repassa a origem ao checkout. Reembolsos e chargebacks ficam fora.</div>` : D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
+      <b>ROAS${D.roas_principal ? " do tráfego" : ""}:</b> faturamento registrado pelo pixel ÷ investimento.${D.roas_principal ? ` <b>ROAS principal:</b> faturamento na ${esc(D.hotmart.fonte)} no período, de qualquer origem (anúncio, orgânico, base), ÷ investimento de todas as contas de anúncio. É o resultado do negócio, independente de o pixel ter registrado a venda.` : ""} <b>p.p.:</b> pontos percentuais em relação ao período anterior.</div>
+    ${D.hotmart && D.hotmart.fonte === "Kiwify" ? `<div class="explica" style="margin-top:12px"><b>Vendas na Kiwify:</b> vendas pagas de ${D.hotmart.todos_produtos ? "todos os produtos da conta Kiwify" : esc(D.hotmart.produtos.join(", "))}, pela data da compra, direto da API da Kiwify${D.hotmart.planos && D.hotmart.planos.length ? `, só dos checkouts para onde os anúncios levam (${esc(D.hotmart.planos.join(", "))})` : D.hotmart.excluir_planos && D.hotmart.excluir_planos.length ? `, sem os planos de renovação (${esc(D.hotmart.excluir_planos.join(", "))})` : ""}. Faturamento líquido, já sem a taxa da Kiwify. Quem chega nesses checkouts sem ser pelo anúncio (orgânico, link direto) também conta, porque a página não repassa a origem ao checkout. Reembolsos e chargebacks ficam fora.</div>` : D.hotmart ? `<div class="explica" style="margin-top:12px"><b>Vendas na Hotmart:</b> vendas aprovadas e concluídas de ${esc(D.hotmart.produtos.join(", "))}, pela data de aprovação, direto da API da Hotmart. Entram vendas de qualquer origem (anúncio, orgânico, link direto), por isso o custo por venda e o ROAS reais usam o investimento das campanhas contra todas as vendas. Reembolsos e chargebacks ficam fora.</div>` : ""}
     ${D.faturamento_real ? `<div class="explica" style="margin-top:12px"><b>Faturamento real:</b> o que entrou de verdade no ${esc(D.faturamento_real.fonte)}, de qualquer origem (anúncio, orgânico, base, renovação): cobranças pagas, no dia em que o cliente pagou (no cartão, o dia da aprovação). Parcelas da mesma venda contam como uma venda. No cartão parcelado a venda inteira conta no dia da compra; no boleto parcelado, cada parcela conta quando é paga. Estornos e chargebacks ficam fora. Por isso fica ao lado do que as plataformas contam, sem dividir por campanha. A Meta e o Google podem contar a mesma venda quando a pessoa vê o anúncio num e compra pelo outro.</div>` : ""}
     <div class="explica" style="margin-top:12px">Dados puxados direto da API da Meta, só campanhas com ${(D.filtros || [D.filtro]).map(f => `"${esc(f)}"`).join(" ou ")} no nome. ${D.leads ? "Leads, c" : "C"}ompras e faturamento são os que o pixel da Meta registrou e podem diferir da plataforma de pagamento. Atualiza sozinho todo dia às 2h. O dia de hoje não entra, os períodos terminam ontem.</div>
   </footer>
@@ -591,6 +609,9 @@ function desenhar(){
     p => `<b>${dataBRano(p.x)}</b><br>Compras: ${fmtInt(p.y)}<br>Investimento: ${fmtMoeda(p.g)}<br>Custo por compra: ${moedaOu(div(p.g,p.y))}`);
   graficoBarras(document.getElementById("c-checkouts"), DD.map(d => ({x:d.data, y:d.checkouts, c:d.compras})),
     p => `<b>${dataBRano(p.x)}</b><br>Checkouts: ${fmtInt(p.y)}<br>Checkout para compra: ${pctOu(div(p.c*100,p.y))}`);
+  const cp = document.getElementById("c-plataforma");
+  if (cp) graficoBarras(cp, DD.map(d => ({x:d.data, y:d.pl_vendas||0, f:d.pl_faturamento||0, g:d.gasto, c:d.compras})),
+    p => `<b>${dataBRano(p.x)}</b><br>Vendas: ${fmtInt(p.y)} (pixel: ${fmtInt(p.c)})<br>Faturamento: ${fmtMoeda(p.f)}<br>Investimento: ${fmtMoeda(p.g)}<br>ROAS principal: ${fmtRoas(div(p.f,p.g))}`);
   const ca = document.getElementById("c-acum");
   if (ca) graficoBarras(ca, D.acumulado.por_dia.map(d => ({x:d.data, y:d.vendas, f:d.faturamento})),
     p => `<b>${dataBRano(p.x)}</b><br>Vendas: ${fmtInt(p.y)}<br>Faturamento: ${fmtMoeda(p.f)}`);

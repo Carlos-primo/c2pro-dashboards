@@ -15,6 +15,13 @@ Opcionais no config.json, so quando o Carlos pedir para aquele cliente:
   "hotmart": {"produtos": {"<id>": "<nome>"}}  vendas reais da Hotmart x compras do pixel (ver gerar_hotmart.py)
   "kiwify": {"produtos": {"<id>": "<nome>"}, "excluir_planos": ["Renova"]}
                                   o mesmo quadro com as vendas da Kiwify, valor liquido (ver gerar_kiwify.py)
+  "contas_anuncio": ["act_...", "act_..."]
+                                  mais de uma conta de anuncio no mesmo dashboard: investimento, funil, campanhas,
+                                  criativos e dia a dia somam todas (sempre com o filtro VENDAS). Wescley (25/11/2026):
+                                  o perpetuo roda na conta da Camila e na Minha Revenda ao mesmo tempo
+  "roas_principal": true          com Hotmart/Kiwify: o resumo abre no ROAS principal (faturamento da plataforma, de
+                                  qualquer origem, / investimento) e no faturamento da plataforma; o ROAS do pixel vira
+                                  "ROAS do trafego". O dia a dia ganha vendas, faturamento e ROAS principal da plataforma
   "excluir": ["BLACK"]            tira campanhas com esse trecho no nome, mesmo tendo VENDAS (Vita Hair: a Black
                                   da Debora tem dashboard proprio)
   "so_dados": true                dashboard so com numeros: sem alerta, sugestao nem textos explicativos
@@ -114,6 +121,11 @@ EVENTOS = {
 EVENTOS_LEAD = ["lead", "offsite_conversion.fb_pixel_lead", "onsite_conversion.lead_grouped"]
 
 
+def contas():
+    """Contas de anuncio do dashboard: "contas_anuncio" (varias) ou so a "conta_anuncio"."""
+    return CFG.get("contas_anuncio") or [CFG["conta_anuncio"]]
+
+
 def sem_acento(txt):
     return unicodedata.normalize("NFKD", txt or "").encode("ascii", "ignore").decode().upper()
 
@@ -156,15 +168,18 @@ def insights(nivel, inicio, fim, campos, ids=None, **extra):
         filtro += [{"field": "campaign.name", "operator": "NOT_CONTAIN", "value": e} for e in excluidos()]
     if ids is not None:
         filtro.append({"field": "campaign.id", "operator": "IN", "value": ids})
-    return api(
-        f"{CFG['conta_anuncio']}/insights",
-        level=nivel,
-        fields=campos,
-        time_range=json.dumps({"since": inicio.isoformat(), "until": fim.isoformat()}),
-        filtering=json.dumps(filtro),
-        limit=500,
-        **extra,
-    )
+    linhas = []
+    for conta in contas():
+        linhas += api(
+            f"{conta}/insights",
+            level=nivel,
+            fields=campos,
+            time_range=json.dumps({"since": inicio.isoformat(), "until": fim.isoformat()}),
+            filtering=json.dumps(filtro),
+            limit=500,
+            **extra,
+        )
+    return linhas
 
 
 def primeiro(dic, chaves):
@@ -193,8 +208,8 @@ def metricas(linha):
 
 
 def conta_total(inicio, fim, ids=None):
-    linhas = insights("account", inicio, fim, CAMPOS_METRICAS, ids=ids)
-    return metricas(linhas[0]) if linhas else metricas({})
+    # Uma linha por conta de anuncio; com varias contas o alcance vira soma (aproximado).
+    return somar(metricas(l) for l in insights("account", inicio, fim, CAMPOS_METRICAS, ids=ids))
 
 
 def precisa_url():
@@ -217,8 +232,8 @@ def detalhes_anuncios(anuncios):
     for i in range(0, len(anuncios), 50):
         lote = anuncios[i:i + 50]
         filtro = [{"field": "ad.id", "operator": "IN", "value": [a["id"] for a in lote]}]
-        resp = {ad["id"]: ad for ad in api(
-            f"{CFG['conta_anuncio']}/ads",
+        resp = {ad["id"]: ad for conta in contas() for ad in api(
+            f"{conta}/ads",
             fields="effective_status,preview_shareable_link,"
                    "creative{thumbnail_url,instagram_permalink_url" + extra + "}",
             filtering=json.dumps(filtro), limit=50)}
@@ -536,18 +551,31 @@ def bloco_hotmart(slug, periodos, fuso):
         print(f"::warning::vendas/{slug} saiu sem a {fonte}: faltam os secrets {fonte.upper()}_{slug.upper().replace('-', '_')}_*")
         return None
     produtos = cfg["produtos"]
-    inicio = min(dt.date.fromisoformat(p["inicio"]) for p in periodos.values())
+    todos = fonte == "Kiwify" and cfg.get("todos_produtos")
+    # Desde o inicio do periodo anterior: o ROAS principal compara com ele.
+    inicio = min(dt.date.fromisoformat(p[k]) for p in periodos.values() for k in ("inicio", "ant_inicio"))
     fim = max(dt.date.fromisoformat(p["fim"]) for p in periodos.values())
     if fonte == "Kiwify":
-        linhas = mod.vendas(mod.Kiwify(slug), list(produtos), inicio, fim, fuso, cfg.get("excluir_planos", []),
-                           cfg.get("planos", []))
+        linhas = mod.vendas(mod.Kiwify(slug), None if todos else list(produtos), inicio, fim, fuso,
+                            cfg.get("excluir_planos", []), cfg.get("planos", []))
     else:
         linhas = mod.vendas(mod.Hotmart(slug), list(produtos), inicio, fim, fuso)
     abas = {pg["nome"]: [str(x) for x in pg["hotmart"]] for pg in CFG.get("paginas", []) if pg.get("hotmart")}
     for p in periodos.values():
         ini, fim_p = dt.date.fromisoformat(p["inicio"]), dt.date.fromisoformat(p["fim"])
         p["hotmart"] = mod.resumo(linhas, ini, fim_p)
-        if len(produtos) > 1 and fonte == "Hotmart":
+        p["hotmart_ant"] = mod.resumo(linhas, *(dt.date.fromisoformat(p[k]) for k in ("ant_inicio", "ant_fim")))
+        if todos:
+            # Quanto cada produto da Kiwify vendeu no periodo, pelo nome que vem na venda.
+            nomes = {}
+            for l in linhas:
+                nomes.setdefault(l["produto"], produtos.get(l["produto"]) or l["produto_nome"] or l["produto"])
+            p["hotmart"]["produtos"] = sorted((
+                {"nome": nome, "vendas": r["vendas"], "faturamento": r["faturamento"]}
+                for pid, nome in nomes.items()
+                for r in [mod.resumo([l for l in linhas if l["produto"] == pid], ini, fim_p)] if r["vendas"]),
+                key=lambda x: -x["faturamento"])
+        elif len(produtos) > 1 and fonte == "Hotmart":
             # Quanto cada produto vendeu de verdade no periodo (de qualquer origem).
             p["hotmart"]["produtos"] = sorted((
                 {"nome": nome, "vendas": r["vendas"], "faturamento": r["faturamento"]}
@@ -557,7 +585,14 @@ def bloco_hotmart(slug, periodos, fuso):
         for nome, ids in abas.items():
             if p.get("paginas") and nome in p["paginas"]:
                 p["paginas"][nome]["hotmart"] = mod.resumo([l for l in linhas if l.get("produto") in ids], ini, fim_p)
-    return {"produtos": list(produtos.values()), "fonte": fonte,
+    # Dia a dia da plataforma (vendas e faturamento), pra juntar na serie diaria da Meta.
+    CFG["_plataforma_dia"] = {}
+    for l in linhas:
+        if l["status"] in gerar_hotmart.VENDIDAS:
+            d = CFG["_plataforma_dia"].setdefault(l["dia"].isoformat(), {"vendas": 0, "faturamento": 0.0})
+            d["vendas"] += 1
+            d["faturamento"] = round(d["faturamento"] + l["valor"], 2)
+    return {"produtos": list(produtos.values()), "fonte": fonte, "todos_produtos": bool(todos),
             "excluir_planos": cfg.get("excluir_planos", []), "planos": cfg.get("planos", [])}
 
 
@@ -662,8 +697,12 @@ def bloco_origem(slug, periodos, ontem):
 
 def serie_diaria(ontem, ids=None):
     inicio = ontem - dt.timedelta(days=29)
-    por_dia = {l["date_start"]: metricas(l) for l in diario_seguro(
-        lambda c, i, f, **e: insights("account", i, f, c, ids=ids, **e), CAMPOS_METRICAS, inicio, ontem)}
+    por_dia = {}
+    for l in diario_seguro(lambda c, i, f, **e: insights("account", i, f, c, ids=ids, **e),
+                           "account_id," + CAMPOS_METRICAS, inicio, ontem):
+        dia = por_dia.setdefault(l["date_start"], metricas({}))
+        for k, v in metricas(l).items():
+            dia[k] += v
     return [{"data": (inicio + dt.timedelta(days=n)).isoformat(),
              **por_dia.get((inicio + dt.timedelta(days=n)).isoformat(), metricas({}))}
             for n in range(30)]
@@ -678,12 +717,14 @@ def gerar_cliente(slug):
         return gerar_funis.gerar_cliente(slug, pasta="vendas")
     saida = SITE / slug
 
-    conta = api(CFG["conta_anuncio"], fields="name,currency,timezone_name")
+    infos = [api(c, fields="name,currency,timezone_name") for c in contas()]
+    conta = {**infos[0], "name": " + ".join(i.get("name", "") for i in infos)}
+    conferir(len({i.get("currency") for i in infos}) == 1, "contas de anuncio com moedas diferentes")
     fuso = ZoneInfo(conta.get("timezone_name") or "America/Sao_Paulo")
     agora = dt.datetime.now(fuso)
     ontem = agora.date() - dt.timedelta(days=1)
 
-    todas = api(f"{CFG['conta_anuncio']}/campaigns", fields="name,effective_status", limit=500)
+    todas = [c for conta_id in contas() for c in api(f"{conta_id}/campaigns", fields="name,effective_status", limit=500)]
     status_camp = {c["id"]: c["effective_status"] for c in todas}
     CFG["_ids_filtro"] = [c["id"] for c in todas if eh_vendas(c["name"])]
     # Filtro quente/frio: so aparece quando o nome das campanhas VENDAS traz Q (quente) ou ASP/F (frio).
@@ -736,7 +777,14 @@ def gerar_cliente(slug):
         "gasto_minimo_criativo": CFG["criativos_gasto_minimo"],
         "periodos": periodos,
         "diario": serie_diaria(ontem),
+        "roas_principal": bool(CFG.get("roas_principal") and hotmart),
     }
+    if hotmart:
+        for d in dados["diario"]:
+            pd = CFG["_plataforma_dia"].get(d["data"], {"vendas": 0, "faturamento": 0.0})
+            d["pl_vendas"], d["pl_faturamento"] = pd["vendas"], pd["faturamento"]
+        conferir(sum(d["pl_vendas"] for d in dados["diario"]) == periodos["30"]["hotmart"]["vendas"],
+                 f"dia a dia da {hotmart['fonte']} nao bate com o total de 30 dias")
     if segmentos:
         dados["diario_segmentos"] = {n: serie_diaria(ontem, ids) for n, ids in segmentos.items()}
     if CFG.get("paginas"):

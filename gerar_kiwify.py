@@ -9,6 +9,10 @@ nao vem de anuncio). Sem acento e sem diferenciar maiuscula.
 checkouts para onde as paginas dos anuncios mandam (lp-vsl-3-1c e oferta-vsl1-reforma -> Fiedl94 "Plano Anual - 12x"
 e HIFbNyG "Plano Anual - Pix"; vsl-demo e oferta-2027-roleta -> ZFLqQz7 "OFF Oferta Roleta - 12x"), conferido em 23/11/2026.
 
+"todos_produtos": true: conta todos os produtos da conta Kiwify (o "produtos" do config so da nome), pra o
+faturamento total do cliente no dia, de qualquer origem. Wescley (25/11/2026): ROAS principal = faturamento da
+Kiwify (sem renovacoes) / investimento das duas contas de anuncio. A Hotmart dele e da Black (dashboard proprio).
+
 Credencial (Kiwify > Apps > API > Criar API Key, so com Vendas e Produtos marcados), uma por cliente:
     KIWIFY_<SLUG>_CLIENT_ID, KIWIFY_<SLUG>_CLIENT_SECRET e KIWIFY_<SLUG>_ACCOUNT_ID   (ex: KIWIFY_WESCLEY_CLIENT_ID)
 No GitHub ficam nos secrets do repositorio; local, no .env desta pasta (fora do Git).
@@ -86,7 +90,8 @@ class Kiwify:
 
 
 def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=(), planos=()):
-    """Vendas do periodo (pelo dia no fuso da conta do Meta), so com o que o dashboard usa."""
+    """Vendas do periodo (pelo dia no fuso da conta do Meta), so com o que o dashboard usa.
+    produtos=None: todos os produtos da conta."""
     excluir = [_norm(e) for e in excluir_planos]
     so = {_norm(p) for p in planos}
     linhas = []
@@ -94,7 +99,7 @@ def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=(), planos=()):
     for v in kw.vendas(inicio - dt.timedelta(days=1), fim + dt.timedelta(days=1)):
         p = v.get("product") or {}
         status = STATUS.get(v.get("status"))
-        if p.get("id") not in produtos or not status:
+        if (produtos is not None and p.get("id") not in produtos) or not status:
             continue
         plano = _norm(f"{p.get('plan_name') or ''} {p.get('offer_name') or ''}")
         if any(e in plano for e in excluir):
@@ -106,6 +111,8 @@ def vendas(kw, produtos, inicio, fim, fuso, excluir_planos=(), planos=()):
             continue
         linhas.append({
             "transacao": v["id"],
+            "produto": p.get("id"),
+            "produto_nome": (p.get("name") or "").strip(),
             "dia": dia,
             "status": status,
             "valor": (v.get("net_amount") or 0) / 100 if v.get("currency", "BRL") == "BRL" else 0.0,
