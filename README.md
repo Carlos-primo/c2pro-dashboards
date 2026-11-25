@@ -68,6 +68,7 @@ https://carlos-primo.github.io/c2pro-dashboards/vendas/<cliente>/
 | Rocha Mazzo Advogados (Raio-X da MP 1.376) | https://carlos-primo.github.io/c2pro-dashboards/vendas/rocha-mazzo/ |
 | BJJ Protech (tráfego completo: abas por tipo, Google e distribuição; com senha) | https://carlos-primo.github.io/c2pro-dashboards/vendas/bjj-protech/ |
 | Wescley Lima (perpétuo: funil VSL, vendas reais da Kiwify; ontem, 3, 7, 14, 30 dias e este mês) | https://carlos-primo.github.io/c2pro-dashboards/vendas/wescley/ |
+| Rafaela Evaldt: dashboard único desde 25/11/2026, com abas Black e Distribuição; ontem, 3, 7, 30 dias e este mês; faturamento do pixel | https://carlos-primo.github.io/c2pro-dashboards/vendas/rafaela-evaldt/ |
 
 - **Resumo:** custo por compra, compras, investimento, faturamento, ROAS e ticket médio
 - **Funil visual:** impressões (CPM) > cliques no link (CTR, CPC) > visitas à página (connect rate, custo por visita) > checkouts (página para checkout, custo por checkout) > compras (checkout para compra, custo por compra), com variação em pontos percentuais e alerta na etapa que mais caiu
@@ -123,6 +124,8 @@ Senha opcional: secret `SENHA_BLACK_<SLUG>` no passo "Gerar dashboards da Black"
 
 A Black da Vita Hair (Débora) entrou no dashboard de vendas dela em 24/11/2026; o link `black/vita-hair/` redireciona pra lá (`redirecionar/`).
 
+O lançamento LP05 da Rafaela acabou; desde 25/11/2026 o link `lancamento/rafaela-lp05/` redireciona pro dashboard único dela (`vendas/rafaela-evaldt/`). O config do LP05 está no histórico do Git, se precisar voltar.
+
 **Origem dos leads (pago x orgânico)**, com `origem_leads` no config (Wescley pode usar; a Vita Hair usa no `vendas/vita-hair`, com o resumo em `vendas/vita-hair/origem.json`): aba que lê a planilha de captura
 de UTM da página e separa os leads em **tráfego pago** (UTM de anúncio da Meta: source ig/fb/an, campanhas C2PRO) e
 **orgânico** (bio do Instagram, WhatsApp, e-mail da RD Station), além de **não traqueado** (cadastro sem UTM nenhuma). Mostra pago x orgânico nos mesmos períodos da
@@ -175,7 +178,7 @@ https://carlos-primo.github.io/c2pro-dashboards/lancamento/<slug>/
 
 | Cliente | Lançamento | Link |
 |---|---|---|
-| Rafaela Evaldt | LP05 (desde 02/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/rafaela-lp05/ |
+| Rafaela Evaldt | LP05 (02/10/2026; encerrado, o link redireciona pro `vendas/rafaela-evaldt/` desde 25/11/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/rafaela-lp05/ |
 | AgroFácil (Athila) | Imersão Consultor Pecuário, campanhas ICP (22/09 a 17/10/2026) | https://carlos-primo.github.io/c2pro-dashboards/lancamento/agrofacil-athila/ |
 
 - **Captação:** custo por ingresso, ingressos, investimento, faturamento, ROAS, ticket médio, o funil de vendas

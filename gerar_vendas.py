@@ -67,6 +67,9 @@ filtro VENDAS (as frentes so separam o que ja passou nele):
                                   como sempre
   "distribuicao": true            aba Distribuicao com o dashboard de distribuicao (campanhas com DISTRIBUICAO no nome,
                                   gerar.py), dentro do mesmo payload (mesma senha)
+  "distribuicao_periodos": ["1", "3", "7", "mes"]
+                                  periodos da aba Distribuicao alem do padrao 7 e 30 ("mes" = Este mes; o 30 fica
+                                  sempre). Rafaela Evaldt (25/11/2026): ontem, 3, 7 dias e este mes em todas as abas
 
 Variaveis de ambiente: as mesmas do gerar.py (META_ADS_TOKEN, SENHA_VENDAS_<SLUG> opcional) e, com Hotmart,
 HOTMART_<SLUG>_CLIENT_ID e HOTMART_<SLUG>_CLIENT_SECRET; com Kiwify, KIWIFY_<SLUG>_CLIENT_ID,
@@ -285,7 +288,21 @@ def bloco_distribuicao():
     base.CFG.clear()
     base.CFG.update({"nome": CFG["nome"], "subtitulo": "Campanhas de distribuição",
                      "conta_anuncio": CFG["conta_anuncio"], "criativos_gasto_minimo": CFG["criativos_gasto_minimo"]})
-    return base.montar_dados()
+    dados = base.montar_dados()
+    pedidos = CFG.get("distribuicao_periodos")
+    if pedidos and "7" in dados["periodos"]:
+        # Periodos a mais na aba Distribuicao (o gerar.py so faz 7 e 30). O "30" fica sempre: o resumo usa.
+        ontem = dt.date.fromisoformat(dados["periodos"]["7"]["fim"])
+        rotulos = {"1": "Ontem", "3": "Últimos 3 dias", "14": "Últimos 14 dias", "mes": "Este mês"}
+        novos = {}
+        for k in dict.fromkeys([str(x) for x in pedidos] + ["30"]):
+            if k in dados["periodos"]:
+                novos[k] = dados["periodos"][k]
+                continue
+            p = base.periodo_entre(ontem.replace(day=1), ontem) if k == "mes" else base.periodo(int(k), ontem)
+            novos[k] = {**p, "rotulo": rotulos.get(k, f"Últimos {k} dias")}
+        dados["periodos"] = novos
+    return dados
 
 
 def frente_de(ad):

@@ -1,0 +1,23 @@
+{
+  "nome": "Rafaela Evaldt",
+  "subtitulo": "Tráfego pago: Black e distribuição",
+  "conta_anuncio": "act_1635485943254693",
+  "criativos_gasto_minimo": 5,
+  "so_dados": true,
+  "mes_atual": true,
+  "paginas": [
+    {
+      "nome": "Black",
+      "contem": [
+        "BLACK"
+      ]
+    }
+  ],
+  "distribuicao": true,
+  "distribuicao_periodos": [
+    "1",
+    "3",
+    "7",
+    "mes"
+  ]
+}
