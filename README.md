@@ -105,6 +105,11 @@ Roda às 3h (Brasília), junto com vendas. Senha: secret `SENHA_FUNIS_<SLUG>` no
 Opcionais do config usados na U-TRAX (24/11/2026): `contas` (várias contas de anúncio num link só, cada campanha mostra a
 conta), `quebras` (idade, gênero e posicionamento em cada aba e na visão geral, mais o quadro "Idade dos conjuntos
 ativos", que fica vermelho com idade aberta até 65+ ou Advantage+ de público ligado e amarelo acima de `idade_maxima`).
+`gargalos` (27/11/2026): o funil de cada aba vira o funil com gargalos. Cada taxa de passagem abaixo da referência
+(CTR 1%, carregamento 70%, página para lead 20%, formulário da Meta 25%, clique para conversa 40%, página para checkout
+5%, checkout para compra 25%, hook rate 25%, retenção 25%) fica em vermelho, a pior vira o "principal gargalo" com a dica
+do que olhar, e a visão geral ganha o quadro "Gargalos por funil". Para trocar referências: `{"ctr": 1.2, ...}` no lugar
+de `true`. Etapa com menos de 30 pessoas na entrada não conta.
 
 ## Dashboards da Black Friday
 

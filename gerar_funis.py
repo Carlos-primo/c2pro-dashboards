@@ -29,6 +29,10 @@ Opcional: "contas": [{"id": "act_...", "nome": "..."}]  junta varias contas de a
           de "conta_anuncio"); cada campanha mostra de qual conta e (U-TRAX, 24/11/2026).
 Opcional: "quebras": true  idade, genero e posicionamento em cada aba e na visao geral, mais o alerta dos
           conjuntos ativos (idade aberta ate 65+, acima de "idade_maxima" ou com Advantage+ de publico ligado).
+Opcional: "gargalos": true  troca o funil de cada aba pelo funil com gargalos: cada taxa de passagem (CTR, carregamento,
+          conversao, checkout, compra, hook, retencao) abaixo da referencia fica vermelha, a pior vira o "principal
+          gargalo" e a visao geral ganha o quadro "Gargalos por funil". Referencias no template (REF_PADRAO); para trocar,
+          {"ctr": 1.2, "carregamento": 75, ...} no lugar do true (U-TRAX, 27/11/2026).
 Opcional: "aba_inicial": "<id da aba>"  o dashboard abre nessa aba em vez da visao geral.
           0 nos periodos = "Hoje": parcial, da meia-noite ate a hora da rodada, comparado com ontem inteiro.
 
@@ -495,6 +499,7 @@ def gerar_cliente(slug, pasta="funis"):
         "nome": CFG["nome"], "subtitulo": CFG.get("subtitulo", ""),
         "conta": " + ".join(n for _, n in contas) if len(contas) > 1 else conta.get("name", ""),
         **({"conjuntos": conjuntos, "idade_maxima": CFG.get("idade_maxima", 65)} if CFG.get("quebras") else {}),
+        **({"gargalos": CFG["gargalos"]} if CFG.get("gargalos") else {}),
         "moeda": conta.get("currency", "BRL"), "gerado_em": agora.isoformat(timespec="minutes"),
         "gasto_minimo_criativo": CFG.get("criativos_gasto_minimo", 10),
         "abas": abas, "aba_inicial": CFG.get("aba_inicial", "geral"),

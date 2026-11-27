@@ -227,6 +227,18 @@ tr.ruim td .st,tr.grave td .st,tr.acima td .st{color:inherit;opacity:.75}
 .idd-tx{font:400 11px/1.5 var(--mono);color:var(--t-muted)}
 .idd-tx b{color:var(--t-strong);font-weight:600}
 .idd-tx .v,.idd-tx .v b{color:var(--neg)}
+/* funil com gargalos (config "gargalos"): etapa abaixo da referência em vermelho */
+.fz{padding:28px 24px 24px}
+.fn-conn .chip.gg{border-color:rgba(255,77,94,.6);background:rgba(255,77,94,.08)}
+.fn-conn .chip.gg b,.fn-conn .chip.gg .k,.fn-conn .chip.gg svg{color:var(--neg)}
+.fn-conn .chip.top{box-shadow:0 0 22px -4px rgba(255,77,94,.65)}
+.fn-conn .nota.gg{color:#FF8A94}
+.tag-gg{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--neg);color:#1A0306;font:600 10px/1.6 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.fn-row.gg .fn-forma .q b{color:#FF8A94;text-shadow:none}
+.fn-row.gg .fn-nome .n{color:#FF8A94}
+td.gg,tr td.gg{color:var(--neg);font-weight:600}
+.ad .kpis .gg b{color:var(--neg)}
+tr.ruim td .lnk{color:var(--t-body)}
 </style>
 </head>
 <body>
@@ -391,7 +403,7 @@ function desenhar(){
     Resultado = o evento que cada campanha otimiza (compra, lead, conversa, ThruPlay...).
     Taxa de carregamento = visitas à página ÷ cliques no link. Taxa de conversão = resultado ÷ visitas à página
     (nas campanhas de WhatsApp, conversas ÷ cliques; no formulário da própria Meta, leads ÷ cliques). Hook rate = views de 3s ÷ impressões. Retenção = ThruPlays ÷ views de 3s.
-    Os períodos terminam ontem${D.periodos["0"] ? `; "Hoje" é parcial, da meia-noite até a última atualização` : ""}.</footer>
+    ${D.gargalos ? "Em vermelho: taxa de passagem abaixo da referência (gargalo). " : ""}Os períodos terminam ontem${D.periodos["0"] ? `; "Hoje" é parcial, da meia-noite até a última atualização` : ""}.</footer>
   </div>`;
 
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { PER = b.dataset.p; mem.set("c2pro-funis-periodo", PER); desenhar(); });
@@ -400,6 +412,8 @@ function desenhar(){
   app.querySelectorAll("[data-pub]").forEach(b => b.onclick = () => { PUB = b.dataset.pub; desenhar(); });
   const sel = app.querySelector("#ord"); if (sel) sel.onchange = () => { ORD = sel.value; desenhar(); };
   const sc = app.querySelector("#campf"); if (sc) sc.onchange = () => { CAMPF = sc.value; desenhar(); };
+  app.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => { const [a, t] = b.dataset.ir.split("|"); ABA = a; TIPO[a] = t; PUB = "todos"; CAMPF = "todas";
+    mem.set("c2pro-funis-aba", ABA); history.replaceState(null, "", "#" + ABA); desenhar(); document.querySelector(".tabs").scrollIntoView({behavior:"smooth"}); });
   app.querySelectorAll("[data-st]").forEach(b => b.onclick = () => { STF = b.dataset.st; desenhar(); });
   ligarGrafico();
 }
@@ -448,6 +462,7 @@ function visaoGeral(P, abas){
       ${temVenda ? tile("Taxa de carregamento", pctOu(meta.carreg), deltaPP(meta.carreg,metaAnt.carreg), "Meta (visitas ÷ cliques)") : ""}
     </div>
   </section>
+  ${secaoGargalos(P, abas)}
   ${secaoConjuntos()}
   <section>
     <div class="sec-head"><div><h2>Campanhas no período</h2><p class="sub">${todas.length} campanha${todas.length===1?"":"s"} com gasto no período · ${nAt} ativa${nAt===1?"":"s"} agora</p></div>
@@ -654,7 +669,8 @@ function abaFunil(P, aba){
   const celVenda = m => ehVenda ? `<td>${fmtMoeda(m.faturamento)}</td><td class="hl">${xOu(m.roas)}</td>` : "";
   const convTxt = G ? "compras ÷ cliques" : R.conv === "cliques" ? "conversas ÷ cliques" : "resultado ÷ visitas";
   const colVis = SP ? "" : "<th>Visitas</th><th>Carregamento</th>";
-  const celVis = m => SP ? "" : `<td>${fmtInt(m.visitas)}</td><td>${pctOu(m.carreg)}</td>`;
+  const celVis = m => SP ? "" : `<td>${fmtInt(m.visitas)}</td><td class="${ggc("carregamento", m.carreg, m.cliques)}">${pctOu(m.carreg)}</td>`;
+  const celConv = m => `<td class="${ggc(refConv(r, m), m.conv, baseConv(r, m))}">${pctOu(m.conv)}</td>`;
 
   return `<p class="desc">${esc(aba.descricao||"")}</p>
   <div class="filtros">
@@ -685,7 +701,7 @@ function abaFunil(P, aba){
     </div>
   </section>
 
-  ${G ? "" : funilVisual(a, b, r)}
+  ${G ? "" : D.gargalos ? funilGargalos(a, b, r) : funilVisual(a, b, r)}
 
   <section>
     <div class="card chart" id="graf">${grafico(idsT, r)}</div>
@@ -698,8 +714,8 @@ function abaFunil(P, aba){
       <tbody>${campanhas.map(({c,m}) => `<tr>
         <td>${esc(c.nome)} ${badge(c.status)}${c.publico ? `<span class="st">Público: ${c.publico}</span>` : ""}${c.conta ? `<span class="st">${esc(c.conta)}</span>` : ""}</td>
         <td>${fmtMoeda(m.gasto)}</td><td class="hl">${fmtInt(m.res)}</td><td>${moedaOu(m.cpr)}</td>
-        <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td>${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>${celVis(m)}
-        ${R.conv?`<td>${pctOu(m.conv)}</td>`:""}${VID?`<td>${fmtInt(m.views)}</td><td>${pctOu(m.hook)}</td><td>${pctOu(m.ret)}</td><td>${fmtInt(m.engajamento)}</td>`:""}${celVenda(m)}</tr>`).join("")}
+        <td>${fmtInt(m.impressoes)}</td><td>${fmtInt(m.cliques)}</td><td class="${VID ? "" : ggc("ctr", m.ctr, m.impressoes)}">${pctOu(m.ctr)}</td><td>${moedaOu(div(m.gasto,m.cliques))}</td>${celVis(m)}
+        ${R.conv?celConv(m):""}${VID?`<td>${fmtInt(m.views)}</td><td class="${ggc("hook", m.hook, m.impressoes)}">${pctOu(m.hook)}</td><td class="${ggc("retencao", m.ret, m.views)}">${pctOu(m.ret)}</td><td>${fmtInt(m.engajamento)}</td>`:""}${celVenda(m)}</tr>`).join("")}
       </tbody></table></div>
   </section>
 
@@ -712,7 +728,7 @@ function abaFunil(P, aba){
       <tbody>${paginas.map(({u,m,n}) => `<tr>
         <td><span class="url">${esc(u)}</span></td>${G?"":`<td>${n}</td>`}
         <td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.cliques)}</td>${celVis(m)}
-        <td class="hl">${fmtInt(m.res)}</td>${R.conv?`<td>${pctOu(m.conv)}</td>`:""}<td>${moedaOu(m.cpr)}</td>${celVenda(m)}</tr>`).join("")}
+        <td class="hl">${fmtInt(m.res)}</td>${R.conv?celConv(m):""}<td>${moedaOu(m.cpr)}</td>${celVenda(m)}</tr>`).join("")}
       </tbody></table></div>
     <p class="defs">${G ? "Página = URL final dos anúncios do Google (relatório de páginas de destino), sem parâmetros. Campanhas de geração de demanda e PMax podem não aparecer aqui." : "Página = link de destino do criativo, sem os parâmetros de UTM. Anúncio de catálogo leva para a página de cada produto do feed."}</p>
   </section>`}
@@ -729,12 +745,12 @@ function abaFunil(P, aba){
           <div class="${ORD==="res"?"sel":""}">${R.un}<b>${fmtInt(x.res)}</b></div>
           <div class="${ORD==="cpr"?"sel":""}">${R.cu}<b>${moedaOu(x.cpr)}</b></div>
           <div class="${ORD==="gasto"?"sel":""}">Valor usado<b>${fmtMoeda(x.gasto)}</b></div>
-          ${VID ? `<div class="${ORD==="hook"?"sel":""}">Hook rate<b>${pctOu(x.hook)}</b></div><div class="${ORD==="ret"?"sel":""}">Retenção<b>${pctOu(x.ret)}</b></div>
+          ${VID ? `<div class="${ORD==="hook"?"sel":""}${ggc("hook", x.hook, x.impressoes)}">Hook rate<b>${pctOu(x.hook)}</b></div><div class="${ORD==="ret"?"sel":""}${ggc("retencao", x.ret, x.views)}">Retenção<b>${pctOu(x.ret)}</b></div>
             <div>Views 3s<b>${fmtInt(x.views)}</b></div><div>Engajamento<b>${fmtInt(x.engajamento)}</b></div>` : ""}
-          ${SP || VID ? "" : `<div>Carregamento<b>${pctOu(x.carreg)}</b></div>`}
-          ${R.conv?`<div class="${ORD==="conv"?"sel":""}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div class="${ORD==="ctr"?"sel":""}">CTR<b>${pctOu(x.ctr)}</b></div>`}
+          ${SP || VID ? "" : `<div class="${ggc("carregamento", x.carreg, x.cliques)}">Carregamento<b>${pctOu(x.carreg)}</b></div>`}
+          ${R.conv?`<div class="${ORD==="conv"?"sel":""}${ggc(refConv(r, x), x.conv, baseConv(r, x))}">Conversão<b>${pctOu(x.conv)}</b></div>`:`<div class="${ORD==="ctr"?"sel":""}${VID ? "" : ggc("ctr", x.ctr, x.impressoes)}">CTR<b>${pctOu(x.ctr)}</b></div>`}
           ${ehVenda?`<div class="${ORD==="roas"?"sel":""}">ROAS<b>${xOu(x.roas)}</b></div>`:`<div>Cliques<b>${fmtInt(x.cliques)}</b></div>`}
-          ${SP && !VID ? `<div>CTR<b>${pctOu(x.ctr)}</b></div>` : ""}
+          ${SP && !VID ? `<div class="${ggc("ctr", x.ctr, x.impressoes)}">CTR<b>${pctOu(x.ctr)}</b></div>` : ""}
         </div>
         ${x.idade ? idadeCriativo(x.idade, R, ORD === "velho" || ORD === "novo") : ""}
         ${VID && x.x.url === "Sem link identificado" ? "" : `<div class="pg">${esc(x.x.url)}</div>`}
@@ -743,6 +759,173 @@ function abaFunil(P, aba){
           ${x.x.previa?`<a class="lnk" href="${esc(x.x.previa)}" target="_blank" rel="noopener">${ICO_EYE} Prévia</a>`:""}
         </div></div></div>`).join("")}</div>` : `<div class="card empty">Nenhum criativo passou do gasto mínimo no período.</div>`}
   </section>`}`;
+}
+
+// ---------- funil com gargalos (config "gargalos": true ou {"ctr": 1.2, ...}) ----------
+// Cada taxa de passagem é comparada com a referência; abaixo dela, a etapa fica vermelha. A pior (taxa ÷ referência)
+// é o principal gargalo. Com menos de BASE_MINIMA na etapa de cima, a taxa não conta (pouco volume). U-TRAX, 27/11/2026.
+const REF_PADRAO = {ctr:1, carregamento:70, pagina_lead:20, form_lead:25, conversa:40, checkout:5, compra:25, hook:25, retencao:25};
+const BASE_MINIMA = 30;
+const DICA = {
+  ctr: "O anúncio aparece mas não faz clicar: revisar criativo, gancho e chamada para ação.",
+  carregamento: "Clicam e não esperam a página abrir: conferir a velocidade da página no celular, o link e o pixel na página.",
+  pagina_lead: "A página recebe visita mas não converte: promessa, prova e tamanho do formulário.",
+  form_lead: "Abrem o formulário da Meta e não enviam: formulário longo ou perguntas demais.",
+  conversa: "Clicam e não chamam no WhatsApp: conferir o link, o número e a mensagem pronta.",
+  checkout: "Visitam a página de vendas e não vão para o pagamento: oferta, preço e botão de compra.",
+  compra: "Chegam ao checkout e não pagam: meios de pagamento, preço final e recuperação de carrinho.",
+  hook: "Os primeiros 3 segundos do vídeo não seguram: testar outro começo.",
+  retencao: "Assistem o começo e saem: ritmo e corpo do vídeo.",
+};
+const refs = () => D.gargalos ? {...REF_PADRAO, ...(typeof D.gargalos === "object" ? D.gargalos : {})} : null;
+const fmtRef = v => new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v) + "%";
+const ICO_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>`;
+// " gg" quando a taxa está abaixo da referência (para células e KPIs dos criativos)
+function ggc(refK, v, base){
+  const REF = refs();
+  return REF && refK && REF[refK] != null && v != null && (base == null || base >= BASE_MINIMA) && v < REF[refK] ? " gg" : "";
+}
+// referência da taxa de conversão de uma campanha ou criativo
+function refConv(r, m){
+  if (r === "conversas") return "conversa";
+  if (r === "leads" || r === "cadastros") return (m.visitas||0) < (m[r]||0) ? "form_lead" : "pagina_lead";
+  if (r === "checkouts") return "checkout";
+  return null;
+}
+function baseConv(r, m){ return r === "conversas" || ((r === "leads" || r === "cadastros") && (m.visitas||0) < (m[r]||0)) ? m.cliques : m.visitas; }
+
+// Etapas (E) e taxas de passagem (T[i] liga E[i] a E[i+1]) conforme o tipo de resultado.
+function etapasFunil(m, r){
+  const R = RES[r] || RES.compras, REF = refs() || {};
+  const E = [{k:"impressoes", nome:"Impressões", desc:"Vezes que o anúncio apareceu", v:m.impressoes||0, custo:"CPM", cv:div(m.gasto*1000, m.impressoes)}];
+  const T = [];
+  const passo = (e, t) => { const ant = E[E.length-1];
+    T.push({...t, val:div(e.v*100, ant.v), base:ant.v, ref:t.ref ? REF[t.ref] : null, refK:t.ref, de:ant.nome, para:e.nome});
+    E.push({...e, cv:div(m.gasto, e.v)}); };
+  const res = m[r] || 0;
+  if (r === "thruplay" || r === "engajamento" || r === "alcance") {
+    if (m.views) {
+      passo({k:"views", nome:"Views de 3s", desc:"Quem parou para ver o começo", v:m.views, custo:"Custo por view"},
+            {nome:"Hook rate", formula:"views de 3s ÷ impressões", ref:"hook"});
+      if (m.thruplay) passo({k:"thruplay", nome:"ThruPlays", desc:"Quem viu 15s ou o vídeo inteiro", v:m.thruplay, custo:"Custo por ThruPlay"},
+            {nome:"Retenção", formula:"ThruPlays ÷ views de 3s", ref:"retencao"});
+    } else if (m.engajamento) passo({k:"engajamento", nome:"Engajamentos", desc:"Curtidas, comentários, cliques e visitas", v:m.engajamento, custo:"Custo por engajamento"},
+            {nome:"Taxa de engajamento", formula:"engajamentos ÷ impressões"});
+    return {E, T};
+  }
+  passo({k:"cliques", nome:"Cliques no link", desc:"Quem clicou no anúncio", v:m.cliques||0, custo:"Custo por clique"},
+        {nome:"CTR", formula:"cliques ÷ impressões", ref:"ctr"});
+  if (r === "cliques") return {E, T};
+  if (r === "conversas") {
+    passo({k:"conversas", nome:"Conversas", desc:"Quem chamou no WhatsApp", v:res, custo:R.cu}, {nome:"Clique para conversa", formula:"conversas ÷ cliques", ref:"conversa"});
+    return {E, T};
+  }
+  if ((r === "leads" || r === "cadastros") && (m.visitas||0) < res) {
+    passo({k:r, nome:R.un, desc:"Formulário da própria Meta (não passa pela página)", v:res, custo:R.cu},
+          {nome:`Clique para ${r === "leads" ? "lead" : "cadastro"}`, formula:`${R.un.toLowerCase()} ÷ cliques`, ref:"form_lead"});
+    return {E, T};
+  }
+  passo({k:"visitas", nome:"Visitas à página", desc:"Quem esperou a página carregar", v:m.visitas||0, custo:"Custo por visita"},
+        {nome:"Taxa de carregamento", formula:"visitas ÷ cliques", ref:"carregamento"});
+  if (r === "compras" || r === "checkouts")
+    passo({k:"checkouts", nome:"Checkouts", desc:"Quem foi para o pagamento", v:m.checkouts||0, custo:"Custo por checkout"},
+          {nome:"Página para checkout", formula:"checkouts ÷ visitas", ref:"checkout"});
+  if (r === "compras")
+    passo({k:"compras", nome:"Compras", desc:"Pagamentos concluídos", v:m.compras||0, custo:"Custo por compra"},
+          {nome:"Checkout para compra", formula:"compras ÷ checkouts", ref:"compra"});
+  if (r === "leads" || r === "cadastros")
+    passo({k:r, nome:R.un, desc:"Quem se cadastrou na página", v:res, custo:R.cu},
+          {nome:`Página para ${r === "leads" ? "lead" : "cadastro"}`, formula:`${R.un.toLowerCase()} ÷ visitas`, ref:"pagina_lead"});
+  return {E, T};
+}
+// Marca as taxas abaixo da referência e devolve as ruins, da pior para a menos pior.
+function avaliar(T){
+  T.forEach(t => { t.pouco = t.base < BASE_MINIMA;
+    t.ruim = t.ref != null && t.val != null && !t.pouco && t.val < t.ref; t.nota = t.ruim ? t.val / t.ref : null; });
+  const ruins = T.filter(t => t.ruim).sort((a,b) => a.nota - b.nota);
+  if (ruins[0]) ruins[0].principal = true;
+  return ruins;
+}
+function formaFunil(i, n, ruim){
+  const L = [100, 84, 68, 52, 38, 28];
+  const t = (100 - L[i]) / 2, b = (100 - L[i+1]) / 2, fim = i === n - 1;
+  const cor = ruim ? "255,77,94" : "0,216,245", fill = ruim ? .2 : [.05,.08,.11,.15,.22][i] || .22;
+  return `<svg viewBox="0 0 100 72" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="${t},0 ${100-t},0 ${100-b},72 ${b},72" fill="rgba(${cor},${fill})"
+      stroke="rgba(${cor},${fim || ruim ? .6 : .28})" stroke-width="1" vector-effect="non-scaling-stroke"
+      ${fim || ruim ? `style="filter:drop-shadow(0 0 14px rgba(${cor},.35))"` : ""}/></svg>`;
+}
+function funilGargalos(a, b, r){
+  if (!a.impressoes) return "";
+  const R = RES[r] || RES.compras;
+  const {E, T} = etapasFunil(a, r), ant = etapasFunil(b, r);
+  const tAnt = Object.fromEntries(ant.T.map(t => [t.nome, t.val])), eAnt = Object.fromEntries(ant.E.map(e => [e.k, e.cv]));
+  const ruins = avaliar(T);
+  let html = `<div class="card fz">
+    <div class="fn-cols"><div>Etapa</div><div style="text-align:center">Volume</div><div>Custo por etapa</div></div>`;
+  E.forEach((e, i) => {
+    const entrou = T[i-1], ruim = entrou && entrou.ruim;
+    html += `<div class="fn-row${i === E.length-1 ? " fim" : ""}${ruim ? " gg" : ""}">
+      <div class="fn-nome"><div class="n">${esc(e.nome)}</div><div class="d">${esc(e.desc)}</div></div>
+      <div class="fn-forma">${formaFunil(i, E.length, ruim)}<div class="q"><b>${fmtInt(e.v)}</b><span>${i ? `${fmtPct(e.v*100/a.impressoes)} das impressões` : "topo do funil"}</span></div></div>
+      <div class="fn-custo"><div class="l">${esc(e.custo)}</div><div class="v">${moedaOu(e.cv)}</div>${delta(e.cv, eAnt[e.k], "desce")}</div>
+    </div>`;
+    const t = T[i];
+    if (t) html += `<div class="fn-conn">
+      <div class="chip${t.ruim ? " gg" : ""}${t.principal ? " top" : ""}">${ICO_DOWN}<span class="k">${esc(t.nome)}</span><b>${pctOu(t.val)}</b>${deltaPP(t.val, tAnt[t.nome])}${t.principal ? `<span class="tag-gg">Principal gargalo</span>` : t.ruim ? `<span class="tag-gg">Gargalo</span>` : ""}</div>
+      <div class="nota${t.ruim ? " gg" : ""}">${esc(t.formula)}<br>${t.ref != null ? `referência: ${fmtRef(t.ref)} ou mais` : "sem referência"}${t.pouco ? " · pouco volume, não conta" : ""}<br>antes: ${pctOu(tAnt[t.nome])}</div></div>`;
+  });
+  html += `<div class="fn-rodape">
+    <div>Valor usado: <b>${fmtMoeda(a.gasto)}</b></div>
+    <div>${esc(R.un)}: <b>${fmtInt(a.res)}</b></div>
+    <div>${esc(R.cu)}: <b>${moedaOu(a.cpr)}</b></div>
+    ${r === "compras" ? `<div>Faturamento: <b>${fmtMoeda(a.faturamento)}</b></div><div>ROAS: <b>${xOu(a.roas)}</b></div>` : ""}
+  </div>`;
+  if (ruins.length) {
+    const p = ruins[0], resto = ruins.slice(1);
+    const frase = ["ctr","hook"].includes(p.refK) ? "" : ` De cada 100 ${esc(p.de.toLowerCase())}, ${fmtInt(p.val)} viram ${esc(p.para.toLowerCase())}.`;
+    html += `<div class="alerta">${ICO_ALERTA}<div><b>Principal gargalo: ${esc(p.nome)}</b> em ${pctOu(p.val)}, abaixo da referência de ${fmtRef(p.ref)}.${frase}
+      ${DICA[p.refK] || ""}${resto.length ? `<br>Também abaixo da referência: ${resto.map(t => `<b>${esc(t.nome)}</b> (${pctOu(t.val)}, referência ${fmtRef(t.ref)})`).join(", ")}.` : ""}</div></div>`;
+  } else if (T.some(t => t.ref != null && !t.pouco && t.val != null)) {
+    html += `<div class="alerta ok">${ICO_OK}<div>Nenhuma etapa abaixo da referência neste período.</div></div>`;
+  }
+  return `<section>
+    <div class="sec-head"><div><h2>Funil</h2><p class="sub">Do anúncio visto até o resultado. Em vermelho, as etapas que passam menos gente do que a referência.</p></div></div>
+    ${html}</div>
+  </section>`;
+}
+// Visão geral: o principal gargalo de cada funil e tipo de campanha.
+function secaoGargalos(P, abas){
+  if (!D.gargalos) return "";
+  const linhas = [];
+  abas.filter(a => a.id !== "google").forEach((aba, ordem) => {
+    const porTipo = {};
+    idsDaAba(aba.id, P).filter(id => P.campanhas[id]).forEach(id => (porTipo[camp(id).resultado] = porTipo[camp(id).resultado] || []).push(P.campanhas[id]));
+    Object.entries(porTipo).forEach(([r, l]) => {
+      const m = deriv(somar(l), r); if (!m.gasto || !m.impressoes) return;
+      const {T} = etapasFunil(m, r);
+      linhas.push({aba, ordem, r, m, ruins: avaliar(T)});
+    });
+  });
+  if (!linhas.length) return "";
+  linhas.sort((x,y) => x.ordem - y.ordem || y.m.gasto - x.m.gasto);
+  const nRuim = linhas.filter(x => x.ruins.length).length;
+  return `<section>
+    <div class="sec-head"><div><h2>Gargalos por funil</h2><p class="sub">${nRuim} de ${linhas.length} funis com alguma etapa abaixo da referência · clique em "Ver funil" para abrir</p></div></div>
+    <div class="card tbl-wrap"><table>
+      <thead><tr><th>Funil</th><th>Valor usado</th><th>Resultado</th><th>Principal gargalo</th><th>Taxa</th><th>Referência</th><th>Também abaixo</th><th></th></tr></thead>
+      <tbody>${linhas.map(({aba, r, m, ruins}) => { const p = ruins[0]; return `<tr${p ? ' class="ruim"' : ""}>
+        <td>${esc(aba.nome)}<span class="st">${esc(RES[r].grupo)}</span></td>
+        <td>${fmtMoeda(m.gasto)}</td><td>${fmtInt(m.res)}<span class="st">${esc(RES[r].un.toLowerCase())}</span></td>
+        <td>${p ? esc(p.nome) : "Nenhum"}</td><td>${p ? pctOu(p.val) : "-"}</td><td>${p ? fmtRef(p.ref) : "-"}</td>
+        <td>${ruins.slice(1).map(t => esc(t.nome)).join(", ") || "-"}</td>
+        <td><button class="lnk" data-ir="${esc(aba.id)}|${r}">Ver funil</button></td></tr>`; }).join("")}
+      </tbody></table></div>
+    <p class="defs">Referências: CTR ${fmtRef(refs().ctr)}, carregamento ${fmtRef(refs().carregamento)}, página para lead ${fmtRef(refs().pagina_lead)},
+      formulário da Meta ${fmtRef(refs().form_lead)}, clique para conversa ${fmtRef(refs().conversa)}, página para checkout ${fmtRef(refs().checkout)},
+      checkout para compra ${fmtRef(refs().compra)}, hook rate ${fmtRef(refs().hook)} e retenção ${fmtRef(refs().retencao)}.
+      Etapa com menos de ${BASE_MINIMA} pessoas na entrada não conta como gargalo.</p>
+  </section>`;
 }
 
 // ---------- funil visual da aba (impressões > cliques > visitas > checkout > resultado) ----------

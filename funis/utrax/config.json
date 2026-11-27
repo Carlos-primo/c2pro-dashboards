@@ -21,6 +21,7 @@
   "periodo_inicial": "7",
   "quebras": true,
   "idade_maxima": 55,
+  "gargalos": true,
   "abas": [
     {
       "id": "juridico",
