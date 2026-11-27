@@ -254,6 +254,7 @@ def hotmart(slug, hcfg, periodos_meta, ontem, fuso):
     hm, linhas = gerar_hotmart.Hotmart(slug), {}
     for produto in hcfg["produtos"]:
         for status in gerar_hotmart.VENDIDAS + gerar_hotmart.DEVOLVIDAS:
+            bases = gerar_hotmart.precos_venda(hm, produto, status, inicio, fim, fuso)
             for v in hm.get("/sales/history", product_id=produto, transaction_status=status,
                             start_date=gerar_hotmart.ms(inicio, fuso), end_date=gerar_hotmart.ms(fim, fuso, fim=True)):
                 p = v.get("purchase", {})
@@ -262,11 +263,10 @@ def hotmart(slug, hcfg, periodos_meta, ontem, fuso):
                     continue
                 u = _utm(p)
                 camp = u.get("utm_campaign", "").strip()
-                preco = p.get("price") or {}
                 linhas[p.get("transaction")] = {
                     "dia": dt.datetime.fromtimestamp(quando / 1000, fuso).date(),
                     "vendida": p.get("status", status) in gerar_hotmart.VENDIDAS,
-                    "valor": float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0,
+                    "valor": gerar_hotmart.valor_venda(p, bases),
                     "campanha": camp if contem in camp.upper() else None,
                     "anuncio": (u.get("utm_content") or "").strip() if contem in camp.upper() else None,
                     "utm": bool(u),

@@ -99,25 +99,41 @@ def ms(data, fuso, fim=False):
     return int(dt.datetime.combine(data, hora, tzinfo=fuso).timestamp() * 1000)
 
 
+def precos_venda(hm, produto, status, inicio, fim, fuso):
+    """Preco de venda de cada transacao (base do /sales/price/details), SEM juros de parcelamento.
+    O purchase.price do /sales/history e o total pago pelo comprador e inclui os juros do cartao,
+    que sao do banco e nunca entram como faturamento."""
+    return {d["transaction"]: d["base"] for d in hm.get(
+        "/sales/price/details", product_id=produto, transaction_status=status,
+        start_date=ms(inicio, fuso), end_date=ms(fim, fuso, fim=True)) if d.get("base")}
+
+
+def valor_venda(compra, bases):
+    """Faturamento da venda em BRL: preco de venda sem juros. Sem detalhe de preco, cai no total pago."""
+    preco = bases.get(compra.get("transaction")) or compra.get("price") or {}
+    return float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0
+
+
 def vendas(hm, produtos, inicio, fim, fuso):
     """Transacoes do periodo (pela data de aprovacao, quando o pixel dispara, no fuso da conta do Meta),
     so com o que o dashboard usa."""
     linhas = []
     for produto in produtos:
         for status in VENDIDAS + DEVOLVIDAS:
+            bases = precos_venda(hm, produto, status, inicio, fim, fuso)
             for v in hm.get("/sales/history", product_id=produto, transaction_status=status,
                             start_date=ms(inicio, fuso), end_date=ms(fim, fuso, fim=True)):
                 p = v.get("purchase", {})
                 quando = p.get("approved_date") or p.get("order_date")
                 if not quando:
                     continue
-                preco = p.get("price") or {}
+                preco = bases.get(p.get("transaction")) or p.get("price") or {}
                 linhas.append({
                     "transacao": p.get("transaction"),
                     "produto": str(produto),
                     "dia": dt.datetime.fromtimestamp(quando / 1000, fuso).date(),
                     "status": p.get("status", status),
-                    "valor": float(preco.get("value") or 0) if preco.get("currency_code", "BRL") == "BRL" else 0.0,
+                    "valor": valor_venda(p, bases),
                     "moeda": preco.get("currency_code", "BRL"),
                     "valor_original": float(preco.get("value") or 0),
                     "origem": origem(p.get("tracking") or {}),
